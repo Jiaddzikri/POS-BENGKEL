@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('discounts', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
             $table->string('name');
             $table->text('desc')->nullable();
             $table->decimal('discount_percent', 5, 2)->comment('Diskon dalam persen');
