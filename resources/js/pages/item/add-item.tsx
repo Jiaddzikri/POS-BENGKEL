@@ -1,14 +1,17 @@
 import AddItemHeader from '@/components/add-item-header';
 import AppLayout from '@/layouts/app-layout';
 import AddItemForm from '@/pages/item/add-item/add-item-form';
-import { BreadcrumbItem, Category } from '@/types';
+import { BreadcrumbItem, Category, FormItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Toaster } from 'sonner';
 
+type FormItemKey = keyof FormItem;
+
 interface AddItemProps {
   categories: Category[];
+  item?: FormItem;
 }
-export default function AddItem({ categories }: AddItemProps) {
+export default function AddItem({ categories, item }: AddItemProps) {
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Item Management',
@@ -19,6 +22,7 @@ export default function AddItem({ categories }: AddItemProps) {
       href: '/item/add',
     },
   ];
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Add Item" />

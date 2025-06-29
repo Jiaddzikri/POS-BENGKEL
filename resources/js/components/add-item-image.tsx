@@ -1,21 +1,18 @@
-import { FormData, Variant } from '@/types';
-import { ImageIcon, X } from 'lucide-react';
+import { FormItem, Variant } from '@/types';
+import { ImageIcon } from 'lucide-react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 
-type FormDataKey = keyof FormData;
+type FormItemKey = keyof FormItem;
 
 interface AddItemImageProps {
-  images: File[];
-  handleInputChange: (field: FormDataKey, value: number | string | Variant | File | null) => void;
-  formData: FormData;
+  handleInputChange: (field: FormItemKey, value: number | string | Variant | File | null) => void;
 }
 
-export default function AddItemImage({ images, handleInputChange, formData }: AddItemImageProps) {
+export default function AddItemImage({ handleInputChange }: AddItemImageProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Tambahkan blok 'if' untuk memeriksa 'e.target.files'
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0]; // Aman untuk diakses di sini
+      const file = e.target.files[0];
 
       handleInputChange('image', file);
     } else {
@@ -42,7 +39,7 @@ export default function AddItemImage({ images, handleInputChange, formData }: Ad
           <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
         </Label>
 
-        {images.length > 0 && (
+        {/* {images.length > 0 && (
           <div className="mt-4 grid grid-cols-2 gap-2">
             {images.map((image, index) => (
               <div key={index} className="relative">
@@ -53,7 +50,7 @@ export default function AddItemImage({ images, handleInputChange, formData }: Ad
               </div>
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

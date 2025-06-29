@@ -8,26 +8,23 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
+Route::middleware('auth')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Menu
     Route::get('/menu', function () {
         return Inertia::render('menu');
-    });
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
+    })->name('menu');
+    
     Route::get('/item', function () {
         return Inertia::render('item');
-    });
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/item/add', [ItemController::class,'addItem'])->name('item.add');
+    })->name('item.index');
+    
+    Route::get('/item/add', [ItemController::class, 'addItem'])->name('item.add');
+    Route::post('/item', [ItemController::class, 'postItem'])->name('item.post');
 });
 
 require __DIR__.'/settings.php';

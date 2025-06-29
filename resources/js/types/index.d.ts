@@ -56,15 +56,17 @@ export interface Variant {
   minimum_stock: string | number;
 }
 
-export interface FormData {
+export interface FormItem {
   tenant_id?: string | number;
   name: string;
   category_id: string;
   description: string;
-  price: string | number | any;
+  purchase_price: string | number | any;
+  selling_price: string | number | any;
   brand: string;
   variants: Variant[];
   image: File | null;
+  [key: string]: any;
 }
 
 export interface Category {
