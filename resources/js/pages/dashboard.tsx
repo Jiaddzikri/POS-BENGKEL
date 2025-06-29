@@ -2,8 +2,6 @@ import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import axios from 'axios';
-import { useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -15,13 +13,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Dashboard() {
   const { auth }: any = usePage().props;
 
-  useEffect(() => {
-    if (auth.user.tenant_id) {
-      axios.defaults.headers.common['TENANT-ID'] = auth.user.tenant_id;
-
-      localStorage.setItem('tenant_id', auth.user.tenant_id);
-    }
-  }, [auth.user.tenant_id]);
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Dashboard" />

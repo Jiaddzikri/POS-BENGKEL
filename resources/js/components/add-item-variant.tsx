@@ -1,12 +1,12 @@
-import { FormData, Variant } from '@/types';
+import { FormItem, Variant } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
-import { Input } from '@headlessui/react';
+import { Button, Input } from '@headlessui/react';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Label } from './ui/label';
 
-type FormDataKey = keyof FormData;
+type FormDataKey = keyof FormItem;
 type VariantKey = keyof Variant;
 
 interface ValidationErrors {
@@ -18,7 +18,7 @@ interface ValidationErrors {
 }
 
 interface AddItemVarianProps {
-  formData: FormData;
+  formData: FormItem;
   handleInputChange: (field: FormDataKey, value: string | number | Variant) => void;
 }
 
@@ -95,7 +95,7 @@ export default function AddItemVariant({ formData, handleInputChange }: AddItemV
       validationErrors.minimum_stock = 'Minimum stock value is too large';
     }
 
-    if (minimum_stock > stock && Number(stock) > 0) {
+    if (Number(minimum_stock) > Number(stock)) {
       validationErrors.minimum_stock = 'Minimum stock cannot be greater than current stock';
     }
 
@@ -244,7 +244,8 @@ export default function AddItemVariant({ formData, handleInputChange }: AddItemV
         </div>
 
         <div>
-          <button
+          <Button
+            type="button"
             onClick={addVariantValueHandler}
             disabled={isSubmitting}
             className={`flex items-center gap-1 rounded-md border px-6 py-2 text-sm font-medium transition-colors ${
@@ -253,7 +254,7 @@ export default function AddItemVariant({ formData, handleInputChange }: AddItemV
           >
             <Plus className="h-4 w-4" />
             {isSubmitting ? 'Adding...' : 'Add Variant'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

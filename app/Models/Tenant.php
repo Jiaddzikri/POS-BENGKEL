@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tenant extends Model
 {
-    use HasFactory, HasUuids; // Gunakan trait di sini
+    use HasFactory, HasUuids;
+
+    protected $table = "tenants";
 
     /**
      * The attributes that are mass assignable.
@@ -20,7 +22,8 @@ class Tenant extends Model
         'name',
     ];
 
-    public function categories(): HasMany {
+    public function categories(): HasMany
+    {
         return $this->hasMany(Category::class);
     }
 }

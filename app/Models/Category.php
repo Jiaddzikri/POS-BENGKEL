@@ -12,8 +12,10 @@ class Category extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $table = "categories";
+
     protected $fillable = ['name', 'tenant_id'];
-    
+
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
