@@ -73,3 +73,57 @@ export interface Category {
   id: string;
   name: string;
 }
+
+export interface ItemList {
+  sku: string;
+  item_name: string;
+  item_id: number;
+  variant_id: string;
+  variant_name: string;
+  stock: number;
+  category_name: string;
+  last_updated: String;
+  price: number;
+  low_stock: boolean;
+  is_active: boolean;
+  status: string;
+}
+
+export interface Links {
+  url?: string;
+  label?: string;
+  active: boolean;
+}
+
+export interface Link {
+  first?: string;
+  last?: string;
+  next?: string;
+  prev?: string;
+}
+
+export interface Pagination {
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
+  links: Links[];
+}
+
+export interface ItemData {
+  data: ItemList[];
+  meta: Pagination;
+  links: Link;
+}
+
+export interface ItemStats {
+  total: number;
+  active_items: number;
+  low_stock: number;
+  categories: number;
+}
+
+export interface ItemFilter {
+  searchQuery: string;
+  page: number;
+}
