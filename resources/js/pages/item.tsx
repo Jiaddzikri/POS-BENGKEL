@@ -3,10 +3,16 @@ import ItemStatsCard from '@/components/item-stats-card';
 import ItemTable from '@/components/item-table';
 import ItemSearchHeader from '@/components/items-search-header';
 import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem } from '@/types';
+import { BreadcrumbItem, ItemData, ItemFilter, ItemStats } from '@/types';
 import { Head } from '@inertiajs/react';
 
-export default function Item() {
+interface ItemProps {
+  items: ItemData;
+  stats: ItemStats;
+  filters: ItemFilter;
+}
+
+export default function Item({ items, filters, stats }: ItemProps) {
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Item Management',
@@ -17,9 +23,9 @@ export default function Item() {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Item Management" />
       <ItemHeader />
-      <ItemStatsCard />
-      <ItemSearchHeader />
-      <ItemTable />
+      <ItemStatsCard stats={stats} />
+      <ItemSearchHeader filters={filters} />
+      <ItemTable filters={filters} pagination={items.meta} items={items.data} />
     </AppLayout>
   );
 }

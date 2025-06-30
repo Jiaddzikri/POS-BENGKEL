@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Item;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Item\PostItemRequest;
+use App\Http\Resources\VariantItemResource;
 use App\Models\Category;
+use App\Models\Item;
+use App\Models\VariantItem;
 use App\Request\PostItemAttributeRequest;
 use App\Request\VariantAttributeRequest;
 use App\Service\Item\ItemService;
@@ -18,6 +21,52 @@ class ItemController extends Controller
     public function __construct(private ItemService $itemService)
     {
 
+    }
+
+    public function showItem(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+        $search = $request->input('search');
+        $page = $request->input('page');
+
+        $activeItemsCount = Item::where('tenant_id', $tenantId)->where('status', "active")->count();
+        $lowStockCount = VariantItem::whereHas('item', function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        })->whereColumn('stock', '<=', 'minimum_stock')->count();
+        $categoriesCount = Category::where('tenant_id', $tenantId)->count();
+
+        $variants = VariantItem::with('item.category')
+            ->whereHas('item', function ($query) use ($tenantId) {
+                $query->where('tenant_id', $tenantId);
+            })
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $searchTerm = '%' . $search . '%';
+                    $q->where('sku', 'like', $searchTerm)
+                        ->orWhere('name', 'like', $searchTerm)
+                        ->orWhereHas('item', function ($itemQuery) use ($searchTerm) {
+                            $itemQuery->where('name', 'like', $searchTerm);
+                        })
+                        ->orWhereHas('item.category', function ($categoryQuery) use ($searchTerm) {
+                            $categoryQuery->where('name', 'like', $searchTerm);
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(2)
+            ->withQueryString();
+
+        return Inertia::render('item', [
+            "items" => VariantItemResource::collection($variants),
+            "stats" => [
+                'total' => $variants->count(),
+                'active_items' => $activeItemsCount,
+                'low_stock' => $lowStockCount,
+                'categories' => $categoriesCount
+            ],
+
+            "filters" => ["search" => $search, 'page' => $page]
+        ]);
     }
 
     public function addItem(Request $request)

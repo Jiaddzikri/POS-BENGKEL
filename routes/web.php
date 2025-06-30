@@ -13,19 +13,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
-    
+
     // Menu
     Route::get('/menu', function () {
         return Inertia::render('menu');
     })->name('menu');
-    
-    Route::get('/item', function () {
-        return Inertia::render('item');
-    })->name('item.index');
-    
+
+    Route::get('/item', [ItemController::class, 'showItem'])->name('item.index');
+
     Route::get('/item/add', [ItemController::class, 'addItem'])->name('item.add');
     Route::post('/item', [ItemController::class, 'postItem'])->name('item.post');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

@@ -1,141 +1,165 @@
-import { AlertTriangle, Edit3, Eye, MoreVertical, Package, Trash2 } from 'lucide-react';
-export default function ItemTable() {
-    const items = [
-        {
-            id: 1,
-            name: 'Nasi Gudeg Special',
-            category: 'Food',
-            price: 15000,
-            stock: 25,
-            sku: 'F001',
-            status: 'Active',
-            lowStock: false,
-            lastUpdated: '2 hours ago',
-        },
-        {
-            id: 2,
-            name: 'Es Teh Manis',
-            category: 'Beverages',
-            price: 5000,
-            stock: 50,
-            sku: 'D001',
-            status: 'Active',
-            lowStock: false,
-            lastUpdated: '1 day ago',
-        },
-        {
-            id: 3,
-            name: 'Keripik Singkong',
-            category: 'Snacks',
-            price: 8000,
-            stock: 5,
-            sku: 'S001',
-            status: 'Active',
-            lowStock: true,
-            lastUpdated: '3 hours ago',
-        },
-        {
-            id: 4,
-            name: 'Kopi Tubruk Premium',
-            category: 'Beverages',
-            price: 7000,
-            stock: 30,
-            sku: 'D002',
-            status: 'Active',
-            lowStock: false,
-            lastUpdated: '5 hours ago',
-        },
-        {
-            id: 5,
-            name: 'Ayam Penyet',
-            category: 'Food',
-            price: 18000,
-            stock: 15,
-            sku: 'F002',
-            status: 'Inactive',
-            lowStock: false,
-            lastUpdated: '1 day ago',
-        },
-    ];
-    return (
-        <div className="px-6 py-2">
-            <div className="rounded-lg border">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="border-b">
-                            <tr className="text-center">
-                                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Item</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">SKU</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Category</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Price</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Stock</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Status</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Last Updated</th>
-                                <th className="px-4 py-3 text-center text-xs font-medium tracking-wider uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                            {items.map((item) => (
-                                <tr key={item.id} className="">
-                                    <td className="px-4 py-4">
-                                        <div className="flex items-center">
-                                            <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg">
-                                                <Package className="h-5 w-5" />
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-medium">{item.name}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-4">
-                                        <span className="font-mono text-sm">{item.sku}</span>
-                                    </td>
-                                    <td className="px-4 py-4">
-                                        <span className="text-sm">{item.category}</span>
-                                    </td>
-                                    <td className="px-4 py-4">
-                                        <span className="text-sm font-medium">Rp {item.price.toLocaleString('id-ID')}</span>
-                                    </td>
-                                    <td className="px-4 py-4">
-                                        <div className="flex items-center">
-                                            <span className={`text-sm font-medium ${item.lowStock ? 'text-orange-600' : ''}`}>{item.stock}</span>
-                                            {item.lowStock && <AlertTriangle className="ml-2 h-4 w-4 text-orange-500" />}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-4">
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                item.status === 'Active' ? 'text-green-800' : ''
-                                            }`}
-                                        >
-                                            {item.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-4">
-                                        <span className="text-sm">{item.lastUpdated}</span>
-                                    </td>
-                                    <td className="px-4 py-4">
-                                        <div className="flex items-center justify-center space-x-2">
-                                            <button className="transition-colors hover:text-blue-600">
-                                                <Eye className="h-4 w-4" />
-                                            </button>
-                                            <button className="transition-colors hover:text-green-600">
-                                                <Edit3 className="h-4 w-4" />
-                                            </button>
-                                            <button className="transition-colors hover:text-red-600">
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                            <button className="transition-colors hover:text-gray-600">
-                                                <MoreVertical className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+import { ItemFilter, ItemList, Pagination } from '@/types';
+import { router } from '@inertiajs/react';
+import { AlertTriangle, ArrowLeft, ArrowRight, Edit3, Eye, MoreVertical, Package, Trash2 } from 'lucide-react';
+import { Button } from './ui/button';
+
+interface ItemTableProps {
+  items: ItemList[];
+  filters: ItemFilter;
+  pagination: Pagination;
+}
+export default function ItemTable({ items, pagination, filters }: ItemTableProps) {
+  const paginationButton = (pagination: Pagination) => {
+    const { per_page, current_page, total, last_page } = pagination;
+    const listNumber = [];
+
+    const totalPages = Math.ceil(total / per_page);
+
+    if (totalPages < 1) {
+      return null;
+    }
+
+    const siblingCount = 2;
+
+    let startPage = Math.max(1, current_page - siblingCount);
+    let endPage = Math.min(last_page, current_page + siblingCount);
+
+    if (current_page - siblingCount < 1) {
+      endPage = Math.min(last_page, 1 + siblingCount * 2);
+    }
+
+    if (current_page + siblingCount > last_page) {
+      startPage = Math.max(1, last_page - siblingCount * 2);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      const isCurrentPage = i === current_page;
+      listNumber.push(
+        <Button
+          key={i}
+          disabled={isCurrentPage}
+          onClick={() => router.get(route('item.index'), { page: i }, { preserveState: true, preserveScroll: true, replace: true })}
+          className={`rounded-lg px-3 py-2 ${isCurrentPage ? 'cursor-default' : 'border'}`}
+        >
+          {i}
+        </Button>,
+      );
+    }
+    return <div className="flex gap-2">{listNumber}</div>;
+  };
+  return (
+    <div className="px-6 py-2">
+      <div className="rounded-lg border">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="border-b">
+              <tr className="text-center">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Item</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">SKU</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Category</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Price</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Stock</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Last Updated</th>
+                <th className="px-4 py-3 text-center text-xs font-medium tracking-wider uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {items.map((item, index) => (
+                <tr key={index} className="">
+                  <td className="px-4 py-4">
+                    <div className="flex items-center">
+                      <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg">
+                        <Package className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">{item.item_name}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="font-mono text-sm">{item.sku}</span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="text-sm">{item.category_name}</span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="text-sm font-medium">Rp {item.price.toLocaleString('id-ID')}</span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center">
+                      <span className={`text-sm font-medium ${item.low_stock ? 'text-orange-600' : ''}`}>{item.stock}</span>
+                      {item.low_stock && <AlertTriangle className="ml-2 h-4 w-4 text-orange-500" />}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${item.is_active ? 'text-green-800' : ''}`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="text-sm">{item.last_updated}</span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center justify-center space-x-2">
+                      <button className="transition-colors hover:text-blue-600">
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button className="transition-colors hover:text-green-600">
+                        <Edit3 className="h-4 w-4" />
+                      </button>
+                      <button className="transition-colors hover:text-red-600">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <button className="transition-colors hover:text-gray-600">
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-    );
+      </div>
+      <div className="mt-6 rounded-lg border bg-white p-4 shadow-sm">
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+          <span className="text-sm text-gray-600">
+            Menampilkan {items.length}-{pagination.per_page} dari {pagination.total} item
+          </span>
+          <div className="flex gap-2">
+            <Button
+              disabled={pagination.current_page === 1}
+              onClick={() =>
+                router.get(
+                  route('item.index'),
+                  { search: filters.searchQuery, page: pagination.current_page - 1 },
+                  { preserveState: true, preserveScroll: true, replace: true },
+                )
+              }
+              className={`rounded-lg border py-2`}
+            >
+              <ArrowLeft />
+            </Button>
+            {paginationButton(pagination)}
+            <Button
+              disabled={pagination.current_page === pagination.last_page}
+              onClick={() =>
+                router.get(
+                  route('item.index'),
+                  { search: filters.searchQuery, page: pagination.current_page + 1 },
+                  { preserveState: true, preserveScroll: true, replace: true },
+                )
+              }
+              className={`rounded-lg border px-3 py-2`}
+            >
+              <ArrowRight />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
