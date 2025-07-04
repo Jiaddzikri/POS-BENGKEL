@@ -77,7 +77,7 @@ export interface Category {
 export interface ItemList {
   sku: string;
   item_name: string;
-  item_id: number;
+  item_id: string;
   variant_id: string;
   variant_name: string;
   stock: number;
@@ -87,6 +87,8 @@ export interface ItemList {
   low_stock: boolean;
   is_active: boolean;
   status: string;
+  image_path: string;
+  quantity?: number;
 }
 
 export interface Links {
@@ -126,4 +128,16 @@ export interface ItemStats {
 export interface ItemFilter {
   searchQuery: string;
   page: number;
+}
+
+export interface CartItem extends ItemList {
+  quantity: number;
+}
+
+export interface OrderItemForm {
+  item_id: string;
+  variant_item_id: string;
+  quantity: number;
+  price_at_sale: number;
+  [key: string]: any;
 }
