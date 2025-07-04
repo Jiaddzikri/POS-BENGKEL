@@ -21,6 +21,7 @@ class VariantItemResource extends JsonResource
             'variant_id' => $this->id,
             'variant_name' => $this->name,
             'stock' => $this->stock,
+            'image_path' => $this->whenLoaded('item', fn() => $this->item->image_path),
             'category_name' => $this->whenLoaded('item', fn() => $this->item->category?->name ?? 'Uncategorized'),
             'price' => $this->whenLoaded('item', fn() => $this->item->selling_price + $this->additional_price),
             'low_stock' => $this->stock <= $this->minimum_stock,
