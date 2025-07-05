@@ -53,7 +53,7 @@ class ItemController extends Controller
                 });
             })
             ->latest()
-            ->paginate(2)
+            ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('item', [
