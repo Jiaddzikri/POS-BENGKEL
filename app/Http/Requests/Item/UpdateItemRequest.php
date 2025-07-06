@@ -5,7 +5,7 @@ namespace App\Http\Requests\Item;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class PostItemRequest extends FormRequest
+class UpdateItemRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,7 +23,7 @@ class PostItemRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'name' => [
+            'item_name' => [
                 'required',
                 'string',
                 'max:255',
@@ -63,11 +63,11 @@ class PostItemRequest extends FormRequest
                 'array'
             ],
 
-            'image' => [
+            'new_image' => [
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif,webp',
-                'max:2048' // 2MB
+                'max:2048'
             ]
         ];
 
@@ -79,34 +79,18 @@ class PostItemRequest extends FormRequest
                 $uniqueRule->ignore($variant['id']);
             }
 
-            $rules["variants.{$index}.sku"] = [
-                'required',
-                'string',
-                'max:100',
-                $uniqueRule
-            ];
+            $rules["variants.{$index}.sku"] = ['required', 'string', 'max:100', $uniqueRule];
+            $rules["variants.{$index}.name"] = ['required', 'string', 'max:255'];
+            $rules["variants.{$index}.stock"] = ['required', 'numeric'];
+            $rules["variants.{$index}.minimum_stock"] = ['required', 'numeric'];
 
-            $rules["variants.{$index}.name"] = [
-                'required',
-                'string',
-                'max:255'
-            ];
-
-            $rules["variants.{$index}.stock"] = [
-                'required',
-                'numeric',
-
-            ];
-
-            $rules["variants.{$index}.minimum_stock"] = [
-                'required',
-                'numeric',
-
-            ];
+            $rules["variants.{$index}.additional_price"] = ['nullable', 'numeric'];
         }
 
         return $rules;
     }
+
+
 
     /**
      * Get the error messages for the defined validation rules.
@@ -116,11 +100,11 @@ class PostItemRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Nama produk harus diisi.',
-            'name.string' => 'Nama produk harus berupa teks.',
-            'name.max' => 'Nama produk maksimal 255 karakter.',
-            'name.min' => 'Nama produk minimal 3 karakter.',
-            'name.unique' => 'Nama produk sudah digunakan.',
+            'item_name.required' => 'Nama produk harus diisi.',
+            'item_name.string' => 'Nama produk harus berupa teks.',
+            'item_name.max' => 'Nama produk maksimal 255 karakter.',
+            'item_name.min' => 'Nama produk minimal 3 karakter.',
+            'item_name.unique' => 'Nama produk sudah digunakan.',
 
             'category_id.required' => 'Kategori harus dipilih.',
             'category_id.integer' => 'Kategori harus berupa angka.',
@@ -143,10 +127,9 @@ class PostItemRequest extends FormRequest
 
             'variants.array' => 'Varian harus berupa array.',
 
-
-            'image.image' => 'File harus berupa gambar.',
-            'image.mimes' => 'Gambar harus berformat: jpeg, png, jpg, gif, atau webp.',
-            'image.max' => 'Ukuran gambar maksimal 2MB.'
+            'new_image.image' => 'File harus berupa gambar.',
+            'new_image.mimes' => 'Gambar harus berformat: jpeg, png, jpg, gif, atau webp.',
+            'new_image.max' => 'Ukuran gambar maksimal 2MB.'
         ];
 
 
@@ -162,7 +145,5 @@ class PostItemRequest extends FormRequest
                 'price' => (float) str_replace(['Rp', '.', ','], '', $this->price)
             ]);
         }
-
-
     }
 }

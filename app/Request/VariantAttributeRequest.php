@@ -2,7 +2,9 @@
 
 namespace App\Request;
 
-class VariantAttributeRequest {
+class VariantAttributeRequest
+{
+  public ?string $id = null;
   public string $name;
   public string $sku;
   public int $stock;

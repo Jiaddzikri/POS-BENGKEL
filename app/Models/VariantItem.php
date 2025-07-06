@@ -19,7 +19,8 @@ class VariantItem extends Model
         "sku",
         "stock",
         "additional_price",
-        "minimum_stock"
+        "minimum_stock",
+        "is_deleted"
     ];
 
     public function item(): BelongsTo

@@ -49,11 +49,13 @@ export interface Dimension {
 }
 
 export interface Variant {
+  id?: string;
   name: string;
   sku: string;
-  additional_price: string | number;
-  stock: string | number;
-  minimum_stock: string | number;
+  additional_price: number;
+  stock: number;
+  minimum_stock: number;
+  [key: string]: any;
 }
 
 export interface FormItem {
@@ -89,6 +91,23 @@ export interface ItemList {
   status: string;
   image_path: string;
   quantity?: number;
+  description: string;
+}
+
+export interface Item {
+  id: string;
+  item_name: string;
+  brand: string;
+  category_id: string;
+  purchase_price: number;
+  selling_price: number;
+  is_active: boolean;
+  status: string;
+  image_path?: string;
+  description: string;
+  variants: Variant[];
+  new_image?: File | null;
+  [key: string]: any;
 }
 
 export interface Links {

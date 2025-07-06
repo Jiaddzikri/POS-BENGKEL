@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\Variant\VariantController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -10,7 +11,6 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware('auth')->group(function () {
-    // Dashboard
     Route::get('/dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
@@ -23,6 +23,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/item/add', [ItemController::class, 'addItem'])->name('item.add');
     Route::post('/item', [ItemController::class, 'postItem'])->name('item.post');
+    Route::get('/item/{itemId}/update', [ItemController::class, 'updateItemPage'])->name('item.update.page');
+    Route::post('/item/{itemId}/update', [ItemController::class, 'putUpdateItem'])->name('item.update.put');
+
+    Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
+    Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
 
 });
 
