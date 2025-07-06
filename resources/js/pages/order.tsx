@@ -116,7 +116,7 @@ export default function Order({ items }: CashierProps) {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
                 <CheckCircle className="h-24 w-24 text-green-600" />
               </div>
-              <DialogTitle className="text-xl font-semibold text-gray-900">Pesanan Berhasil Dibuat!</DialogTitle>
+              <DialogTitle className="text-xl font-semibold">Pesanan Berhasil Dibuat!</DialogTitle>
             </DialogHeader>
             <DialogFooter className="flex w-full justify-center gap-2">
               <Button onClick={finishOrder} className="w-full bg-red-500 outline-none">

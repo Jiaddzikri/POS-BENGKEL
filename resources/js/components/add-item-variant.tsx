@@ -10,6 +10,7 @@ type FormDataKey = keyof FormItem;
 type VariantKey = keyof Variant;
 
 interface ValidationErrors {
+  id?: string;
   name?: string;
   sku?: string;
   additional_price?: string;
