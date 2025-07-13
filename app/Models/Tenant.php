@@ -20,6 +20,8 @@ class Tenant extends Model
      */
     protected $fillable = [
         'name',
+        'status',
+        'is_deleted'
     ];
 
     public function categories(): HasMany

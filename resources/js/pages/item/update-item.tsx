@@ -37,7 +37,6 @@ export default function UpdateItem({ categories, item }: UpdateItemProps) {
     new_image: null,
   });
 
-  console.log(errors);
 
   const [variants, setVariants] = useState<Variant[]>(item.variants);
 

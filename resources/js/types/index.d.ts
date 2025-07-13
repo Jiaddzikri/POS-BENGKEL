@@ -84,7 +84,7 @@ export interface ItemList {
   variant_name: string;
   stock: number;
   category_name: string;
-  last_updated: String;
+  last_updated: string;
   price: number;
   low_stock: boolean;
   is_active: boolean;
@@ -160,3 +160,33 @@ export interface OrderItemForm {
   price_at_sale: number;
   [key: string]: any;
 }
+
+
+// Tenant
+
+export interface Status {
+  id: string,
+  name: string
+}
+
+export interface TenantList {
+  id: string;
+  name: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TenantData {
+  data: TenantList[];
+  meta: Pagination;
+  links: Link;
+}
+
+export interface FormTenant {
+  name: string;
+  status: string;
+  [key: string]: any;
+}
+
+// Tenant

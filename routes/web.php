@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\Variant\VariantController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -11,6 +12,18 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware('auth')->group(function () {
+
+    Route::resource('tenant', TenantController::class)
+        ->except(['show'])
+        ->names([
+            'index' => 'tenant.index',
+            'create' => 'tenant.create',
+            'store' => 'tenant.store',
+            'edit' => 'tenant.edit',
+            'update' => 'tenant.update',
+            'destory' => 'tenant.destory'
+        ]);
+
     Route::get('/dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
@@ -28,7 +41,6 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
     Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
-
 });
 
 require __DIR__ . '/settings.php';

@@ -50,13 +50,19 @@ class HandleInertiaRequests extends Middleware
                     'tenant_id' => $request->user()->tenant_id,
                     'email' => $request->user()->email,
                     'role' => $request->user()->role
-                ]: null,
+                ] : null,
             ],
-            'ziggy' => fn (): array => [
+            'ziggy' => fn(): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+                'waring' => session('warning'),
+                'info' => session('info')
+            ]
         ];
     }
 }

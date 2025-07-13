@@ -16,6 +16,7 @@ interface AddItemFormProps {
 }
 
 export default function AddItemForm({ categories, item }: AddItemFormProps) {
+
   const { data, setData, post, reset, processing, errors } = useForm<FormItem>({
     name: item?.name || '',
     category_id: item?.category_id || '',
