@@ -190,3 +190,19 @@ export interface FormTenant {
 }
 
 // Tenant
+
+
+// Category
+
+export interface CategoryData {
+  data: Category[];
+  meta: Pagination;
+  links: Link;
+}
+
+export interface FormCategory {
+  name: string;
+  [key: string]: any;
+}
+
+// Category
