@@ -74,6 +74,7 @@ export interface FormItem {
 export interface Category {
   id: string;
   name: string;
+  tenant_name?: string;
 }
 
 export interface ItemList {
@@ -203,6 +204,12 @@ export interface CategoryData {
 export interface FormCategory {
   name: string;
   [key: string]: any;
+}
+
+export interface CategoryFilter {
+  searchQuery: string;
+  page: number;
+  
 }
 
 // Category

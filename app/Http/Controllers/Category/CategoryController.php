@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Category;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CategoryResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
@@ -12,7 +15,18 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = DB::table('categories');
+        $categories = DB::table('categories')
+            ->join('tenants', 'categories.tenant_id', '=', 'tenants.id')
+            ->where('categories.is_deleted', false)
+            ->where('tenants.is_deleted', false)
+            ->select('categories.*', 'tenants.name as tenant_name')
+            ->latest('categories.created_at')
+            ->get();
+
+
+        return Inertia::render('category', [
+            'categories' => CategoryResource::collection($categories),
+        ]);
     }
 
     /**

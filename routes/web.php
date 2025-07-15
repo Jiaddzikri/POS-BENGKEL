@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Tenant\TenantController;
@@ -41,6 +42,18 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
     Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
+
+
+    Route::resource('/category', CategoryController::class)
+        ->except(['show'])
+        ->names([
+            'index' => 'category.index',
+            'create' => 'category.create',
+            'store' => 'category.store',
+            'edit' => 'category.edit',
+            'update' => 'category.update',
+            'destroy' => 'category.destroy'
+        ]);
 });
 
 require __DIR__ . '/settings.php';

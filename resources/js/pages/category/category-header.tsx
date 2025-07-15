@@ -12,10 +12,11 @@ export default function CategoryHeader() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Link href="/tenant/create">
+          <Link href="/category/
+          create">
             <button className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700">
               <Plus className="mr-2 h-4 w-4" />
-              Add Store
+              Add Category
             </button>
           </Link>
         </div>
