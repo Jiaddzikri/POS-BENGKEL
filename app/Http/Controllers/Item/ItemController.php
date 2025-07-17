@@ -30,6 +30,7 @@ class ItemController extends Controller
         $search = $request->input('search');
         $page = $request->input('page');
 
+
         $activeItemsCount = Item::where('tenant_id', $tenantId)->where('status', "active")->count();
         $lowStockCount = VariantItem::whereHas('item', function ($q) use ($tenantId) {
             $q->where('tenant_id', $tenantId);
