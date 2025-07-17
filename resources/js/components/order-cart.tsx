@@ -1,8 +1,9 @@
-import { CartItem, ItemList } from '@/types';
+import { useApi } from '@/hooks/use-api';
+import { CartItem, Customer, ItemList } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
 import { Label } from '@radix-ui/react-label';
-import { CreditCard, Minus, Percent, Plus, Receipt, ShoppingCart, Trash2 } from 'lucide-react';
-import React, { MouseEvent, useState } from 'react';
+import { CreditCard, Minus, Percent, Phone, Plus, Receipt, ShoppingCart, Trash2, User } from 'lucide-react';
+import React, { MouseEvent, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
@@ -15,8 +16,9 @@ interface OrderCartProps {
   cart: CartItem[];
   setCart: (cart: CartItem[]) => void;
   handleDiscountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  submitOrder: (e: MouseEvent<HTMLButtonElement>, closePaymentModal: any) => void;
+  submitOrder: (e: MouseEvent<HTMLButtonElement>, closePaymentModal: any, customerData?: Customer) => void;
   items: ItemList[];
+  addCustomerData: (customerData?: Customer) => void;
 }
 
 type PaymentMethod = 'cash' | 'card';
@@ -31,13 +33,68 @@ export function OrderCart({
   cart,
   setCart,
   handleDiscountChange,
+  addCustomerData,
 }: OrderCartProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [isPaymentModalOpen, setPaymentModalOpen] = useState<boolean>(false);
+
+  const [customerPhone, setCustomerPhone] = useState<string>('');
+  const [customerName, setCustomerName] = useState<string>('');
+  const [isSearchingCustomer, setIsSearchingCustomer] = useState<boolean>(false);
+  const [customerFound, setCustomerFound] = useState<boolean>(false);
+
   const subtotal: number = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount: number = subtotal * (discount / 100);
   const total: number = subtotal - discountAmount;
   const change: number = cashReceived ? parseInt(cashReceived) - total : 0;
+
+  const [findBuyer, { isLoading: buyerLoading, error: buyerError, data: buyerData }] = useApi<Customer>(
+    `/api/buyer?phone_number=${customerPhone}`,
+    'GET',
+  );
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (customerPhone.length >= 10) {
+        findBuyer();
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [customerPhone]);
+
+  useEffect(() => {
+    if (buyerData) {
+      setCustomerFound(true);
+      setCustomerName(buyerData.name || '');
+    } else {
+      setCustomerFound(false);
+      setCustomerName('');
+    }
+  }, [buyerData]); //
+
+  useEffect(() => {
+    addCustomerData({ phone_number: customerPhone, name: customerName });
+  }, [customerName, customerPhone]);
+
+  const handleCustomerPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const phone = e.target.value;
+    setCustomerPhone(phone);
+  };
+
+  const handleCustomerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (customerFound) return;
+
+    const name = e.target.value;
+    setCustomerName(name);
+  };
+
+  const resetCustomerData = () => {
+    setCustomerPhone('');
+    setCustomerName('');
+    setCustomerFound(false);
+    setIsSearchingCustomer(false);
+  };
 
   const checkIsStockOutOfQuantity = (sku: string): boolean => {
     const findItem: ItemList = items.filter((i) => {
@@ -73,7 +130,13 @@ export function OrderCart({
 
   const closePaymentModal = () => {
     setPaymentModalOpen(false);
+    resetCustomerData();
   };
+
+  const handleSubmitOrder = (e: MouseEvent<HTMLButtonElement>) => {
+    submitOrder(e, closePaymentModal);
+  };
+
   return (
     <>
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -164,12 +227,66 @@ export function OrderCart({
                   Bayar Sekarang
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle>Proses Pembayaran</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <div className="rounded-lg p-4">
+                  {/* Customer Information Section */}
+                  <div className="space-y-3 rounded-lg border p-4">
+                    <h3 className="text-sm font-medium text-gray-700">Informasi Customer (Opsional)</h3>
+
+                    {/* Customer Phone */}
+                    <div>
+                      <Label className="mb-2 block text-sm font-medium">Nomor Telepon</Label>
+                      <div className="relative">
+                        <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Input
+                          type="tel"
+                          value={customerPhone}
+                          onChange={handleCustomerPhoneChange}
+                          className="w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                          placeholder="08xxxxxxxxxx"
+                        />
+                        {isSearchingCustomer && (
+                          <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Customer Name */}
+                    <div>
+                      <Label className="mb-2 block text-sm font-medium">Nama Customer</Label>
+                      <div className="relative">
+                        <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Input
+                          type="text"
+                          value={customerName}
+                          onChange={handleCustomerNameChange}
+                          className={`w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
+                            customerFound ? 'border-green-300 bg-green-50' : ''
+                          }`}
+                          placeholder="Masukkan nama customer"
+                          disabled={customerFound}
+                        />
+                        {customerFound && (
+                          <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-green-500">
+                              <svg className="h-2 w-2 text-white" fill="currentColor" viewBox="0 0 8 8">
+                                <path d="M6.5 0l-.5.5-2 2-1-1-.5-.5-1 1 .5.5 1.5 1.5.5.5.5-.5 2.5-2.5.5-.5-1-1z" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {customerFound && <p className="mt-1 text-xs text-green-600">Customer ditemukan di database</p>}
+                    </div>
+                  </div>
+
+                  {/* Payment Summary */}
+                  <div className="rounded-lg border p-4">
                     <div className="mb-2 flex items-center justify-between">
                       <span>Subtotal:</span>
                       <span>Rp {subtotal.toLocaleString('id-ID')}</span>
@@ -186,6 +303,7 @@ export function OrderCart({
                     </div>
                   </div>
 
+                  {/* Payment Method */}
                   {paymentMethod === 'cash' && (
                     <div>
                       <Label className="mb-2 block text-sm font-medium">Uang Diterima</Label>
@@ -208,9 +326,14 @@ export function OrderCart({
                       )}
                     </div>
                   )}
+
+                  {/* Action Buttons */}
                   <div className="flex gap-3 pt-4">
+                    <Button onClick={closePaymentModal} variant="outline" className="flex-1" type="button">
+                      Batal
+                    </Button>
                     <Button
-                      onClick={(e) => submitOrder(e, closePaymentModal)}
+                      onClick={handleSubmitOrder}
                       disabled={paymentMethod === 'cash' && change < 0}
                       className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                       type="submit"
