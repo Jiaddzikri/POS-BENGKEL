@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Category\CategoryController;
+use App\Http\Controllers\Buyer\BuyerController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Tenant\TenantController;
@@ -54,6 +55,7 @@ Route::middleware('auth')->group(function () {
             'update' => 'category.update',
             'destroy' => 'category.destroy'
         ]);
+    Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 });
 
 require __DIR__ . '/settings.php';

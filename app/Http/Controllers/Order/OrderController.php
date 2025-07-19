@@ -8,7 +8,18 @@ use App\Models\Category;
 use App\Models\ItemRecord;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\SalesTransaction;
+use App\Models\SalesTransactionDetail;
 use App\Models\VariantItem;
+use App\Request\CreateBuyerRequest;
+use App\Request\CreateOrderDetailRequest;
+use App\Request\CreateOrderRequest;
+use App\Request\CreateSalesTransactionDetailRequest;
+use App\Request\CreateSalesTransactionRequest;
+use App\Request\ProcessOrderRequest;
+use App\Service\Buyer\BuyerService;
+use App\Service\Order\OrderService;
+use App\Service\Transaction\TransactionService;
 use DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,22 +27,21 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+  public function __construct(private OrderService $orderService, private TransactionService $transactionService, private BuyerService $buyerService)
+  {
+
+  }
   public function createOrder(Request $request)
   {
     $user = $request->user();
 
+    $createOrderRequest = new CreateOrderRequest();
+    $createOrderRequest->userId = $user->id;
+    $createOrderRequest->tenantId = $user->tenant_id;
+    $createOrderRequest->status = 'processing';
 
     try {
-      $order = DB::transaction(function () use ($user) {
-        $newOrder = Order::create([
-          "user_id" => $user->id,
-          "tenant_id" => $user->tenant_id,
-          "order_status" => "processing",
-
-        ]);
-
-        return $newOrder;
-      });
+      $order = $this->orderService->create($createOrderRequest);
 
       return redirect()
         ->route("menu", ["orderId" => $order->id])
@@ -81,41 +91,28 @@ class OrderController extends Controller
   public function processOrder(Request $request, string $orderId)
   {
     try {
-      $order = Order::findOrFail($orderId);
-      $orderItems = $request->post("items");
 
-      $order = DB::transaction(function () use ($orderItems, $order) {
-        $totalAmount = 0;
-        $finalAmount = 0;
-        foreach ($orderItems as $orderItem) {
+      $findBuyer = $this->buyerService->findBuyerByPhone($request->post("phone_number"));
 
-          $totalAmount += $orderItem["price_at_sale"] * $orderItem["quantity"];
+      if (!$findBuyer) {
+        $createBuyerRequest = new CreateBuyerRequest();
+        $createBuyerRequest->tenantId = $request->user()->tenant_id;
+        $createBuyerRequest->name = $request->post("name");
+        $createBuyerRequest->phoneNumber = $request->post("phone_number");
 
-          OrderItem::create([
-            "order_id" => $order->id,
-            "item_id" => $orderItem["item_id"],
-            "variant_item_id" => $orderItem["variant_item_id"],
-            "quantity" => $orderItem["quantity"],
-            "price_at_sale" => $orderItem["price_at_sale"]
-          ]);
-          $findVariantItem = VariantItem::where("id", $orderItem["variant_item_id"]);
+        $findBuyer = $this->buyerService->createBuyer($createBuyerRequest);
+      }
 
-          $findVariantItem->update([
-            "stock" => $findVariantItem->first()->stock - $orderItem["quantity"]
-          ]);
+      $processOrderRequest = new ProcessOrderRequest();
+      $processOrderRequest->orderId = $orderId;
+      $processOrderRequest->buyerId = $findBuyer->id;
+      $processOrderRequest->orderItems = $request->post("items");
+      $processOrderRequest->payment = [
+        "amount_paid" => (int) $request->post("amount_paid", 0),
+      ];
 
-          ItemRecord::create([
-            "variant_item_id" => $orderItem["variant_item_id"],
-            "stock_record" => $findVariantItem->first()->stock,
-            "stock_out" => $orderItem["quantity"]
-          ]);
-        }
-        Order::where("id", $order->id)->update([
-          "total_amount" => $totalAmount,
-          "order_status" => "completed"
-        ]);
+      $this->orderService->processOrder($processOrderRequest);
 
-      });
       return redirect()->route('menu', ["orderId" => $orderId])->with("success", "success");
     } catch (\Exception $error) {
       dd($error->getMessage());
