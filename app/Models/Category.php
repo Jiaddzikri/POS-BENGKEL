@@ -15,7 +15,7 @@ class Category extends Model
 
     protected $table = "categories";
 
-    protected $fillable = ['name', 'tenant_id'];
+    protected $fillable = ['name', 'tenant_id', 'is_deleted'];
 
     public function tenant(): BelongsTo
     {

@@ -3,17 +3,22 @@
 namespace App\Http\Controllers\Category;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Category\CategoryRequestValidator;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\TenantResource;
 use App\Models\Category;
 use App\Models\Tenant;
+use App\Request\CategoryAttributeRequest;
+use App\Service\Category\CategoryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
+
+    public function __construct(private CategoryService $categoryService) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -50,8 +55,8 @@ class CategoryController extends Controller
             'categories' => CategoryResource::collection($categories),
             'tenants' => TenantResource::collection($tenants),
             'filters' => [
-                "search" => $search, 
-                'page' => $page, 
+                "search" => $search,
+                'page' => $page,
                 'filter' => $filter
             ]
         ]);
@@ -62,15 +67,34 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+        $tenants = Tenant::latest()->get();
+
+        return Inertia::render('category/action/add-category', [
+            'tenants' => TenantResource::collection($tenants)->resolve()
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CategoryRequestValidator $request)
     {
-        //
+        try {
+
+            $request->validated();
+
+            $categoryRequest = new CategoryAttributeRequest();
+
+            $categoryRequest->name = $request->post('name');
+            $categoryRequest->tenant_id = $request->post('tenant_id');
+
+            $this->categoryService->store($categoryRequest);
+
+            return redirect()->route('category.index')->with('success', 'Category berhasil di buat');
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
     }
 
     /**
@@ -84,17 +108,36 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Category $category)
     {
-        //
+        $tenants = Tenant::latest()->get();
+
+        return Inertia::render('category/action/update-category', [
+            'category' => $category,
+            'tenants' => TenantResource::collection($tenants)->resolve()
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CategoryRequestValidator $request, string $id)
     {
-        //
+        try {
+
+            $request->validated();
+
+            $categoryRequest = new CategoryAttributeRequest();
+            $categoryRequest->name = $request->post('name');
+            $categoryRequest->tenant_id = $request->post('tenant_id');
+
+            $this->categoryService->update($categoryRequest, $id);
+
+            return redirect()->route('category.index')->with('success', 'Category berhasil di ubah');
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
     }
 
     /**
@@ -102,6 +145,13 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $this->categoryService->delete($id);
+
+            return redirect()->route('category.index')->with('success', 'Category berhasil di hapus');
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
     }
 }

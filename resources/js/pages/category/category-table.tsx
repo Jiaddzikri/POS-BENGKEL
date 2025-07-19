@@ -1,4 +1,4 @@
-import { Category, FormTenant } from '@/types';
+import { Category, FormCategory } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { Edit3, Eye, Package, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,9 +10,10 @@ interface CategoryTableProps {
 
 export default function CategoryTable({ categories }: CategoryTableProps) {
 
-  const { errors, delete: destroy } = useForm<FormTenant>();
+  const { errors, delete: destroy } = useForm<FormCategory>();
 
   const handleDelete = (id: string) => {
+
     destroy(route('category.destroy', id), {
       onError: () => console.log(errors)
     });
@@ -53,7 +54,7 @@ export default function CategoryTable({ categories }: CategoryTableProps) {
                         <Eye className="h-4 w-4" />
                       </Button>
 
-                      <Link href={`/tenant/${cat.id}/edit`}>
+                      <Link href={`/category/${cat.id}/edit`}>
                         <Button className="transition-colors hover:text-green-600">
                           <Edit3 className="h-4 w-4" />
                         </Button>
