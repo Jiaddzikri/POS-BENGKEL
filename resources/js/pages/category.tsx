@@ -27,7 +27,7 @@ export default function Category({ categories, tenants, filters, route_name }: C
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={'Category Management'} />
       <CategoryHeader />
-      <SearchHeader link={route_name} filters={filters} data_select={tenants.data} />
+      <SearchHeader link={route_name} filters={filters} dropdowns={tenants.data} />
       <CategoryTable categories={categories.data} />
       <Pagination link={route_name} filters={filters} pagination={categories.meta} data={categories.data} />
     </AppLayout>

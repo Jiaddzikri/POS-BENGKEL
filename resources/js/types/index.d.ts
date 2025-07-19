@@ -219,3 +219,9 @@ export interface Filter {
   page: number;
   filter: string | number;
 }
+
+export interface DropdownData {
+  id: number | string;
+  // slug
+  name?: string;
+}
