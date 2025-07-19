@@ -4,7 +4,7 @@ import CashierListItem from '@/components/order-list-item';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
-import { CartItem, ItemData, ItemList, OrderItemForm } from '@/types';
+import { CartItem, Customer, ItemData, ItemList, OrderItemForm } from '@/types';
 import {} from '@headlessui/react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { CheckCircle, Plus, X } from 'lucide-react';
@@ -24,6 +24,9 @@ export default function Order({ items }: CashierProps) {
 
   const { data, setData, post } = useForm({
     items: [] as OrderItemForm[],
+    phone_number: '' as string | undefined,
+    name: '' as string | undefined,
+    amount_paid: 0 as number,
   });
 
   const [cashReceived, setCashReceived] = useState<string>('');
@@ -39,6 +42,11 @@ export default function Order({ items }: CashierProps) {
     }
   };
 
+  const addCustomerData = (customerData?: Customer): void => {
+    setData('phone_number', customerData?.phone_number || '');
+    setData('name', customerData?.name || '');
+  };
+
   const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = parseInt(e.target.value) || 0;
     setDiscount(Math.max(0, Math.min(100, value)));
@@ -50,8 +58,9 @@ export default function Order({ items }: CashierProps) {
     setCashReceived('');
   };
 
-  const submitOrder = (e: MouseEvent<HTMLButtonElement>, closePaymentModal: any) => {
+  const submitOrder = (e: MouseEvent<HTMLButtonElement>, closePaymentModal: any, customerData?: Customer) => {
     e.preventDefault();
+
     post(route(`order.process`, { orderId: orderId }), {
       onSuccess: () => {
         closePaymentModal();
@@ -85,8 +94,12 @@ export default function Order({ items }: CashierProps) {
       items.push(item);
     });
 
-    setData({ items: items });
+    setData('items', items);
   }, [cart]);
+
+  useEffect(() => {
+    setData('amount_paid', parseInt(cashReceived));
+  }, [cashReceived]);
   return (
     <AppLayout>
       <Head title="Cashier" />
@@ -107,6 +120,7 @@ export default function Order({ items }: CashierProps) {
               handleDiscountChange={handleDiscountChange}
               submitOrder={submitOrder}
               items={items.data}
+              addCustomerData={addCustomerData}
             />
           </div>
         </div>

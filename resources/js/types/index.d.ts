@@ -162,12 +162,11 @@ export interface OrderItemForm {
   [key: string]: any;
 }
 
-
 // Tenant
 
 export interface Status {
-  id: string,
-  name: string
+  id: string;
+  name: string;
 }
 
 export interface TenantList {
@@ -213,3 +212,10 @@ export interface CategoryFilter {
 }
 
 // Category
+// customer
+interface Customer {
+  name?: string;
+  phone_number?: string;
+  [key: string]: any;
+}
+// customer
