@@ -17,6 +17,7 @@ export default function ItemSearchHeader({ filters }: ItemProps) {
   useEffect(() => {
     router.get(route('item.index'), { search: querySearch }, { preserveState: true, preserveScroll: true, replace: true });
   }, [debouncedQuery]);
+
   return (
     <div className="px-6 py-2">
       <div className="mb-6 rounded-lg border">

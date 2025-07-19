@@ -13,7 +13,7 @@ export default function CategoryTable({ categories }: CategoryTableProps) {
   const { errors, delete: destroy } = useForm<FormTenant>();
 
   const handleDelete = (id: string) => {
-    destroy(route('tenant.destroy', id), {
+    destroy(route('category.destroy', id), {
       onError: () => console.log(errors)
     });
   };

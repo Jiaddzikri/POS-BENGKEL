@@ -206,10 +206,16 @@ export interface FormCategory {
   [key: string]: any;
 }
 
-export interface CategoryFilter {
-  searchQuery: string;
-  page: number;
-  
-}
+// export interface CategoryFilter {
+//   searchQuery: string;
+//   page: number;
+
+// }
 
 // Category
+
+export interface Filter {
+  searchQuery: string;
+  page: number;
+  filter: string | number;
+}
