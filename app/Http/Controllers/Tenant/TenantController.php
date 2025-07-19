@@ -45,7 +45,7 @@ class TenantController extends Controller
     {
         $statusEnums = get_enum_values('tenants', 'status');
 
-        return Inertia::render('tenant/add-tenant', [
+        return Inertia::render('tenant/action-tenant/add-tenant', [
             'status' => $statusEnums,
         ]);
     }
@@ -88,7 +88,7 @@ class TenantController extends Controller
     {
         $statusEnums = get_enum_values('tenants', 'status');
 
-        return Inertia::render('tenant/update-tenant', [
+        return Inertia::render('tenant/action-tenant/update-tenant', [
             'status' => $statusEnums,
             'tenant' => $tenant
         ]);
