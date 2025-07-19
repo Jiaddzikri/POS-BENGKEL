@@ -169,7 +169,7 @@ export interface Status {
   name: string
 }
 
-export interface TenantList {
+export interface Tenant {
   id: string;
   name: string;
   status: string;
@@ -178,14 +178,13 @@ export interface TenantList {
 }
 
 export interface TenantData {
-  data: TenantList[];
+  data: Tenant[];
   meta: Pagination;
   links: Link;
 }
 
 export interface FormTenant {
   name: string;
-  status: string;
   [key: string]: any;
 }
 

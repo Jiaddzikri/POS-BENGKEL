@@ -12,11 +12,12 @@ type Errors = Partial<Record<keyof FormTenant, string>>
 interface TenantBasicInformation {
   formData: FormTenant;
   status: Status[];
-  handleInputChange: (field: FormTenantKey, value: string | number) => void,
-  errors: Errors
+  handleInputChange: (field: FormTenantKey, value: string | number) => void;
+  errors: Errors;
+  action: string;
 }
 
-export default function TenantBasicInformation({ handleInputChange, formData, status, errors }: TenantBasicInformation) {
+export default function TenantBasicInformation({ handleInputChange, formData, status, errors, action }: TenantBasicInformation) {
 
   const handleInputChangeWithValidation = (field: keyof Errors, value: string | number) => {
     handleInputChange(field, value);
@@ -29,8 +30,8 @@ export default function TenantBasicInformation({ handleInputChange, formData, st
   return (
     <div className="rounded-lg border">
       <div className="border-b px-6 py-4">
-        <h3 className="text-lg font-medium">Create New Store</h3>
-        <p className="mt-1 text-sm">Details about new store</p>
+        <h3 className="text-lg font-medium">{action} Store</h3>
+        <p className="mt-1 text-sm">Details about store</p>
       </div>
 
       <div className="space-y-4 p-6">

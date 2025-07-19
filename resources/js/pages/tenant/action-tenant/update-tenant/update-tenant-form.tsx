@@ -22,7 +22,7 @@ export default function UpdateTenantForm({ tenant, status }: UpdateTenantFormPro
 
 
   const handleInputChange = (field: FormTenantKey, value: string | number | null) => {
-    setData((prev) => {
+    setData((prev: FormTenant) => {
       const updated = { ...prev, [field as FormTenantKey]: value };
 
       Object.entries(updated)
@@ -50,7 +50,7 @@ export default function UpdateTenantForm({ tenant, status }: UpdateTenantFormPro
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
-              <TenantBasicInformation errors={errors} formData={data} status={status} handleInputChange={handleInputChange}/>
+              <TenantBasicInformation action="Update" errors={errors} formData={data} status={status} handleInputChange={handleInputChange}/>
             </div>
           </div>
           <ActionButton backLink="/tenant"/>
