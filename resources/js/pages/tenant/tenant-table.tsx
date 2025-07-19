@@ -1,11 +1,11 @@
-import { FormTenant, TenantList } from '@/types';
+import { FormTenant, Tenant } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { Edit3, Eye, Package, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from "@/components/modal";
 
 interface TenantTableProps {
-  tenants: TenantList[];
+  tenants: Tenant[];
 }
 
 export default function TenantTable({ tenants }: TenantTableProps) {
