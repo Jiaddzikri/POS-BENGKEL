@@ -61,6 +61,7 @@ class OrderController extends Controller
     $categories = Category::query()->select(["id", "name"])->where('tenant_id', $tenantId)->limit(4)->get();
 
     $variants = VariantItem::with('item.category')
+      ->where('is_deleted', false)
       ->whereHas('item', function ($query) use ($tenantId) {
         $query->where('tenant_id', $tenantId);
       })
@@ -78,6 +79,7 @@ class OrderController extends Controller
         });
       })
       ->latest()
+
       ->paginate(10)
       ->withQueryString();
 
@@ -115,7 +117,7 @@ class OrderController extends Controller
 
       return redirect()->route('menu', ["orderId" => $orderId])->with("success", "success");
     } catch (\Exception $error) {
-      dd($error->getMessage());
+
       return redirect()->back()->with("error", $error->getMessage());
 
     }

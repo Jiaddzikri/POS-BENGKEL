@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Analytical\AnalyticalController;
 use App\Http\Controllers\Buyer\BuyerController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
@@ -44,6 +45,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
 
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
+
+    Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
+    Route::get('/analytics-report/download', [AnalyticalController::class, 'export'])->name('analytical.download');
 });
 
 require __DIR__ . '/settings.php';

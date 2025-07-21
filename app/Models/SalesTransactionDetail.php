@@ -22,8 +22,18 @@ class SalesTransactionDetail extends Model
         'sub_total'
     ];
 
-    public function salesTransaction()
+    public function transaction()
     {
         return $this->belongsTo(SalesTransaction::class, 'sales_transaction_id');
+    }
+
+    public function variant()
+    {
+        return $this->belongsTo(VariantItem::class, 'variant_id');
+    }
+
+    public function item()
+    {
+        return $this->belongsTo(Item::class, 'item_id');
     }
 }
