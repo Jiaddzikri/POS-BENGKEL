@@ -4,15 +4,10 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BarChart3, BookOpen, Building2, ClipboardList, Folder, LayoutGrid, Package } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
-  {
-    title: 'Tenant',
-    href: '/tenant',
-    icon: LayoutGrid,
-  },
   {
     title: 'Dashboard',
     href: '/dashboard',
@@ -21,12 +16,31 @@ const mainNavItems: NavItem[] = [
   {
     title: 'Order',
     href: '/order',
-    icon: LayoutGrid,
+    icon: ClipboardList,
   },
+];
+
+const InventoryNavItems: NavItem[] = [
   {
-    title: 'Item Management',
+    title: 'Item',
     href: '/item',
-    icon: LayoutGrid,
+    icon: Package,
+  },
+];
+
+const SalesAndCustomerNavItems: NavItem[] = [
+  {
+    title: 'Reports',
+    href: '/analytics-report',
+    icon: BarChart3,
+  },
+];
+
+const AdministrationNavItems: NavItem[] = [
+  {
+    title: 'Tenant',
+    href: '/tenant',
+    icon: Building2,
   },
 ];
 
@@ -59,7 +73,12 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain items={mainNavItems} />
+        <NavMain
+          mainItems={mainNavItems}
+          inventoryItems={InventoryNavItems}
+          salesAndCustomerItems={SalesAndCustomerNavItems}
+          administrationItems={AdministrationNavItems}
+        />
       </SidebarContent>
 
       <SidebarFooter>
