@@ -15,7 +15,7 @@ const mainNavItems: NavItem[] = [
   },
   {
     title: 'User',
-    href: '/User',
+    href: '/user',
     icon: LayoutGrid
   },
   {

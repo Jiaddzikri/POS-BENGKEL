@@ -5,6 +5,7 @@ use App\Http\Controllers\Buyer\BuyerController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Tenant\TenantController;
+use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Variant\VariantController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -56,6 +57,17 @@ Route::middleware('auth')->group(function () {
             'destroy' => 'category.destroy'
         ]);
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
+
+    Route::resource('/user', UserController::class)
+        ->except(['show'])
+        ->names([
+            'index' => 'user.index',
+            'create' => 'user.crate',
+            'store' => 'user.store',
+            'edit' => 'user.edit',
+            'update' => 'user.update',
+            'destroy' => 'user.destroy'
+        ]);
 });
 
 require __DIR__ . '/settings.php';

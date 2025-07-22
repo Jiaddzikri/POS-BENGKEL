@@ -42,6 +42,13 @@ export interface User {
   [key: string]: unknown; // This allows for additional properties...
 }
 
+export interface UserData {
+  data: User[];
+  meta: Pagination;
+  links: Link;
+}
+
+
 export interface Dimension {
   length: string | number;
   width: string | number;
