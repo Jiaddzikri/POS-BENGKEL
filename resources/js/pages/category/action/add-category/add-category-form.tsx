@@ -1,4 +1,4 @@
-import { FormCategory, TenantList } from "@/types";
+import { FormCategory, Tenant } from "@/types";
 import { useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 import ActionButton from "@/components/action-button";
@@ -9,7 +9,7 @@ type FormCategoryKey = keyof FormCategory;
 
 interface AddCategoryFormProps {
   category?: FormCategory;
-  tenants: TenantList[];
+  tenants: Tenant[];
 }
 
 export default function AddCategoryForm({ category, tenants }: AddCategoryFormProps) {

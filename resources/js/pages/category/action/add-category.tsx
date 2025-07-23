@@ -1,11 +1,11 @@
 import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem, TenantList } from '@/types';
+import { BreadcrumbItem, Tenant } from '@/types';
 import { Head } from '@inertiajs/react';
 import FormHeader from '@/components/form-header';
 import AddCategoryForm from './add-category/add-category-form';
 
 interface AddCategoryProps {
-  tenants: TenantList[]
+  tenants: Tenant[]
 }
 
 export default function AddCategory({ tenants }: AddCategoryProps) {

@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FormCategory, FormTenant, TenantList } from '@/types';
+import { FormCategory, FormTenant, Tenant } from '@/types';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { ChevronDown } from 'lucide-react';
 
@@ -11,7 +11,7 @@ type Errors = Partial<Record<keyof FormTenant, string>>
 
 interface CategoryBasicInformation {
   formData: FormCategory;
-  tenants: TenantList[];
+  tenants: Tenant[];
   handleInputChange: (field: FormTenantKey, value: string | number) => void,
   errors: Errors,
   action: string;

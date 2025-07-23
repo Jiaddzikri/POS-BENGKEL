@@ -1,4 +1,4 @@
-import { FormCategory, TenantList } from "@/types";
+import { FormCategory, Tenant } from "@/types";
 import { useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 import ActionButton from "@/components/action-button";
@@ -9,7 +9,7 @@ type FormCategoryKey = keyof FormCategory;
 
 interface UpdateTenantFormProps {
   category?: FormCategory;
-  tenants: TenantList[];
+  tenants: Tenant[];
 }
 
 export default function UpdateCategoryForm({ category, tenants }: UpdateTenantFormProps) {
@@ -52,7 +52,7 @@ export default function UpdateCategoryForm({ category, tenants }: UpdateTenantFo
               <CategoryBasicInformation action="Update" errors={errors} formData={data} tenants={tenants} handleInputChange={handleInputChange} />
             </div>
           </div>
-          <ActionButton backLink="/tenant" />
+          <ActionButton backLink="/category" />
         </form>
       </div>
     </div>
