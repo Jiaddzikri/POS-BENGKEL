@@ -32,13 +32,15 @@ export interface SharedData {
 }
 
 export interface User {
-  id: number;
+  id: string | number;
   name: string;
   email: string;
   avatar?: string;
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
+  tenant_name: string;
+  role: string;
   [key: string]: unknown; // This allows for additional properties...
 }
 
@@ -46,6 +48,15 @@ export interface UserData {
   data: User[];
   meta: Pagination;
   links: Link;
+}
+
+
+export interface FormUser {
+  name: string;
+  email: string;
+  role: string;
+  tenant_id: string;
+  [key: string]: any;
 }
 
 
@@ -237,3 +248,4 @@ interface Customer {
   [key: string]: any;
 }
 // customer
+

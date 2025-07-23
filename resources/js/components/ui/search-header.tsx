@@ -40,7 +40,7 @@ export default function SearchHeader({ filters, dropdowns, link }: SearchProps) 
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 type="text"
-                placeholder="Search items..."
+                placeholder="Search data..."
                 value={querySearch}
                 onChange={(e) => setQuerySearch(e.target.value)}
                 className="w-full rounded-md border py-2 pr-4 pl-9 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"

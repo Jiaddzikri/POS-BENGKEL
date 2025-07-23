@@ -7,12 +7,16 @@ use App\Http\Resources\TenantResource;
 use App\Http\Resources\UserResource;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Service\User\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
+
+    public function __construct(private UserService $userService) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -42,9 +46,9 @@ class UserController extends Controller
 
 
         return Inertia::render('user', [
-            'router_name' => $routeName,
+            'route_name' => $routeName,
             'tenants' => TenantResource::collection($tenants)->resolve(),
-            'users' => UserResource::collection($users)->resolve(),
+            'users' => UserResource::collection($users),
             'filters' => [
                 'search' => $search,
                 'page' => $page,
@@ -58,7 +62,16 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        $roleEnums = get_enum_values('users', 'role');
+        $tenants = Tenant::latest()->get();
+
+        return Inertia::render(
+            'user/action/add-user',
+            [
+                'roles' => $roleEnums,
+                'tenants' => $tenants
+            ]
+        );
     }
 
     /**
@@ -80,9 +93,20 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(User $user)
     {
-        //
+        $roleEnums = get_enum_values('users', 'role');
+        $tenants = Tenant::latest()->get();
+
+        return Inertia::render(
+            'user/action/update-user',
+            [
+                'user' => $user,
+                'roles' => $roleEnums,
+                'tenants' => $tenants,
+            ]
+
+        );
     }
 
     /**
@@ -98,6 +122,11 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $this->userService->delete($id);
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
     }
 }
