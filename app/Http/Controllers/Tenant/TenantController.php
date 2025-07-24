@@ -14,6 +14,7 @@ use App\Request\TenantAttributeRequest;
 use App\Service\Tenant\TenantService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 class TenantController extends Controller
@@ -25,16 +26,38 @@ class TenantController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $routeName = Route::currentRouteName();
+        $search = $request->input('search');
+        $page = $request->input('page');
+        $filter = $request->input('filter');
 
-        $tenantsItems = DB::table('tenants')
+        $tenants = Tenant::when($search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $searchTerm = '%' . $search . '%';
+                $q->where('name', 'like', $searchTerm);
+            });
+        })
+            ->when($filter, function ($query, $filter) {
+                $query->where('status', $filter);
+            })
             ->where('is_deleted', false)
-            ->latest('created_at')
-            ->get();
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $statusEnums = get_enum_values('tenants', 'status');
 
         return Inertia::render('tenant', [
-            'tenants' => TenantResource::collection($tenantsItems)
+            'route_name' => $routeName,
+            'tenants' => TenantResource::collection($tenants),
+            'status' => $statusEnums,
+            'filters' => [
+                'search' => $search,
+                'page' => $page,
+                'filter' => $filter,
+            ]
         ]);
     }
 
@@ -45,7 +68,7 @@ class TenantController extends Controller
     {
         $statusEnums = get_enum_values('tenants', 'status');
 
-        return Inertia::render('tenant/action-tenant/add-tenant', [
+        return Inertia::render('tenant/action/add-tenant', [
             'status' => $statusEnums,
         ]);
     }
@@ -88,7 +111,7 @@ class TenantController extends Controller
     {
         $statusEnums = get_enum_values('tenants', 'status');
 
-        return Inertia::render('tenant/action-tenant/update-tenant', [
+        return Inertia::render('tenant/action/update-tenant', [
             'status' => $statusEnums,
             'tenant' => $tenant
         ]);

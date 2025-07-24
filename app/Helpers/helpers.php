@@ -8,6 +8,14 @@ if (!function_exists('get_enum_values')) {
     $type = DB::selectOne("SHOW COLUMNS FROM {$table} WHERE Field = ?", [$field])->Type;
     preg_match("/^enum\(\'(.*)\'\)$/", $type, $matches);
     $enum = explode("','", $matches[1]);
-    return array_map(fn($val) => trim($val, "'"), $enum);
+    return array_map(
+      function($val) {
+        trim($val, "'");
+        return [
+          'id' => $val,
+          'name' => ucwords(str_replace('_', ' ', $val))
+        ];
+      }, $enum
+    );
   }
 }
