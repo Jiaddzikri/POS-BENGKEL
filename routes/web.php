@@ -4,6 +4,7 @@ use App\Http\Controllers\Analytical\AnalyticalController;
 use App\Http\Controllers\Buyer\BuyerController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\Qr\QrController;
 use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\Variant\VariantController;
 use Illuminate\Support\Facades\Route;
@@ -43,11 +44,14 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
     Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
+    Route::get('/item/variant', [ItemController::class, 'findItem'])->prefix('api');
 
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 
     Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
     Route::get('/analytics-report/download', [AnalyticalController::class, 'export'])->name('analytical.download');
+
+    Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
 });
 
 require __DIR__ . '/settings.php';
