@@ -1,12 +1,12 @@
 import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem, Tenant } from '@/types';
+import { BreadcrumbItem, DropdownData, Tenant } from '@/types';
 import { Head } from '@inertiajs/react';
 import FormHeader from '@/components/form-header';
 import AddUserForm from './add-user/add-user-form';
 
 interface AddUserProps {
   tenants: Tenant[];
-  roles: string[];
+  roles: DropdownData[];
 }
 
 export default function AddUser({ tenants, roles }: AddUserProps) {

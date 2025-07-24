@@ -53,9 +53,11 @@ export interface UserData {
 
 export interface FormUser {
   name: string;
-  email: string;
+  email?: string;
   role: string;
   tenant_id: string;
+  password?: string;
+  password_confirmation?: string;
   [key: string]: any;
 }
 

@@ -1,4 +1,4 @@
-import { FormUser, Tenant } from "@/types";
+import { DropdownData, FormUser, Tenant } from "@/types";
 import { useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 import ActionButton from "@/components/action-button";
@@ -8,18 +8,22 @@ import UserBasicInformation from "../user-basic-information";
 type FormUserKey = keyof FormUser;
 
 interface AddUserFormProps {
-  user?: FormUser;
   tenants: Tenant[];
-  roles: string[];
+  roles: DropdownData[];
 }
 
-export default function AddUserForm({ user, tenants, roles }: AddUserFormProps) {
+export default function AddUserForm({ tenants, roles }: AddUserFormProps) {
   const { data, setData, post, reset, errors, clearErrors } = useForm<FormUser>({
-    name: user?.name || '',
-    email: user?.email || '',
-    role: user?.role || '',
-    tenant_id: user?.tenant_id || ''
+    name: '',
+    email: '',
+    role: '',
+    tenant_id: '',
+    password: '',
+    password_confirmation: '',
   });
+
+
+  console.log(data);
 
 
   const handleInputChange = (field: FormUserKey, value: string | number | null) => {
@@ -38,7 +42,7 @@ export default function AddUserForm({ user, tenants, roles }: AddUserFormProps) 
     e.preventDefault();
 
     post(route('user.store'), {
-      onSuccess: () => reset('name', 'email', 'password', 'role', 'tenant_id'),
+      onSuccess: () => reset('name', 'email', 'password', 'password_confirmation', 'role', 'tenant_id'),
       onError: () => console.log(errors)
     });
   }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Variant\VariantController;
+use App\Mail\HelloMail;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -68,6 +69,12 @@ Route::middleware('auth')->group(function () {
             'update' => 'user.update',
             'destroy' => 'user.destroy'
         ]);
+
+    Route::get('/testmail', function () {
+        Mail::to('muhamadilhan02404@gmail.com')
+        ->send(new HelloMail());
+    });
+
 });
 
 require __DIR__ . '/settings.php';

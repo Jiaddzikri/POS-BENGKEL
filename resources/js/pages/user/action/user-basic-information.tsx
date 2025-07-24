@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FormUser, Tenant } from '@/types';
+import { DropdownData, FormUser, Tenant } from '@/types';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { ChevronDown } from 'lucide-react';
 
@@ -12,7 +12,7 @@ type Errors = Partial<Record<keyof FormUser, string>>
 interface UserBasicInformation {
   formData: FormUser;
   tenants: Tenant[];
-  roles: string[];
+  roles: DropdownData[];
   handleInputChange: (field: FormUserKey, value: string | number) => void,
   errors: Errors,
   action: string;
@@ -39,7 +39,7 @@ export default function UserBasicInformation({ action, handleInputChange, formDa
       <div className="space-y-4 p-6">
         <div>
           <Label className="mb-2 block text-sm font-medium">
-            User Name <span className="text-red-500">*</span>
+            Name<span className="text-red-500">*</span>
           </Label>
           <Input
             type="text"
@@ -51,20 +51,54 @@ export default function UserBasicInformation({ action, handleInputChange, formDa
           />
           {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
         </div>
-        <div>
-          <Label className="mb-2 block text-sm font-medium">
-            Email <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            type="text"
-            value={formData.email}
-            onChange={(e) => handleInputChangeWithValidation('email', e.target.value)}
-            className={getInputClassName('email')}
-            placeholder="Enter email"
-            maxLength={200}
-          />
-          {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
-        </div>
+        {action !== 'Update' && (
+          <>
+            <div>
+              <Label className="mb-2 block text-sm font-medium">
+                Email <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="text"
+                value={formData.email}
+                onChange={(e) => handleInputChangeWithValidation('email', e.target.value)}
+                className={getInputClassName('email')}
+                placeholder="Enter email"
+                maxLength={200}
+              />
+              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                autoComplete="new-password"
+                value={formData.password}
+                onChange={(e) => handleInputChangeWithValidation('password', e.target.value)}
+                placeholder="Enter password"
+              />
+              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="password_confirmation">Confirm password</Label>
+              <Input
+                id="password_confirmation"
+                type="password"
+                required
+                autoComplete="new-password"
+                value={formData.password_confirmation}
+                onChange={(e) => handleInputChangeWithValidation('password_confirmation', e.target.value)}
+                placeholder="Confirm password"
+              />
+              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+            </div>
+          </>
+        )
+        }
+
         <div>
           <Label className="mb-2 block text-sm font-medium">
             Role <span className="text-red-500">*</span>
@@ -77,10 +111,9 @@ export default function UserBasicInformation({ action, handleInputChange, formDa
               </SelectTrigger>
 
               <SelectContent>
-
-                {roles && roles.map((data, key) => (
-                  <SelectItem key={key} value={data}>
-                    {data}
+                {roles && roles.map((data) => (
+                  <SelectItem key={data.id} value={String(data.id)}>
+                    {data.name}
                   </SelectItem>
                 ))}
               </SelectContent>

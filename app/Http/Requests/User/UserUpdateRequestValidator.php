@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests\User;
 
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
 
-class UserRequestValidator extends FormRequest
+class UserUpdateRequestValidator extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,20 +26,6 @@ class UserRequestValidator extends FormRequest
                 'required',
                 'string',
                 'max:255'
-            ],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'lowercase',
-                'max:255',
-                'unique:' . User::class . ',email'
-            ],
-            'password' => [
-                'required',
-                'string',
-                'confirmed',
-                Password::default()
             ],
             'role' => [
                 'required',

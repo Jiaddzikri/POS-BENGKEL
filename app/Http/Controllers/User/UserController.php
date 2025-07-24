@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\UserAddRequestValidator;
+use App\Http\Requests\User\UserUpdateRequestValidator;
 use App\Http\Resources\TenantResource;
 use App\Http\Resources\UserResource;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Request\UserAttributeRequest;
 use App\Service\User\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -77,9 +80,25 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(UserAddRequestValidator $request)
     {
-        //
+        try {
+            $request->validated();
+
+            $userRequest = new UserAttributeRequest();
+            $userRequest->name = $request->post('name');
+            $userRequest->email = $request->post('email');
+            $userRequest->password = $request->post('password');
+            $userRequest->role = $request->post('role');
+            $userRequest->tenant_id = $request->post('tenant_id');
+
+            $user = $this->userService->store($userRequest);
+
+            return redirect()->route('user.index')->with('success', 'Pengguna ' . $user->email . ' berhasil di tambahkan, sebagai ' . $user->role);
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
     }
 
     /**
@@ -98,23 +117,41 @@ class UserController extends Controller
         $roleEnums = get_enum_values('users', 'role');
         $tenants = Tenant::where('is_deleted', false)->latest()->get();
 
+        $routeName = Route::currentRouteName();
+
         return Inertia::render(
             'user/action/update-user',
             [
                 'user' => $user,
                 'roles' => $roleEnums,
                 'tenants' => $tenants,
+                'route_name' => $routeName
             ]
-
         );
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UserUpdateRequestValidator $request, string $id)
     {
-        //
+        try {
+
+            $request->validated();
+
+            $userRequest = new UserAttributeRequest();
+
+            $userRequest->name = $request->post('name');
+            $userRequest->role = $request->post('role');
+            $userRequest->tenant_id = $request->post('tenant_id');
+
+            $user = $this->userService->update($userRequest, $id);
+
+            return redirect()->route('user.index')->with('success', 'Mengubah pengguna ' . $user->email);
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
     }
 
     /**

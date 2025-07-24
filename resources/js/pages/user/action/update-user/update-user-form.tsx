@@ -1,4 +1,4 @@
-import { FormUser, Tenant } from "@/types";
+import { DropdownData, FormUser, Tenant } from "@/types";
 import { useForm } from "@inertiajs/react";
 import { FormEventHandler } from "react";
 import ActionButton from "@/components/action-button";
@@ -8,21 +8,19 @@ import UserBasicInformation from "../user-basic-information";
 type FormUserKey = keyof FormUser;
 
 interface UpdateTenantFormProps {
-  user?: FormUser;
+  user: FormUser;
   tenants: Tenant[];
-  roles: string[];
+  roles: DropdownData[];
 }
 
 export default function UpdateUserForm({ user, tenants, roles }: UpdateTenantFormProps) {
 
   const { data, setData, put, reset, errors, clearErrors } = useForm<FormUser>({
+    id: user?.id,
     name: user?.name || '',
-    email: user?.email || '',
     role: user?.role || '',
     tenant_id: user?.tenant_id || ''
   });
-
-
 
   const handleInputChange = (field: FormUserKey, value: string | number | null) => {
     setData((prev: FormUser) => {
@@ -40,7 +38,7 @@ export default function UpdateUserForm({ user, tenants, roles }: UpdateTenantFor
     e.preventDefault();
 
     put(route('user.update', data.id), {
-      onSuccess: () => reset('name', 'email', 'password', 'role', 'tenant_id'),
+      onSuccess: () => reset('name', 'email', 'role', 'tenant_id'),
       onError: () => console.log(errors)
     });
   }
