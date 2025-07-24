@@ -1,11 +1,11 @@
 import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, FormCategory, TenantList } from "@/types";
+import { BreadcrumbItem, FormCategory, Tenant } from "@/types";
 import { Head } from "@inertiajs/react";
 import FormHeader from "@/components/form-header";
 import UpdateCategoryForm from "./update-category/update-category-form";
 
 interface UpdateCategoryProps {
-  tenants: TenantList[];
+  tenants: Tenant[];
   category: FormCategory;
 }
 
@@ -14,7 +14,7 @@ export default function UpdateCategory({ tenants, category }: UpdateCategoryProp
   const breadcrumbs: BreadcrumbItem[] = [
 
     {
-      title: "Tenant Management",
+      title: "Category Management",
       href: '/category'
     },
     {

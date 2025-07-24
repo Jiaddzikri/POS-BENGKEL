@@ -61,7 +61,7 @@ export default function CategoryTable({ categories }: CategoryTableProps) {
                       </Link>
 
                       <Modal
-                        title={`Apakah kamu yakin ingin Menghapus toko ${cat.name}?`}
+                        title={`Apakah kamu yakin ingin Menghapus Category ${cat.name}?`}
                         description={'Tindakan ini tidak dapat dibatalkan.'}
                         onConfirm={() => handleDelete(cat.id)}
                       >
