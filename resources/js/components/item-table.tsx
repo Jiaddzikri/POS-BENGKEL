@@ -1,7 +1,10 @@
 import { ItemFilter, ItemList, Pagination } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import { AlertTriangle, ArrowLeft, ArrowRight, Edit3, Eye, MoreVertical, Package, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 interface ItemTableProps {
   items: ItemList[];
@@ -9,6 +12,8 @@ interface ItemTableProps {
   pagination: Pagination;
 }
 export default function ItemTable({ items, pagination, filters }: ItemTableProps) {
+  const [openQr, setOpenQrModal] = useState<boolean>(false);
+  const [sku, setSku] = useState<string | null>(null);
   const paginationButton = (pagination: Pagination) => {
     const { per_page, current_page, total, last_page } = pagination;
     const listNumber = [];
@@ -47,6 +52,15 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
     }
     return <div className="flex gap-2">{listNumber}</div>;
   };
+
+  const handleShowQr = (sku: string) => {
+    setSku(sku);
+
+    setTimeout(() => {
+      setOpenQrModal(true);
+    }, 300);
+  };
+
   return (
     <div className="px-6 py-2">
       <div className="rounded-lg border">
@@ -116,9 +130,18 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
                       <Button className="transition-colors hover:text-red-600">
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                      <Button className="transition-colors hover:text-gray-600">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button className="transition-colors">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleShowQr(item.sku)} className="cursor-pointer">
+                            Tampilkan QrCode
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </td>
                 </tr>
@@ -163,6 +186,14 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
           </div>
         </div>
       </div>
+      <Dialog open={openQr} onOpenChange={setOpenQrModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Qr Code</DialogTitle>
+          </DialogHeader>
+          <img className="mx-auto" src={`/qr-code/${sku}`} alt="qr-code" />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
