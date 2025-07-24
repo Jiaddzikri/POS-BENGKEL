@@ -22,6 +22,6 @@ class BuyerService
   {
     return Buyer::where('phone_number', $phoneNumber)
       ->with('discount')
-      ->first() ?? throw new \Exception('Buyer not found', 404);
+      ->first();
   }
 }
