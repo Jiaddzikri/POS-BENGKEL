@@ -27,7 +27,7 @@ class UserController extends Controller
         $page = $request->input('page');
         $filter = $request->input('filter');
 
-        $tenants = Tenant::latest()->get();
+        $tenants = Tenant::where('is_deleted', false)->latest()->get();
 
         $users = User::with('tenant')
             ->when($search, function ($query, $search) {
@@ -63,7 +63,7 @@ class UserController extends Controller
     public function create()
     {
         $roleEnums = get_enum_values('users', 'role');
-        $tenants = Tenant::latest()->get();
+        $tenants = Tenant::where('is_deleted', false)->latest()->get();
 
         return Inertia::render(
             'user/action/add-user',
@@ -96,7 +96,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roleEnums = get_enum_values('users', 'role');
-        $tenants = Tenant::latest()->get();
+        $tenants = Tenant::where('is_deleted', false)->latest()->get();
 
         return Inertia::render(
             'user/action/update-user',
