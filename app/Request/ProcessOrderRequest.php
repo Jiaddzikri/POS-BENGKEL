@@ -11,4 +11,6 @@ class ProcessOrderRequest
   public array $orderItems;
 
   public array $payment;
+
+  public int $discount;
 }
