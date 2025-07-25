@@ -30,85 +30,78 @@ class OrderService
       return $newOrder;
     });
   }
-
-  public function createOrderDetail(CreateOrderDetailRequest $request)
-  {
-    return DB::transaction(function () use ($request) {
-      $orderItem = OrderItem::create([
-        "order_id" => $request->orderId,
-        "item_id" => $request->itemId,
-        "variant_item_id" => $request->variantId,
-        "quantity" => $request->quantity,
-        "price_at_sale" => $request->priceAtSale,
-      ]);
-      return $orderItem;
-    });
-  }
-
   public function processOrder(ProcessOrderRequest $request)
   {
     $order = Order::findOrFail($request->orderId);
 
     return DB::transaction(function () use ($request, $order) {
+
+      $variantIds = collect($request->orderItems)->pluck('variant_item_id');
+      $variants = VariantItem::whereIn('id', $variantIds)
+        ->lockForUpdate()
+        ->get()
+        ->keyBy('id');
+
       $totalAmount = 0;
-      $finalAmount = 0;
+      $transactionDetails = [];
+
       foreach ($request->orderItems as $orderItem) {
+        $variant = $variants->get($orderItem['variant_item_id']);
 
-        $totalAmount += $orderItem["price_at_sale"] * $orderItem["quantity"];
+        if (!$variant || $variant->stock < $orderItem['quantity']) {
+          throw new \Exception('Stok tidak mencukupi untuk produk: ' . ($variant->item->name ?? 'N/A'));
+        }
 
-        $orderDetailRequest = new CreateOrderDetailRequest();
-        $orderDetailRequest->orderId = $order->id;
-        $orderDetailRequest->itemId = $orderItem["item_id"];
-        $orderDetailRequest->variantId = $orderItem["variant_item_id"];
-        $orderDetailRequest->quantity = $orderItem["quantity"];
-        $orderDetailRequest->priceAtSale = $orderItem["price_at_sale"];
+        $subtotal = $orderItem['price_at_sale'] * $orderItem['quantity'];
+        $totalAmount += $subtotal;
 
-        $this->createOrderDetail($orderDetailRequest);
+        $variant->decrement('stock', $orderItem['quantity']);
 
-        $findVariantItem = VariantItem::where("id", $orderItem["variant_item_id"]);
-
-        $findVariantItem->update([
-          "stock" => $findVariantItem->first()->stock - $orderItem["quantity"]
-        ]);
+        $transactionDetails[] = [
+          'item_id' => $orderItem['item_id'],
+          'variant_item_id' => $orderItem['variant_item_id'],
+          'variant_id' => $orderItem['variant_item_id'],
+          'quantity' => $orderItem['quantity'],
+          'price_at_sale' => $orderItem['price_at_sale'],
+          'sub_total' => $subtotal,
+        ];
 
         ItemRecord::create([
-          "variant_item_id" => $orderItem["variant_item_id"],
-          "stock_record" => $findVariantItem->first()->stock,
-          "stock_out" => $orderItem["quantity"]
+          'variant_item_id' => $orderItem['variant_item_id'],
+          'stock_out' => $orderItem['quantity'],
+          'stock_record' => $variant->stock,
         ]);
       }
 
-      Order::where("id", $order->id)->update([
-        "total_amount" => $totalAmount,
-        "order_status" => "completed"
+      $order->orderItem()->createMany($transactionDetails);
+
+      $finalAmount = $request->discount > 0 && $request->discount <= 100
+        ? $totalAmount * (1 - ($request->discount / 100))
+        : $totalAmount;
+
+      $change = $request->payment['amount_paid'] - $finalAmount;
+
+      $order->update([
+        'total_amount' => $totalAmount,
+        'final_amount' => $finalAmount,
+        'order_status' => 'completed',
       ]);
 
       $createSalesTransactionRequest = new CreateSalesTransactionRequest();
+
       $createSalesTransactionRequest->tenantId = $order->tenant_id;
       $createSalesTransactionRequest->buyerId = $request->buyerId;
       $createSalesTransactionRequest->invoiceNumber = "INV-" . time();
       $createSalesTransactionRequest->totalAmount = $totalAmount;
-      $createSalesTransactionRequest->finalAmount = $totalAmount;
+      $createSalesTransactionRequest->finalAmount = $finalAmount;
       $createSalesTransactionRequest->paymentMethod = "cash";
       $createSalesTransactionRequest->amountPaid = $request->payment['amount_paid'];
-      $createSalesTransactionRequest->change = $request->payment['amount_paid'] - $totalAmount;
+      $createSalesTransactionRequest->change = $change;
 
       $transaction = $this->transactionService->createTransaction($createSalesTransactionRequest);
+      $transaction->details()->createMany($transactionDetails);
 
-
-      foreach ($request->orderItems as $orderItem) {
-        $createSalesTransactionDetailRequest = new CreateSalesTransactionDetailRequest();
-        $createSalesTransactionDetailRequest->salesTransactionId = $transaction->id;
-        $createSalesTransactionDetailRequest->itemId = $orderItem["item_id"];
-        $createSalesTransactionDetailRequest->variantItemId = $orderItem["variant_item_id"];
-        $createSalesTransactionDetailRequest->quantity = $orderItem["quantity"];
-        $createSalesTransactionDetailRequest->priceAtSale = $orderItem["price_at_sale"];
-        $createSalesTransactionDetailRequest->subTotal = $orderItem["price_at_sale"] * $orderItem["quantity"];
-
-        $this->transactionService->createTransactionDetail($createSalesTransactionDetailRequest);
-
-      }
-
+      return $transaction;
     });
   }
 }
