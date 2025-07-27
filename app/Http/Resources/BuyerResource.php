@@ -18,7 +18,8 @@ class BuyerResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'phone_number' => $this->phone_number,
-
+            
+            'tenant' => new TenantResource($this->whenLoaded('tenant')),
             'discount' => new DiscountResource($this->whenLoaded('discount'))
         ];
     }

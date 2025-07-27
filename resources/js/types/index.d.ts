@@ -252,11 +252,11 @@ interface Customer {
 }
 // customer
 
-export interface DropdownGroups {
-  label: string;
-  name: string;
-  options: DropdownData[];
-}
+// export interface DropdownGroups {
+//   label: string;
+//   name: string;
+//   options: DropdownData[];
+// }
 
 export interface SalesTransactionData {
   data: SalesTransaction[];
@@ -312,5 +312,31 @@ export interface Discount {
 
   tenant: Tenant;
 
+  [key: string]: any;
+}
+
+
+export interface BuyerData {
+  data: Buyer[];
+  meta: Pagination;
+  links: Link;
+}
+
+
+export interface Buyer {
+  id: string;
+  name: string;
+  phone_number: string;
+
+  tenant: Tenant;
+  discount: Discount;
+
+  [key: string]: any;
+}
+
+export interface FormBuyer {
+  name: string;
+  phone_number: string;
+  tenant_id: string;
   [key: string]: any;
 }

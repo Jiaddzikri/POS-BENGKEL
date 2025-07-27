@@ -60,6 +60,8 @@ Route::middleware('auth')->group(function () {
         ]);
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 
+    Route::get('/buyer/list', [BuyerController::class, 'index'])->name('buyer.index');
+
     Route::resource('/user', UserController::class)
         ->except(['show'])
         ->names([

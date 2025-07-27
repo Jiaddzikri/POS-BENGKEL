@@ -42,6 +42,12 @@ const mainNavItems: NavItem[] = [
     title: 'Transaction',
     href: '/transaction',
     icon: LayoutGrid
+  },
+  {
+    title: 'Buyer',
+    href: '/buyer/list',
+    icon: LayoutGrid
+    
   }
 ];
 
