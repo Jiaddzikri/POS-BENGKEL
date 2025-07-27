@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SalesTransactionDetail extends Model
 {
@@ -22,8 +23,18 @@ class SalesTransactionDetail extends Model
         'sub_total'
     ];
 
-    public function salesTransaction()
+    public function salesTransaction(): BelongsTo
     {
         return $this->belongsTo(SalesTransaction::class, 'sales_transaction_id');
+    }
+
+    public function variants(): BelongsTo
+    {
+        return $this->belongsTo(VariantItem::class, 'variant_id');
+    }
+
+    public function item(): BelongsTo
+    {
+        return $this->belongsTo(Item::class, 'item_id');
     }
 }

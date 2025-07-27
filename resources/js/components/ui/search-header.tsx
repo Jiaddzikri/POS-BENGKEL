@@ -31,10 +31,13 @@ export default function SearchHeader({ filters, dropdowns, link }: SearchProps) 
       });
   }, [debouncedQuery]);
 
+  
+
+
   return (
     <div className="px-6 py-2">
       <div className="mb-6 rounded-lg border">
-        <div className="border-b p-4">
+        <div className="p-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="relative max-w-md flex-1">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />

@@ -4,6 +4,7 @@ use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Buyer\BuyerController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\SalesTransaction\SalesTransactionController;
 use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Variant\VariantController;
@@ -69,6 +70,8 @@ Route::middleware('auth')->group(function () {
             'update' => 'user.update',
             'destroy' => 'user.destroy'
         ]);
+
+    Route::get('/transaction', [SalesTransactionController::class, 'salesTransaction'])->name('transaction.index');
 
     Route::get('/testmail', function () {
         Mail::to('muhamadilhan02404@gmail.com')

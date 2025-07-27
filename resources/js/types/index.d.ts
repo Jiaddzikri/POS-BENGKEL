@@ -243,6 +243,7 @@ export interface DropdownData {
   // slug
   name?: string;
 }
+
 // customer
 interface Customer {
   name?: string;
@@ -251,3 +252,65 @@ interface Customer {
 }
 // customer
 
+export interface DropdownGroups {
+  label: string;
+  name: string;
+  options: DropdownData[];
+}
+
+export interface SalesTransactionData {
+  data: SalesTransaction[];
+  meta: Pagination;
+  links: Link;
+}
+
+export interface Buyer {
+  id: string;
+  name: string;
+  phone_number: string;
+
+  discount: Discount | null;
+
+  [key: string]: any;
+}
+
+export interface SalesTransaction {
+  id: string;
+  name: string;
+  invoice_number: string;
+  total_amount: number;
+  final_amount: number;
+  payment_method: string;
+  amount_paid: number;
+  change: number;
+  date: string;
+  tenant: Tenant;
+  buyer: Buyer;
+  transaction_details: SalesTransactionDetails[];
+  [key: string]: any;
+}
+
+export interface SalesTransactionDetails {
+  id: string;
+  sku: string;
+  quantity: string;
+  price_at_sale: number;
+  sub_total: number;
+
+  item_name: string;
+  variant_name: string;
+
+  [key: string]: any;
+}
+
+export interface Discount {
+  id: string;
+  name: string;
+  desc: string;
+  discount_percent: number;
+  active: boolean;
+
+  tenant: Tenant;
+
+  [key: string]: any;
+}

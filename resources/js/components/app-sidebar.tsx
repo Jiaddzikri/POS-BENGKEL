@@ -37,6 +37,11 @@ const mainNavItems: NavItem[] = [
     title: 'Category',
     href: '/category',
     icon: LayoutGrid
+  },
+  {
+    title: 'Transaction',
+    href: '/transaction',
+    icon: LayoutGrid
   }
 ];
 
