@@ -30,8 +30,6 @@ export default function Order({ items }: CashierProps) {
     discount: 0 as number,
   });
 
-  console.log(data);
-
   const [cashReceived, setCashReceived] = useState<string>('');
 
   const addToCart = (item: ItemList): void => {

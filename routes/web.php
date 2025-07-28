@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Analytical\AnalyticalController;
 use App\Http\Controllers\Buyer\BuyerController;
+use App\Http\Controllers\Invetory\InventoryController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Qr\QrController;
@@ -52,6 +53,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/analytics-report/download', [AnalyticalController::class, 'export'])->name('analytical.download');
 
     Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
+
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+
+    Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
+
+    Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
 });
 
 require __DIR__ . '/settings.php';
