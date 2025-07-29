@@ -211,6 +211,31 @@ class ItemController extends Controller
             dd($error);
             return redirect()->back()->with('error', 'an internal server error');
         }
+    }
 
+    public function findItem(Request $request)
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        try {
+
+            $variants = VariantItem::with('item.category')
+                ->where('is_deleted', false)
+                ->whereHas('item', function ($query) use ($tenantId) {
+                    $query->where('tenant_id', $tenantId);
+                })->where('sku', $request->get('sku', null))->first();
+
+            $resource = new VariantItemResource($variants);
+
+            return response()->json([
+                $resource
+            ], 200);
+
+        } catch (\Exception $error) {
+            return response()->json([
+                "message" => $error->getMessage(),
+
+            ], $error->getCode());
+        }
     }
 }

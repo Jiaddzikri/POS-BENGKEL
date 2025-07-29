@@ -48,15 +48,12 @@ export function OrderCart({
   const total: number = subtotal - discountAmount;
   const change: number = cashReceived ? parseInt(cashReceived) - total : 0;
 
-  const [findBuyer, { isLoading: buyerLoading, error: buyerError, data: buyerData }] = useApi<Customer>(
-    `/api/buyer?phone_number=${customerPhone}`,
-    'GET',
-  );
+  const [findBuyer, { isLoading: buyerLoading, error: buyerError, data: buyerData }] = useApi<Customer>();
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (customerPhone.length >= 10) {
-        findBuyer();
+        findBuyer(`/api/buyer?phone_number=${customerPhone}`);
       }
     }, 500);
 
@@ -157,7 +154,7 @@ export function OrderCart({
                   </h4>
                   <p className="font-semibold text-green-600">Rp {item.price.toLocaleString('id-ID')}</p>
                 </div>
-                <Button onClick={() => removeFromCart(item.sku)} className="" type="button">
+                <Button onClick={() => removeFromCart(item.sku)} className="bg-red-500" type="button">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -183,7 +180,7 @@ export function OrderCart({
         )}
       </div>
       {cart.length > 0 && (
-        <div className="space-y-4 border-t p-4">
+        <div className="border-t p-4">
           <div className="flex items-center gap-2">
             <Percent className="h-4 w-4" />
             <Input

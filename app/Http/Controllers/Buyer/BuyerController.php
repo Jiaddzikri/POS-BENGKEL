@@ -25,6 +25,10 @@ class BuyerController extends Controller
         try {
             $buyer = $this->buyerService->findBuyerByPhone($phone);
 
+            if ($buyer === null) {
+                throw new \Exception("Buyer not found", 404);
+            }
+
             return response()->json(
                 $buyer,
                 200

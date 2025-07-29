@@ -7,9 +7,9 @@ import AppLayout from '@/layouts/app-layout';
 import { CartItem, Customer, ItemData, ItemList, OrderItemForm } from '@/types';
 import {} from '@headlessui/react';
 import { Head, router, useForm } from '@inertiajs/react';
+
 import { CheckCircle, Plus, X } from 'lucide-react';
 import React, { MouseEvent, useEffect, useState } from 'react';
-import { route } from 'ziggy-js';
 
 interface CashierProps {
   items: ItemData;
@@ -106,7 +106,7 @@ export default function Order({ items }: CashierProps) {
       <div className="min-h-screen">
         <div className="flex h-screen">
           <div className="flex-1 overflow-y-auto p-6">
-            <CashierHeader />
+            <CashierHeader addToCart={addToCart} />
             <CashierListItem addToCart={addToCart} items={items.data} />
           </div>
           <div className="flex w-96 flex-col border-l">

@@ -361,3 +361,74 @@ export interface DiscountData {
   meta: Pagination;
   links: Link;
 }
+// sales
+interface SalesPerHour {
+  time: string;
+  sales: number;
+}
+
+interface BestSellingProducts {
+  rank: number;
+  name: string;
+  category: string;
+  sales: number;
+  revenue: number;
+  trend: 'up' | 'down';
+}
+
+interface CategoryAnalysis {
+  category: string;
+  percentage: number;
+  revenue: number;
+  color: string;
+}
+
+interface AnalyticsRevenue {
+  revenue: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
+interface AnalyticsTransaction {
+  total: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
+interface AnalyticsGrossProfit {
+  grossProfit: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
+interface AnalyticsAverageTransaction {
+  averageValue: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
+interface AnalyticsFilter {
+  startDate: string;
+  endDate: string;
+  range: string;
+}
+
+interface AnalyticsSalesTrend {
+  labels: [];
+  value: [];
+}
+
+interface AnalyticBestSelling {
+  item_name: string;
+  category: string;
+  sku: string;
+  total_revenue: number;
+  total_quantity: number;
+}
+
+interface AnalyticBestSellingCategory {
+  category: string;
+  total_revenue: number;
+  total_quantity: number;
+}
+// sales
