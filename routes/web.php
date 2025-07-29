@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 
     Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
-    Route::get('/analytics-report/download', [AnalyticalController::class, 'export'])->name('analytical.download');
+    Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
 
     Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
 
