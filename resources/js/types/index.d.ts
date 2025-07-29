@@ -340,3 +340,24 @@ export interface FormBuyer {
   tenant_id: string;
   [key: string]: any;
 }
+
+
+export interface FormDiscount {
+  name: string;
+  desc: string;
+  discount_percent: number;
+  tenant_id: string;
+  active?: boolean;
+
+  [key: string]: any;
+}
+
+export interface FormDiscountActive {
+  active: boolean;
+}
+
+export interface DiscountData {
+  data: Discount[];
+  meta: Pagination;
+  links: Link;
+}

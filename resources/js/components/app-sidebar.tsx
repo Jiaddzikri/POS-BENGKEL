@@ -47,7 +47,12 @@ const mainNavItems: NavItem[] = [
     title: 'Buyer',
     href: '/buyer/list',
     icon: LayoutGrid
-    
+
+  },
+  {
+    title: 'Discount',
+    href: '/discount',
+    icon: LayoutGrid
   }
 ];
 

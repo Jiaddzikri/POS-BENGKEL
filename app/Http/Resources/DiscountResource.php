@@ -18,8 +18,9 @@ class DiscountResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'desc' => $this->desc,
-            'discount_percent' => $this->discount_percen,
-            'active' => $this->active
+            'discount_percent' => $this->discount_percent,
+            'active' => $this->active,
+            'tenant' => new TenantResource($this->whenLoaded('tenant'))
         ];
     }
 }
