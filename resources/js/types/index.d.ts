@@ -243,6 +243,7 @@ export interface DropdownData {
   // slug
   name?: string;
 }
+
 // customer
 interface Customer {
   name?: string;
@@ -251,3 +252,183 @@ interface Customer {
 }
 // customer
 
+// export interface DropdownGroups {
+//   label: string;
+//   name: string;
+//   options: DropdownData[];
+// }
+
+export interface SalesTransactionData {
+  data: SalesTransaction[];
+  meta: Pagination;
+  links: Link;
+}
+
+export interface Buyer {
+  id: string;
+  name: string;
+  phone_number: string;
+
+  discount: Discount | null;
+
+  [key: string]: any;
+}
+
+export interface SalesTransaction {
+  id: string;
+  name: string;
+  invoice_number: string;
+  total_amount: number;
+  final_amount: number;
+  payment_method: string;
+  amount_paid: number;
+  change: number;
+  date: string;
+  tenant: Tenant;
+  buyer: Buyer;
+  transaction_details: SalesTransactionDetails[];
+  [key: string]: any;
+}
+
+export interface SalesTransactionDetails {
+  id: string;
+  sku: string;
+  quantity: string;
+  price_at_sale: number;
+  sub_total: number;
+
+  item_name: string;
+  variant_name: string;
+
+  [key: string]: any;
+}
+
+export interface Discount {
+  id: string;
+  name: string;
+  desc: string;
+  discount_percent: number;
+  active: boolean;
+
+  tenant: Tenant;
+
+  [key: string]: any;
+}
+
+
+export interface BuyerData {
+  data: Buyer[];
+  meta: Pagination;
+  links: Link;
+}
+
+
+export interface Buyer {
+  id: string;
+  name: string;
+  phone_number: string;
+
+  tenant: Tenant;
+  discount: Discount;
+
+  [key: string]: any;
+}
+
+export interface FormBuyer {
+  name: string;
+  phone_number: string;
+  tenant_id: string;
+  [key: string]: any;
+}
+
+
+export interface FormDiscount {
+  name: string;
+  desc: string;
+  discount_percent: number;
+  tenant_id: string;
+  active?: boolean;
+
+  [key: string]: any;
+}
+
+export interface FormDiscountActive {
+  active: boolean;
+}
+
+export interface DiscountData {
+  data: Discount[];
+  meta: Pagination;
+  links: Link;
+}
+// sales
+interface SalesPerHour {
+  time: string;
+  sales: number;
+}
+
+interface BestSellingProducts {
+  rank: number;
+  name: string;
+  category: string;
+  sales: number;
+  revenue: number;
+  trend: 'up' | 'down';
+}
+
+interface CategoryAnalysis {
+  category: string;
+  percentage: number;
+  revenue: number;
+  color: string;
+}
+
+interface AnalyticsRevenue {
+  revenue: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
+interface AnalyticsTransaction {
+  total: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
+interface AnalyticsGrossProfit {
+  grossProfit: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
+interface AnalyticsAverageTransaction {
+  averageValue: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
+interface AnalyticsFilter {
+  startDate: string;
+  endDate: string;
+  range: string;
+}
+
+interface AnalyticsSalesTrend {
+  labels: [];
+  value: [];
+}
+
+interface AnalyticBestSelling {
+  item_name: string;
+  category: string;
+  sku: string;
+  total_revenue: number;
+  total_quantity: number;
+}
+
+interface AnalyticBestSellingCategory {
+  category: string;
+  total_revenue: number;
+  total_quantity: number;
+}
+// sales

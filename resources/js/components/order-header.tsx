@@ -1,20 +1,32 @@
+import { useApi } from '@/hooks/use-api';
+import { ItemList } from '@/types';
 import { router } from '@inertiajs/react';
 import { Clock, Scan, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
+import QrScanner from './qr-scanner';
 import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
 
-export default function CashierHeader() {
+interface CashierHeaderProps {
+  addToCart: (item: ItemList) => void;
+}
+
+export default function CashierHeader({ addToCart }: CashierHeaderProps) {
   const path = window.location.pathname.split('/');
   const orderId = path[path.length - 1];
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [sku, setSku] = useState<string>('');
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const [findItem, { isLoading, error, data: findItemData }, setFindItemState] = useApi<ItemList[]>();
+
+  // useEffect(() => {
+  //   const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+  //   return () => clearInterval(timer);
+  // }, []);
 
   const [debouncedQuery] = useDebounce(searchTerm, 300);
 
@@ -25,6 +37,24 @@ export default function CashierHeader() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(e.target.value);
   };
+
+  const onScanSuccess = (decodeText: string): void => {
+    setSku(decodeText);
+  };
+
+  useEffect(() => {
+    if (findItemData == null) return;
+
+    addToCart(findItemData[0]);
+
+    setSku('');
+  }, [findItemData]);
+
+  useEffect(() => {
+    if (!sku || sku === '') return;
+
+    findItem(`/api/item/variant?sku=${sku}`);
+  }, [sku]);
 
   return (
     <div className="mb-6 rounded-lg border p-4">
@@ -45,10 +75,17 @@ export default function CashierHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button className="flex items-center gap-2 rounded-lg px-4 py-2 transition-colors" type="button">
-            <Scan className="h-4 w-4" />
-            Scan Barcode
-          </Button>
+          <Dialog open={openModal} onOpenChange={setOpenModal}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 transition-colors hover:bg-indigo-700" type="button">
+                <Scan className="h-4 w-4" />
+                Scan QRCode
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <QrScanner onScanSuccess={onScanSuccess} />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

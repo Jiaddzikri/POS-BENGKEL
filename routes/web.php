@@ -2,12 +2,17 @@
 
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Buyer\BuyerController;
+use App\Http\Controllers\Discount\DiscountController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\SalesTransaction\SalesTransactionController;
+use App\Http\Controllers\Analytical\AnalyticalController;
+use App\Http\Controllers\Qr\QrController;
 use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Variant\VariantController;
 use App\Mail\HelloMail;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -45,6 +50,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
     Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
+    Route::get('/item/variant', [ItemController::class, 'findItem'])->prefix('api');
 
 
     Route::resource('/category', CategoryController::class)
@@ -59,6 +65,8 @@ Route::middleware('auth')->group(function () {
         ]);
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 
+    Route::get('/buyer/list', [BuyerController::class, 'index'])->name('buyer.index');
+
     Route::resource('/user', UserController::class)
         ->except(['show'])
         ->names([
@@ -70,11 +78,29 @@ Route::middleware('auth')->group(function () {
             'destroy' => 'user.destroy'
         ]);
 
+    Route::get('/transaction', [SalesTransactionController::class, 'salesTransaction'])->name('transaction.index');
+
+    Route::resource('/discount', DiscountController::class)
+        ->except(['show'])
+        ->names([
+            'index' => 'discount.index',
+            'create' => 'discount.create',
+            'store' => 'discount.store',
+            'edit' => 'discount.edit',
+            'update' => 'discount.update',
+            'destroy' => 'discount.destroy'
+        ]);
+
+    Route::patch('/discount/{id}/active', [DiscountController::class, 'updateStatusActive'])->name('discount.update.active');
+
     Route::get('/testmail', function () {
         Mail::to('muhamadilhan02404@gmail.com')
-        ->send(new HelloMail());
+            ->send(new HelloMail());
     });
+    Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
+    Route::get('/analytics-report/download', [AnalyticalController::class, 'export'])->name('analytical.download');
 
+    Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
 });
 
 require __DIR__ . '/settings.php';

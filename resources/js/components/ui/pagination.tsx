@@ -77,7 +77,7 @@ export function Pagination<T>({ pagination, link, data, filters }: PaginationPro
               }
               className={`rounded-lg border px-4 py-2 ${pagination.current_page === 1 ? 'hidden' : 'block'}`}
             >
-              <ArrowLeft className="w-4 h-4"  />
+              <ArrowLeft className="w-4 h-4" />
             </Button>
 
             {paginationButton(pagination)}
