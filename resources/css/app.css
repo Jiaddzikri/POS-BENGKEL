@@ -160,3 +160,13 @@
 button {
   cursor: pointer;
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .printable-content {
+    margin: 0;
+    padding: 0;
+  }
+}

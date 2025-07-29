@@ -112,6 +112,7 @@ class OrderController extends Controller
       $processOrderRequest->payment = [
         "amount_paid" => (int) $request->post("amount_paid", 0),
       ];
+      $processOrderRequest->discount = (int) $request->post('discount', 0);
 
       $this->orderService->processOrder($processOrderRequest);
 
