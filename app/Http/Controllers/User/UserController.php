@@ -143,7 +143,10 @@ class UserController extends Controller
 
             $userRequest->name = $request->post('name');
             $userRequest->role = $request->post('role');
-            $userRequest->tenant_id = $request->post('tenant_id');
+
+            if (is_null($request->input('tenant_id'))) {
+                $userRequest->tenant_id = $request->post('tenant_id');
+            }
 
             $user = $this->userService->update($userRequest, $id);
 
