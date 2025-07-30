@@ -137,8 +137,8 @@ class AnalyticalService
 
     if ($previousTransactionAverageValue > 0) {
       $percentageChange = (($currentTransactionAverageValue - $previousTransactionAverageValue) / $previousTransactionAverageValue) * 100;
-    } else {
-      $percentageChange = 100;
+    } elseif ($currentTransactionAverageValue > 0) {
+      $percentageChange = 100.0;
     }
 
     if ($percentageChange > 0) {

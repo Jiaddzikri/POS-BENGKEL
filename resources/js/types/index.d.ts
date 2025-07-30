@@ -432,3 +432,65 @@ interface AnalyticBestSellingCategory {
   total_quantity: number;
 }
 // sales
+
+// sales
+interface InventoryStats {
+  active_item: number;
+  low_stock: number;
+  out_of_stock: 0;
+  stock_movement: 0;
+}
+
+interface InventoryFilters {
+  page: number;
+  search: string;
+  stock_condition: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface InventoryItems {
+  id: string;
+  item_id: string;
+  item_name: string;
+  sku: string;
+  stock: number;
+  low_stock: boolean;
+  price: number;
+  minimum_stock: number;
+  is_active: boolean;
+  category_name: string;
+  variant_id: string;
+}
+
+interface InventoryData {
+  data: InventoryItems[];
+  meta: Pagination;
+  links: Link;
+}
+
+interface AdjustItemInventoryForm {
+  variant_id: string | null;
+  adjust_type: string | null;
+  quantity: number;
+  [key: string]: any;
+}
+
+interface StockMovementRecord {
+  variant_id: string;
+  item_id: string;
+  sku: string;
+  item_name: string;
+  variant_name: string;
+  category_name: string | null;
+  stock_record: number;
+  stock_in: number;
+  stock_out: number;
+  created_at: string;
+}
+
+interface StockMovementData {
+  data: StockMovementRecord[];
+  meta: Pagination;
+  links: Link;
+}
