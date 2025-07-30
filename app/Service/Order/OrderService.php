@@ -13,6 +13,7 @@ use App\Request\CreateSalesTransactionRequest;
 use App\Request\ProcessOrderRequest;
 use App\Service\Transaction\TransactionService;
 use DB;
+use DiscountUsageHistoryAttributeRequest;
 
 class OrderService
 {
@@ -89,16 +90,25 @@ class OrderService
 
       $createSalesTransactionRequest = new CreateSalesTransactionRequest();
 
+      $createSalesTransactionRequest->orderId = $request->orderId;
       $createSalesTransactionRequest->tenantId = $order->tenant_id;
       $createSalesTransactionRequest->buyerId = $request->buyerId;
       $createSalesTransactionRequest->invoiceNumber = "INV-" . time();
       $createSalesTransactionRequest->totalAmount = $totalAmount;
       $createSalesTransactionRequest->finalAmount = $finalAmount;
-      $createSalesTransactionRequest->paymentMethod = "cash";
+      $createSalesTransactionRequest->paymentMethod = $request->payment["payment_method"];
       $createSalesTransactionRequest->amountPaid = $request->payment['amount_paid'];
       $createSalesTransactionRequest->change = $change;
 
+      // $createDiscountUsageHistoryRequest = new DiscountUsageHistoryAttributeRequest();
+      // $createDiscountUsageHistoryRequest->tenant_id
+
+
       $transaction = $this->transactionService->createTransaction($createSalesTransactionRequest);
+      $transaction->details()->createMany($transactionDetails);
+
+
+      
       $transaction->details()->createMany($transactionDetails);
 
       return $transaction;

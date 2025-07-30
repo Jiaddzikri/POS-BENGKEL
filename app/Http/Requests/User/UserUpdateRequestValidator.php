@@ -32,10 +32,9 @@ class UserUpdateRequestValidator extends FormRequest
                 'in:super_admin,admin,manager,employee'
             ],
             'tenant_id' => [
-                'required',
                 'uuid',
-                'required',
-                'exists:tenants,id'
+                'exists:tenants,id',
+                'nullable'
             ]
         ];
     }
