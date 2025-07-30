@@ -28,7 +28,8 @@ export default function Order({ items, discounts }: CashierProps) {
     phone_number: '' as string | undefined,
     name: '' as string | undefined,
     amount_paid: 0 as number,
-    discount: {} as Discount | undefined,
+    // discount: {} as Discount | undefined,
+    // discount: 0 as number,
   });
 
   const [cashReceived, setCashReceived] = useState<string>('');
@@ -48,14 +49,20 @@ export default function Order({ items, discounts }: CashierProps) {
     setData('name', customerData?.name || '');
   };
 
-  const handleDiscountSelectChange = (value: string): void => {
+  // const handleDiscountSelectChange = (value: string): void => {
 
-    const findDiscount: Discount | undefined = discounts.data.find(dsc => dsc.id === value);
+  //   const findDiscount: Discount | undefined = discounts.data.find(dsc => dsc.id === value);
 
-    // setData('discount', Math.max(0, Math.min(100, findDiscount?.discount_percent ?? 0)));
+  //   // setData('discount', Math.max(0, Math.min(100, findDiscount?.discount_percent ?? 0)));
 
-    setData('discount', findDiscount);
-  };
+  //   setData('discount', findDiscount);
+
+  // }
+
+  // const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  //   const value = parseInt(e.target.value) || 0;
+  //   setData('discount', Math.max(0, Math.min(100, value)));
+  // };
 
   const clearCart = () => {
     setCart([]);

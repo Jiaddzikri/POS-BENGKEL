@@ -98,16 +98,23 @@ class OrderService
       $createSalesTransactionRequest->paymentMethod = "cash";
       $createSalesTransactionRequest->amountPaid = $request->payment['amount_paid'];
       $createSalesTransactionRequest->change = $change;
+<<<<<<< HEAD
 
       // $createDiscountUsageHistoryRequest = new DiscountUsageHistoryAttributeRequest();
       // $createDiscountUsageHistoryRequest->tenant_id
 
+=======
+>>>>>>> main
 
       $transaction = $this->transactionService->createTransaction($createSalesTransactionRequest);
+      $transaction->details()->createMany($transactionDetails);
 
+<<<<<<< HEAD
       
       $transaction->details()->createMany($transactionDetails);
 
+=======
+>>>>>>> main
       return $transaction;
     });
   }
