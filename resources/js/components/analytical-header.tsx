@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { Download, RefreshCw } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
 import DatePicker from 'react-datepicker';
@@ -74,12 +75,18 @@ export default function AnalyticalHeader({
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </Button>
-          <a href={route('analytical.download', params)} download>
-            <Button className="flex items-center rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200">
-              <Download className="h-4 w-4" />
-              <span>Export</span>
-            </Button>
-          </a>
+
+          <Link
+            href={route('analytical.preview', {
+              range: selectedPeriod,
+              startDate: startDate,
+              endDate: endDate,
+            })}
+            className="flex items-center rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+          >
+            <Download className="h-4 w-4" />
+            <span>Export</span>
+          </Link>
         </div>
       </div>
     </div>

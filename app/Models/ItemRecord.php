@@ -20,8 +20,8 @@ class ItemRecord extends Model
         "stock_out"
     ];
 
-    public function item(): BelongsTo
+    public function variant(): BelongsTo
     {
-        return $this->belongsTo(Item::class);
+        return $this->belongsTo(VariantItem::class, 'variant_item_id', 'id');
     }
 }
