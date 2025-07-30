@@ -62,8 +62,8 @@ export default function TenantBasicInformation({ handleInputChange, formData, st
 
               <SelectContent>
                 {status.map((stats, key) => (
-                  <SelectItem key={key} value={String(stats)}>
-                    {String(stats)}
+                  <SelectItem key={key} value={stats.id}>
+                    {stats.name}
                   </SelectItem>
 
                 ))}

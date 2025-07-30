@@ -5,20 +5,14 @@ namespace App\Http\Controllers\Order;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VariantItemResource;
 use App\Models\Category;
-use App\Models\ItemRecord;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\SalesTransaction;
-use App\Models\SalesTransactionDetail;
 use App\Models\VariantItem;
 use App\Request\CreateBuyerRequest;
-use App\Request\CreateOrderDetailRequest;
 use App\Request\CreateOrderRequest;
-use App\Request\CreateSalesTransactionDetailRequest;
-use App\Request\CreateSalesTransactionRequest;
+use App\Request\CreateReceiptRequest;
 use App\Request\ProcessOrderRequest;
 use App\Service\Buyer\BuyerService;
 use App\Service\Order\OrderService;
+use App\Service\Receipt\ReceiptService;
 use App\Service\Transaction\TransactionService;
 use DB;
 use Illuminate\Http\Request;
@@ -27,7 +21,7 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
-  public function __construct(private OrderService $orderService, private TransactionService $transactionService, private BuyerService $buyerService)
+  public function __construct(private OrderService $orderService, private TransactionService $transactionService, private BuyerService $buyerService, private ReceiptService $receiptService)
   {
 
   }
@@ -111,16 +105,15 @@ class OrderController extends Controller
       $processOrderRequest->orderItems = $request->post("items");
       $processOrderRequest->payment = [
         "amount_paid" => (int) $request->post("amount_paid", 0),
+        "payment_method" => $request->post('payment_method', 'cash')
       ];
       $processOrderRequest->discount = (int) $request->post('discount', 0);
 
       $this->orderService->processOrder($processOrderRequest);
 
-      return redirect()->route('menu', ["orderId" => $orderId])->with("success", "success");
+      return redirect()->route('menu', ['orderId' => $orderId])->with(["success" => "pesanan berhasil diproses"]);
     } catch (\Exception $error) {
-
       return redirect()->back()->with("error", $error->getMessage());
-
     }
   }
 
