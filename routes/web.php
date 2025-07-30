@@ -2,11 +2,8 @@
 
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Buyer\BuyerController;
-<<<<<<< HEAD
 use App\Http\Controllers\Discount\DiscountController;
-=======
 use App\Http\Controllers\Invetory\InventoryController;
->>>>>>> main
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\SalesTransaction\SalesTransactionController;

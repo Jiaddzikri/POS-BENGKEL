@@ -60,7 +60,7 @@ const AdministrationNavItems: NavItem[] = [
   {
     title: 'Transaction',
     href: '/transaction',
-    icon: LayoutGrid
+    icon: CircleDollarSign
   },
   {
     title: 'Buyer',
@@ -71,7 +71,7 @@ const AdministrationNavItems: NavItem[] = [
   {
     title: 'Discount',
     href: '/discount',
-    icon: LayoutGrid
+    icon: TicketPercent
   }
 ];
 
