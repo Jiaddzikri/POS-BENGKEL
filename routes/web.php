@@ -1,14 +1,23 @@
 <?php
 
-use App\Http\Controllers\Analytical\AnalyticalController;
+use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Buyer\BuyerController;
+<<<<<<< HEAD
+use App\Http\Controllers\Discount\DiscountController;
+=======
 use App\Http\Controllers\Invetory\InventoryController;
+>>>>>>> main
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\SalesTransaction\SalesTransactionController;
+use App\Http\Controllers\Analytical\AnalyticalController;
 use App\Http\Controllers\Qr\QrController;
 use App\Http\Controllers\Receipt\ReceiptController;
 use App\Http\Controllers\Tenant\TenantController;
+use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Variant\VariantController;
+use App\Mail\HelloMail;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -48,8 +57,51 @@ Route::middleware('auth')->group(function () {
     Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
     Route::get('/item/variant', [ItemController::class, 'findItem'])->prefix('api');
 
+
+    Route::resource('/category', CategoryController::class)
+        ->except(['show'])
+        ->names([
+            'index' => 'category.index',
+            'create' => 'category.create',
+            'store' => 'category.store',
+            'edit' => 'category.edit',
+            'update' => 'category.update',
+            'destroy' => 'category.destroy'
+        ]);
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 
+    Route::get('/buyer/list', [BuyerController::class, 'index'])->name('buyer.index');
+
+    Route::resource('/user', UserController::class)
+        ->except(['show'])
+        ->names([
+            'index' => 'user.index',
+            'create' => 'user.crate',
+            'store' => 'user.store',
+            'edit' => 'user.edit',
+            'update' => 'user.update',
+            'destroy' => 'user.destroy'
+        ]);
+
+    Route::get('/transaction', [SalesTransactionController::class, 'salesTransaction'])->name('transaction.index');
+
+    Route::resource('/discount', DiscountController::class)
+        ->except(['show'])
+        ->names([
+            'index' => 'discount.index',
+            'create' => 'discount.create',
+            'store' => 'discount.store',
+            'edit' => 'discount.edit',
+            'update' => 'discount.update',
+            'destroy' => 'discount.destroy'
+        ]);
+
+    Route::patch('/discount/{id}/active', [DiscountController::class, 'updateStatusActive'])->name('discount.update.active');
+
+    Route::get('/testmail', function () {
+        Mail::to('muhamadilhan02404@gmail.com')
+            ->send(new HelloMail());
+    });
     Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
     Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
 

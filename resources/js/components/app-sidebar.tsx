@@ -9,6 +9,11 @@ import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
   {
+    title: 'User',
+    href: '/user',
+    icon: LayoutGrid
+  },
+  {
     title: 'Dashboard',
     href: '/dashboard',
     icon: LayoutGrid,
@@ -47,6 +52,27 @@ const AdministrationNavItems: NavItem[] = [
     href: '/tenant',
     icon: Building2,
   },
+  {
+    title: 'Category',
+    href: '/category',
+    icon: LayoutGrid
+  },
+  {
+    title: 'Transaction',
+    href: '/transaction',
+    icon: LayoutGrid
+  },
+  {
+    title: 'Buyer',
+    href: '/buyer/list',
+    icon: LayoutGrid
+
+  },
+  {
+    title: 'Discount',
+    href: '/discount',
+    icon: LayoutGrid
+  }
 ];
 
 const footerNavItems: NavItem[] = [

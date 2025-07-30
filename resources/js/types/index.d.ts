@@ -32,15 +32,35 @@ export interface SharedData {
 }
 
 export interface User {
-  id: number;
+  id: string | number;
   name: string;
   email: string;
   avatar?: string;
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
+  tenant_name: string;
+  role: string;
   [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface UserData {
+  data: User[];
+  meta: Pagination;
+  links: Link;
+}
+
+
+export interface FormUser {
+  name: string;
+  email?: string;
+  role: string;
+  tenant_id: string;
+  password?: string;
+  password_confirmation?: string;
+  [key: string]: any;
+}
+
 
 export interface Dimension {
   length: string | number;
@@ -74,6 +94,7 @@ export interface FormItem {
 export interface Category {
   id: string;
   name: string;
+  tenant_name?: string;
 }
 
 export interface ItemList {
@@ -172,7 +193,7 @@ export interface Status {
   name: string;
 }
 
-export interface TenantList {
+export interface Tenant {
   id: string;
   name: string;
   status: string;
@@ -181,18 +202,51 @@ export interface TenantList {
 }
 
 export interface TenantData {
-  data: TenantList[];
+  data: Tenant[];
   meta: Pagination;
   links: Link;
 }
 
 export interface FormTenant {
   name: string;
-  status: string;
   [key: string]: any;
 }
 
 // Tenant
+
+
+// Category
+
+export interface CategoryData {
+  data: Category[];
+  meta: Pagination;
+  links: Link;
+}
+
+export interface FormCategory {
+  name: string;
+  [key: string]: any;
+}
+
+// export interface CategoryFilter {
+//   searchQuery: string;
+//   page: number;
+
+// }
+
+// Category
+
+export interface Filter {
+  searchQuery: string;
+  page: number;
+  filter: string | number;
+}
+
+export interface DropdownData {
+  id: number | string;
+  // slug
+  name?: string;
+}
 
 // customer
 interface Customer {
@@ -202,6 +256,115 @@ interface Customer {
 }
 // customer
 
+// export interface DropdownGroups {
+//   label: string;
+//   name: string;
+//   options: DropdownData[];
+// }
+
+export interface SalesTransactionData {
+  data: SalesTransaction[];
+  meta: Pagination;
+  links: Link;
+}
+
+export interface Buyer {
+  id: string;
+  name: string;
+  phone_number: string;
+
+  discount: Discount | null;
+
+  [key: string]: any;
+}
+
+export interface SalesTransaction {
+  id: string;
+  name: string;
+  invoice_number: string;
+  total_amount: number;
+  final_amount: number;
+  payment_method: string;
+  amount_paid: number;
+  change: number;
+  date: string;
+  tenant: Tenant;
+  buyer: Buyer;
+  transaction_details: SalesTransactionDetails[];
+  [key: string]: any;
+}
+
+export interface SalesTransactionDetails {
+  id: string;
+  sku: string;
+  quantity: string;
+  price_at_sale: number;
+  sub_total: number;
+
+  item_name: string;
+  variant_name: string;
+
+  [key: string]: any;
+}
+
+export interface Discount {
+  id: string;
+  name: string;
+  desc: string;
+  discount_percent: number;
+  active: boolean;
+
+  tenant: Tenant;
+
+  [key: string]: any;
+}
+
+
+export interface BuyerData {
+  data: Buyer[];
+  meta: Pagination;
+  links: Link;
+}
+
+
+export interface Buyer {
+  id: string;
+  name: string;
+  phone_number: string;
+
+  tenant: Tenant;
+  discount: Discount;
+
+  [key: string]: any;
+}
+
+export interface FormBuyer {
+  name: string;
+  phone_number: string;
+  tenant_id: string;
+  [key: string]: any;
+}
+
+
+export interface FormDiscount {
+  name: string;
+  desc: string;
+  discount_percent: number;
+  tenant_id: string;
+  active?: boolean;
+
+  [key: string]: any;
+}
+
+export interface FormDiscountActive {
+  active: boolean;
+}
+
+export interface DiscountData {
+  data: Discount[];
+  meta: Pagination;
+  links: Link;
+}
 // sales
 interface SalesPerHour {
   time: string;
