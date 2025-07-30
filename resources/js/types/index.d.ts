@@ -182,6 +182,10 @@ export interface OrderItemForm {
   [key: string]: any;
 }
 
+export interface PaymentMethod {
+  payment_method: 'cash' | 'qris';
+}
+
 // Tenant
 
 export interface Status {

@@ -17,6 +17,7 @@ class TransactionService
       $buyer = Buyer::where("id", $request->buyerId)->first();
       $newTransaction = SalesTransaction::create([
         "tenant_id" => $request->tenantId,
+        'order_id' => $request->orderId,
         "name" => $buyer->name,
         "buyer_id" => $request->buyerId,
         "invoice_number" => $request->invoiceNumber,
