@@ -4,8 +4,8 @@ import CashierListItem from '@/components/order-list-item';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
-import { CartItem, Customer, ItemData, ItemList, OrderItemForm } from '@/types';
-import {} from '@headlessui/react';
+import { CartItem, Customer, Discount, DiscountData, ItemData, ItemList, OrderItemForm } from '@/types';
+import { } from '@headlessui/react';
 import { Head, router, useForm } from '@inertiajs/react';
 
 import { CheckCircle, Plus, X } from 'lucide-react';
@@ -13,9 +13,10 @@ import React, { MouseEvent, useEffect, useState } from 'react';
 
 interface CashierProps {
   items: ItemData;
+  discounts: DiscountData;
 }
 
-export default function Order({ items }: CashierProps) {
+export default function Order({ items, discounts }: CashierProps) {
   const path = window.location.pathname.split('/');
   const orderId = path[path.length - 1];
 
@@ -27,7 +28,7 @@ export default function Order({ items }: CashierProps) {
     phone_number: '' as string | undefined,
     name: '' as string | undefined,
     amount_paid: 0 as number,
-    discount: 0 as number,
+    discount: {} as Discount | undefined,
   });
 
   const [cashReceived, setCashReceived] = useState<string>('');
@@ -47,9 +48,13 @@ export default function Order({ items }: CashierProps) {
     setData('name', customerData?.name || '');
   };
 
-  const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const value = parseInt(e.target.value) || 0;
-    setData('discount', Math.max(0, Math.min(100, value)));
+  const handleDiscountSelectChange = (value: string): void => {
+
+    const findDiscount: Discount | undefined = discounts.data.find(dsc => dsc.id === value);
+
+    // setData('discount', Math.max(0, Math.min(100, findDiscount?.discount_percent ?? 0)));
+
+    setData('discount', findDiscount);
   };
 
   const clearCart = () => {
@@ -117,9 +122,10 @@ export default function Order({ items }: CashierProps) {
               cart={cart}
               setCart={setCart}
               cashReceived={cashReceived}
-              handleDiscountChange={handleDiscountChange}
+              handleDiscountSelectChange={handleDiscountSelectChange}
               submitOrder={submitOrder}
               items={items.data}
+              discounts={discounts.data}
               addCustomerData={addCustomerData}
             />
           </div>

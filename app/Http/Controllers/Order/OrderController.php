@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\DiscountResource;
 use App\Http\Resources\VariantItemResource;
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\ItemRecord;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -83,9 +85,12 @@ class OrderController extends Controller
       ->paginate(10)
       ->withQueryString();
 
+      $discounts = Discount::latest()->get();
+
     return Inertia::render("order", [
       "items" => VariantItemResource::collection($variants),
-      "categories" => $categories
+      "categories" => $categories,
+      'discounts' => DiscountResource::collection($discounts)
 
     ]);
   }

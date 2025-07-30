@@ -1,5 +1,5 @@
 import { useApi } from '@/hooks/use-api';
-import { CartItem, Customer, ItemList } from '@/types';
+import { CartItem, Customer, Discount, ItemList } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
 import { Label } from '@radix-ui/react-label';
 import { CreditCard, Minus, Percent, Phone, Plus, Receipt, ShoppingCart, Trash2, User } from 'lucide-react';
@@ -7,17 +7,19 @@ import React, { MouseEvent, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface OrderCartProps {
   setCashReceived: (param: string) => void;
   clearCart: () => void;
-  discount: number;
+  discount: Discount;
   cashReceived: string;
   cart: CartItem[];
   setCart: (cart: CartItem[]) => void;
-  handleDiscountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleDiscountSelectChange: (e: string) => void;
   submitOrder: (e: MouseEvent<HTMLButtonElement>, closePaymentModal: any, customerData?: Customer) => void;
   items: ItemList[];
+  discounts: Discount[];
   addCustomerData: (customerData?: Customer) => void;
 }
 
@@ -25,6 +27,7 @@ type PaymentMethod = 'cash' | 'card';
 
 export function OrderCart({
   items,
+  discounts,
   submitOrder,
   setCashReceived,
   clearCart,
@@ -32,7 +35,7 @@ export function OrderCart({
   cashReceived,
   cart,
   setCart,
-  handleDiscountChange,
+  handleDiscountSelectChange,
   addCustomerData,
 }: OrderCartProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
@@ -44,7 +47,7 @@ export function OrderCart({
   const [customerFound, setCustomerFound] = useState<boolean>(false);
 
   const subtotal: number = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const discountAmount: number = subtotal * (discount / 100);
+  const discountAmount: number = subtotal * (discount.discount_percent / 100);
   const total: number = subtotal - discountAmount;
   const change: number = cashReceived ? parseInt(cashReceived) - total : 0;
 
@@ -183,7 +186,7 @@ export function OrderCart({
         <div className="border-t p-4">
           <div className="flex items-center gap-2">
             <Percent className="h-4 w-4" />
-            <Input
+            {/* <Input
               type="number"
               placeholder="Diskon %"
               value={discount || ''}
@@ -191,7 +194,22 @@ export function OrderCart({
               className="flex-1 rounded-lg border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
               min="0"
               max="100"
-            />
+            /> */}
+
+            <Select
+              onValueChange={(value: string) => handleDiscountSelectChange(value)}
+              value={discount.id}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={"Diskon %"} />
+              </SelectTrigger>
+              <SelectContent>
+                {discounts.map(dsc => (
+                  <SelectItem key={dsc.id} value={dsc.id}>{dsc.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
           </div>
 
           {/* Ringkasan Total */}
@@ -262,9 +280,8 @@ export function OrderCart({
                           type="text"
                           value={customerName}
                           onChange={handleCustomerNameChange}
-                          className={`w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
-                            customerFound ? 'border-green-300 bg-green-50' : ''
-                          }`}
+                          className={`w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${customerFound ? 'border-green-300 bg-green-50' : ''
+                            }`}
                           placeholder="Masukkan nama customer"
                           disabled={customerFound}
                         />
@@ -288,9 +305,9 @@ export function OrderCart({
                       <span>Subtotal:</span>
                       <span>Rp {subtotal.toLocaleString('id-ID')}</span>
                     </div>
-                    {discount > 0 && (
+                    {discount.discount_percent > 0 && (
                       <div className="mb-2 flex items-center justify-between text-green-600">
-                        <span>Diskon ({discount}%):</span>
+                        <span>Diskon ({discount.discount_percent}%):</span>
                         <span>-Rp {discountAmount.toLocaleString('id-ID')}</span>
                       </div>
                     )}
