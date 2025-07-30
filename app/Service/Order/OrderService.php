@@ -89,17 +89,19 @@ class OrderService
 
       $createSalesTransactionRequest = new CreateSalesTransactionRequest();
 
+      $createSalesTransactionRequest->orderId = $request->orderId;
       $createSalesTransactionRequest->tenantId = $order->tenant_id;
       $createSalesTransactionRequest->buyerId = $request->buyerId;
       $createSalesTransactionRequest->invoiceNumber = "INV-" . time();
       $createSalesTransactionRequest->totalAmount = $totalAmount;
       $createSalesTransactionRequest->finalAmount = $finalAmount;
-      $createSalesTransactionRequest->paymentMethod = "cash";
+      $createSalesTransactionRequest->paymentMethod = $request->payment["payment_method"];
       $createSalesTransactionRequest->amountPaid = $request->payment['amount_paid'];
       $createSalesTransactionRequest->change = $change;
 
       $transaction = $this->transactionService->createTransaction($createSalesTransactionRequest);
       $transaction->details()->createMany($transactionDetails);
+
 
       return $transaction;
     });

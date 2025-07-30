@@ -15,6 +15,7 @@ class SalesTransaction extends Model
     protected $fillable = [
         'tenant_id',
         'buyer_id',
+        'order_id',
         'invoice_number',
         'name',
         'total_amount',
@@ -27,5 +28,15 @@ class SalesTransaction extends Model
     public function details()
     {
         return $this->hasMany(SalesTransactionDetail::class, 'sales_transaction_id');
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id', 'id');
+    }
+
+    public function buyer()
+    {
+        return $this->belongsTo(Buyer::class, 'buyer_id', 'id');
     }
 }
