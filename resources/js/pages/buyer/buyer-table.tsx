@@ -1,6 +1,6 @@
 import { Buyer, FormBuyer } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
-import { Edit3, Eye, Package, Trash2 } from 'lucide-react';
+import { Edit3, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from "@/components/modal";
 
@@ -25,9 +25,10 @@ export default function BuyerTable({ buyers }: BuyerTableProps) {
           <table className="w-full">
             <thead className="border-b">
               <tr className="text-center">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Store Name</th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Name</th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Phone Number</th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Store Name</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Discount</th>
                 <th className="px-4 py-3 text-center text-xs font-medium tracking-wider uppercase">Actions</th>
               </tr>
             </thead>
@@ -35,27 +36,19 @@ export default function BuyerTable({ buyers }: BuyerTableProps) {
               {buyers.map((buyer) => (
                 <tr key={buyer.id} className="">
                   <td className="px-4 py-4">
-                    <div className="flex items-center">
-                      <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg">
-                        <Package className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium">{buyer.name}</div>
-                      </div>
-                    </div>
+                    <span className="text-sm">{buyer.tenant.name}</span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="text-sm">{buyer.name}</span>
                   </td>
                   <td className="px-4 py-4">
                     <span className="text-sm">{buyer.phone_number}</span>
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-sm">{buyer.tenant.name}</span>
+                    <span className="text-sm">{buyer.discount?.name || 'None'}</span>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-center space-x-2">
-                      <Button className="transition-colors hover:text-blue-600">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-
                       <Link href={`/buyer/${buyer.id}/edit`}>
                         <Button className="transition-colors hover:text-green-600">
                           <Edit3 className="h-4 w-4" />

@@ -150,7 +150,8 @@ class CategoryController extends Controller
 
             return redirect()->route('category.index')->with('success', 'Category berhasil di hapus');
         } catch (\Exception $e) {
-            ;
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
         }
     }
 }
