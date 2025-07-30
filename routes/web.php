@@ -69,6 +69,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/buyer/list', [BuyerController::class, 'index'])->name('buyer.index');
 
+    Route::get('/buyer/{buyer}/edit', [BuyerController::class, 'edit'])->name('buyer.edit');
+
+    Route::put('/buyer/{id}', [BuyerController::class, 'update'])->name('buyer.update');
+
     Route::resource('/user', UserController::class)
         ->except(['show'])
         ->names([

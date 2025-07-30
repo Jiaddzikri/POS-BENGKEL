@@ -24,4 +24,16 @@ class BuyerService
       ->with('discount')
       ->first();
   }
+
+  public function update(CreateBuyerRequest $request, string $id)
+  {
+    return DB::transaction((function () use ($request, $id) {
+      Buyer::findOrFail($id)->update([
+        'tenant_id' => $request->tenantId,
+        'discount_id' => $request->discountId,
+        'phone_number' => $request->phoneNumber,
+        'name' => $request->name,
+      ]);
+    }));;
+  }
 }

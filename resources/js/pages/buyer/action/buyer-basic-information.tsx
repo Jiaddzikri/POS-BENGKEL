@@ -1,18 +1,18 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FormCategory, FormTenant, Tenant } from '@/types';
+import { FormBuyer, Tenant } from '@/types';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { ChevronDown } from 'lucide-react';
 
 
-type FormTenantKey = keyof FormTenant;
+type FormBuyerKey = keyof FormBuyer;
 
-type Errors = Partial<Record<keyof FormTenant, string>>
+type Errors = Partial<Record<keyof FormBuyer, string>>
 
 interface BuyerBasicInformationProps {
-  formData: FormCategory;
+  formData: FormBuyer;
   tenants: Tenant[];
-  handleInputChange: (field: FormTenantKey, value: string | number) => void;
+  handleInputChange: (field: FormBuyerKey, value: string | number) => void;
   errors: Errors;
   action: string;
 }
@@ -38,17 +38,31 @@ export default function BuyerBasicInformation({ action, handleInputChange, formD
       <div className="space-y-4 p-6">
         <div>
           <Label className="mb-2 block text-sm font-medium">
-            Category Name <span className="text-red-500">*</span>
+            Buyer Name <span className="text-red-500">*</span>
           </Label>
           <Input
             type="text"
             value={formData.name}
             onChange={(e) => handleInputChangeWithValidation('name', e.target.value)}
             className={getInputClassName('name')}
-            placeholder="Enter category name"
+            placeholder="Enter buyer name"
             maxLength={200}
           />
           {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+        </div>
+        <div>
+          <Label className="mb-2 block text-sm font-medium">
+            Phone Number <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            type="text"
+            value={formData.phone_number}
+            onChange={(e) => handleInputChangeWithValidation('phone_number', e.target.value)}
+            className={getInputClassName('phone_number')}
+            placeholder="Enter phone number"
+            maxLength={200}
+          />
+          {errors.phone_number && <p className="mt-1 text-sm text-red-500">{errors.phone_number}</p>}
         </div>
         <div>
           <Label className="mb-2 block text-sm font-medium">

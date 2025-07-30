@@ -1,5 +1,5 @@
 import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, BuyerData, Filter, TenantData } from "@/types";
+import { BreadcrumbItem, BuyerData, DiscountData, Filter, TenantData } from "@/types";
 import { Head } from "@inertiajs/react";
 import BuyerHeader from "./buyer/buyer-header";
 import BuyerTable from "./buyer/buyer-table";
@@ -9,6 +9,7 @@ import { Pagination } from "@/components/ui/pagination";
 interface BuyerProps {
   buyers: BuyerData;
   tenants: TenantData;
+  discounts: DiscountData;
   filters: Filter;
   route_name: string;
 }
@@ -21,6 +22,8 @@ export default function Buyer({ buyers, tenants, filters, route_name }: BuyerPro
       href: '/buyer/list'
     }
   ];
+
+
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>

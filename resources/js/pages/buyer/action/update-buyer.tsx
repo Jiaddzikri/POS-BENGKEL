@@ -26,7 +26,7 @@ export default function UpdateBuyer({ tenants, buyer }: UpdateBuyerProps) {
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Update Tenant" />
+      <Head title="Update Buyer" />
       <FormHeader title="Update buyer" subTitle="Update a buyer" />
       <UpdateBuyerForm tenants={tenants} buyer={buyer} />
     </AppLayout>
