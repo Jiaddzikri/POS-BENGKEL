@@ -1,14 +1,21 @@
 import { OrderCart } from '@/components/order-cart';
 import CashierHeader from '@/components/order-header';
 import CashierListItem from '@/components/order-list-item';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
 import { CartItem, Customer, Discount, DiscountData, ItemData, ItemList, OrderItemForm } from '@/types';
 import { } from '@headlessui/react';
 import { Head, router, useForm } from '@inertiajs/react';
 
-import { CheckCircle, Plus, X } from 'lucide-react';
 import React, { MouseEvent, useEffect, useState } from 'react';
 
 interface CashierProps {
@@ -31,6 +38,8 @@ export default function Order({ items, discounts }: CashierProps) {
     // discount: {} as Discount | undefined,
     // discount: 0 as number,
   });
+
+  console.log(data);
 
   const [cashReceived, setCashReceived] = useState<string>('');
 
@@ -64,6 +73,10 @@ export default function Order({ items, discounts }: CashierProps) {
   //   setData('discount', Math.max(0, Math.min(100, value)));
   // };
 
+  const handlePaymentMethod = (method?: string): void => {
+    setData('payment_method', method || 'cash');
+  };
+
   const clearCart = () => {
     setCart([]);
     setData('discount', 0);
@@ -74,7 +87,7 @@ export default function Order({ items, discounts }: CashierProps) {
     e.preventDefault();
 
     post(route(`order.process`, { orderId: orderId }), {
-      onSuccess: () => {
+      onSuccess: (response) => {
         closePaymentModal();
         openModalAfterOrder();
       },
@@ -85,12 +98,25 @@ export default function Order({ items, discounts }: CashierProps) {
     setModalAfterOrder(true);
   };
 
-  const createNewOrder = () => {
-    router.get(route('order.post'));
-  };
+  const handleDownloadReceipt = async () => {
+    try {
+      const response = await fetch(route('receipt.download', { orderId: orderId }));
 
-  const finishOrder = () => {
-    router.get(route('dashboard'));
+      if (!response.ok) {
+        throw new Error('Gagal mengunduh struk dari server.');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `struk-${orderId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Gagal mengunduh file.');
+    }
   };
 
   useEffect(() => {
@@ -123,6 +149,7 @@ export default function Order({ items, discounts }: CashierProps) {
           </div>
           <div className="flex w-96 flex-col border-l">
             <OrderCart
+              handlePaymentMethod={handlePaymentMethod}
               setCashReceived={setCashReceived}
               clearCart={clearCart}
               discount={data.discount}
@@ -137,26 +164,22 @@ export default function Order({ items, discounts }: CashierProps) {
             />
           </div>
         </div>
-        <Dialog open={isModalAfterOrderOpen} onOpenChange={setModalAfterOrder}>
-          <DialogContent>
-            <DialogHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-                <CheckCircle className="h-24 w-24 text-green-600" />
-              </div>
-              <DialogTitle className="text-xl font-semibold">Pesanan Berhasil Dibuat!</DialogTitle>
-            </DialogHeader>
-            <DialogFooter className="flex w-full justify-center gap-2">
-              <Button onClick={finishOrder} className="w-full bg-red-500 outline-none">
-                <X className="h-4 w-4" />
-                Selesai
+        <AlertDialog open={isModalAfterOrderOpen} onOpenChange={setModalAfterOrder}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Lanjut membuat order?</AlertDialogTitle>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => router.get(route('dashboard'))}>Cancel</AlertDialogCancel>
+
+              <Button variant="outline" onClick={handleDownloadReceipt}>
+                Download Struk
               </Button>
-              <Button type="button" onClick={createNewOrder} className="w-full border">
-                <Plus className="h-4 w-4" />
-                Buat Pesanan Lagi
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+
+              <AlertDialogAction onClick={() => router.get(route('order.post'))}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );
