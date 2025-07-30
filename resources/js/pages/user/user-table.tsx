@@ -1,6 +1,6 @@
 import { FormUser, User } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
-import { Edit3, Eye, Package, Trash2 } from 'lucide-react';
+import { Edit3, Package, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from "@/components/modal";
 
@@ -58,9 +58,6 @@ export default function UserTable({ users }: UserTableProps) {
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-center space-x-2">
-                      <Button className="transition-colors hover:text-blue-600">
-                        <Eye className="h-4 w-4" />
-                      </Button>
 
                       <Link href={`/user/${user.id}/edit`}>
                         <Button className="transition-colors hover:text-green-600">

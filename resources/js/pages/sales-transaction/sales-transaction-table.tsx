@@ -1,6 +1,8 @@
 import { SalesTransaction, SalesTransactionDetails } from '@/types';
 import { Accordion, AccordionContent, AccordionItem } from '@/components/ui/accordion';
 import React, { useState } from 'react';
+import { convertDate } from '@/utils/date-convert';
+import { convertCurrency } from '@/utils/currency-convert';
 
 interface SalesTransactionProps {
   sales_transaction: SalesTransaction[];
@@ -49,15 +51,15 @@ export default function SalesTransactionTable({ sales_transaction }: SalesTransa
                         <td className='px-2 py-2'>{detail.sku}</td>
                         <td className='px-2 py-2'>{detail.variant_name}</td>
                         <td className='px-2 py-2 text-center'>x {detail.quantity}</td>
-                        <td className='px-2 py-2 text-right'>{Number(detail.price_at_sale).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
-                        <td className='px-2 py-2 text-right'>{Number(detail.sub_total).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+                        <td className='px-2 py-2 text-right'>{convertCurrency(detail.price_at_sale)}</td>
+                        <td className='px-2 py-2 text-right'>{convertCurrency(detail.sub_total)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot className='text-xs'>
                     <tr className="border-t">
                       <td colSpan={6} className="text-right pr-4 pt-3 font-semibold">Total</td>
-                      <td className="text-right py-1 pr-2 pt-3">{Number(sales_transaction.total_amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+                      <td className="text-right py-1 pr-2 pt-3">{convertCurrency(sales_transaction.total_amount)}</td>
                     </tr>
 
                     {sales_transaction.buyer?.discount?.active &&
@@ -71,17 +73,17 @@ export default function SalesTransactionTable({ sales_transaction }: SalesTransa
 
                     <tr>
                       <td colSpan={6} className="text-right pr-4 py-1 font-semibold">Final Amount</td>
-                      <td className="text-right py-1 pr-2">{Number(sales_transaction.final_amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+                      <td className="text-right py-1 pr-2">{convertCurrency(sales_transaction.final_amount)}</td>
                     </tr>
 
                     <tr>
                       <td colSpan={6} className="text-right pr-4 py-1 font-semibold">Amount Paid</td>
-                      <td className="text-right py-1 pr-2">{Number(sales_transaction.amount_paid).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+                      <td className="text-right py-1 pr-2">{convertCurrency(sales_transaction.amount_paid)}</td>
                     </tr>
 
                     <tr>
                       <td colSpan={6} className="text-right pr-4 py-1 font-semibold">Change</td>
-                      <td className="text-right py-1 pr-2">{Number(sales_transaction.change).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+                      <td className="text-right py-1 pr-2">{convertCurrency(sales_transaction.change)}</td>
                     </tr>
 
                   </tfoot>
@@ -96,7 +98,6 @@ export default function SalesTransactionTable({ sales_transaction }: SalesTransa
 
   }
 
-  console.log(sales_transaction);
 
 
   return (
@@ -130,17 +131,7 @@ export default function SalesTransactionTable({ sales_transaction }: SalesTransa
                       <span className="text-sm">{sales.payment_method}</span>
                     </td>
                     <td>
-                      <span className="text-sm">{new Date(sales.date).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}{' '}
-                        {new Date(sales.date).toLocaleTimeString('id-ID', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit',
-                          hour12: false
-                        })}</span>
+                      <span className="text-sm">{convertDate(sales.date)}</span>
                     </td>
                   </tr>
 
