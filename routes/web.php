@@ -6,6 +6,7 @@ use App\Http\Controllers\Invetory\InventoryController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Qr\QrController;
+use App\Http\Controllers\Receipt\ReceiptController;
 use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\Variant\VariantController;
 use Illuminate\Support\Facades\Route;
@@ -59,6 +60,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
 
     Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
+
+    Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
 });
 
 require __DIR__ . '/settings.php';
