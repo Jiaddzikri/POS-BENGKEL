@@ -27,10 +27,10 @@ export default function Order({ items }: CashierProps) {
     phone_number: '' as string | undefined,
     name: '' as string | undefined,
     amount_paid: 0 as number,
+    discount: 0 as number,
   });
 
   const [cashReceived, setCashReceived] = useState<string>('');
-  const [discount, setDiscount] = useState<number>(0);
 
   const addToCart = (item: ItemList): void => {
     if (item.stock === 0) return;
@@ -49,12 +49,12 @@ export default function Order({ items }: CashierProps) {
 
   const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = parseInt(e.target.value) || 0;
-    setDiscount(Math.max(0, Math.min(100, value)));
+    setData('discount', Math.max(0, Math.min(100, value)));
   };
 
   const clearCart = () => {
     setCart([]);
-    setDiscount(0);
+    setData('discount', 0);
     setCashReceived('');
   };
 
@@ -113,7 +113,7 @@ export default function Order({ items }: CashierProps) {
             <OrderCart
               setCashReceived={setCashReceived}
               clearCart={clearCart}
-              discount={discount}
+              discount={data.discount}
               cart={cart}
               setCart={setCart}
               cashReceived={cashReceived}
