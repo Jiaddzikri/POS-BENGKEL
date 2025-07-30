@@ -2,7 +2,11 @@
 
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Buyer\BuyerController;
+<<<<<<< HEAD
 use App\Http\Controllers\Discount\DiscountController;
+=======
+use App\Http\Controllers\Invetory\InventoryController;
+>>>>>>> main
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\SalesTransaction\SalesTransactionController;
@@ -98,9 +102,15 @@ Route::middleware('auth')->group(function () {
             ->send(new HelloMail());
     });
     Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
-    Route::get('/analytics-report/download', [AnalyticalController::class, 'export'])->name('analytical.download');
+    Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
 
     Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
+
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+
+    Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
+
+    Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
 });
 
 require __DIR__ . '/settings.php';
