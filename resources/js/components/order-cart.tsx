@@ -68,7 +68,7 @@ export function OrderCart({
       setCustomerFound(false);
       setCustomerName('');
     }
-  }, [buyerData]); //
+  }, [buyerData]);
 
   useEffect(() => {
     addCustomerData({ phone_number: customerPhone, name: customerName });

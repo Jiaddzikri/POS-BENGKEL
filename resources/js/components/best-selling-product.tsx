@@ -10,10 +10,10 @@ export default function BestSellingProduct({ bestSelling }: BestSellingProductPr
   return (
     <div className="lg:col-span-2">
       <div className="rounded-lg border">
-        <div className="border-b border-gray-200 p-6">
+        <div className="border-b p-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Produk Terlaris</h3>
-            <Package className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-semibold">Produk Terlaris</h3>
+            <Package className="h-5 w-5" />
           </div>
         </div>
         <div className="p-6">
