@@ -7,5 +7,5 @@ class UserAttributeRequest {
   public ?string $email;
   public ?string $password;
   public string $role;
-  public string $tenant_id;
+  public ?string $tenant_id;
 }
