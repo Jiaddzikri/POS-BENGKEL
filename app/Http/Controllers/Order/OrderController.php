@@ -6,15 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\DiscountResource;
 use App\Http\Resources\VariantItemResource;
 use App\Models\Category;
-<<<<<<< HEAD
 use App\Models\Discount;
 use App\Models\ItemRecord;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\SalesTransaction;
 use App\Models\SalesTransactionDetail;
-=======
->>>>>>> 2e5a9d2236172919a61e40ceded74d01b0e6d1c3
 use App\Models\VariantItem;
 use App\Request\CreateBuyerRequest;
 use App\Request\CreateOrderRequest;

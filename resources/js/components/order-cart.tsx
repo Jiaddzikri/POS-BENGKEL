@@ -7,11 +7,7 @@ import React, { MouseEvent, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
-<<<<<<< HEAD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-=======
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from './ui/select';
->>>>>>> 2e5a9d2236172919a61e40ceded74d01b0e6d1c3
 
 interface OrderCartProps {
   setCashReceived: (param: string) => void;
@@ -356,14 +352,8 @@ export function OrderCart({
                           type="text"
                           value={customerName}
                           onChange={handleCustomerNameChange}
-<<<<<<< HEAD
                           className={`w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${customerFound ? 'border-green-300 bg-green-50' : ''
                             }`}
-=======
-                          className={`w-full rounded-lg border py-2.5 pr-10 pl-10 focus:ring-2 focus:ring-blue-500/20 ${
-                            customerFound ? 'border-green-300 focus:border-green-500' : 'border-gray-300 focus:border-blue-500'
-                          }`}
->>>>>>> 2e5a9d2236172919a61e40ceded74d01b0e6d1c3
                           placeholder="Masukkan nama customer"
                           disabled={customerFound}
                         />
@@ -428,81 +418,53 @@ export function OrderCart({
                         <span>Rp {total.toLocaleString('id-ID')}</span>
                       </div>
                     </div>
-<<<<<<< HEAD
-  {
-    discount.discount_percent > 0 && (
-                      <div className="mb-2 flex items-center justify-between text-green-600">
-                        <span>Diskon ({discount.discount_percent}%):</span>
-                        <span>-Rp {discountAmount.toLocaleString('id-ID')}</span>
-=======
+                    {
+                      discount.discount_percent > 0 && (
+                        <div className="mb-2 flex items-center justify-between text-green-600">
+                          <span>Diskon ({discount.discount_percent}%):</span>
+                          <span>-Rp {discountAmount.toLocaleString('id-ID')}</span>
+                        </div>
+                      )}
                   </div>
 
-      <div>
-        <Label className="mb-2 block text-sm font-medium">Uang Diterima</Label>
-        <Input
-          type="text"
-          value={numberFormat(Number(cashReceived))}
-          onChange={(e) => setCashReceived(getRawNumber(e.target.value))}
-          className="w-full rounded-lg px-3 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-          placeholder="Masukkan jumlah uang"
-        />
-        {change > 0 && (
-          <div className="mt-2 rounded-lg border border-green-200 bg-green-50 p-3">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span className="text-sm font-medium text-green-700">Kembalian: Rp {change.toLocaleString('id-ID')}</span>
-            </div>
-          </div>
-        )}
-        {change < 0 && cashReceived && (
-          <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-red-500" />
-              <span className="text-sm font-medium text-red-700">Uang kurang: Rp {Math.abs(change).toLocaleString('id-ID')}</span>
-            </div>
->>>>>>> 2e5a9d2236172919a61e40ceded74d01b0e6d1c3
-          </div>
-        )}
-      </div>
-
-      <div className="flex gap-3 pt-4">
-        <Button onClick={closePaymentModal} variant="outline" className="flex-1 rounded-lg border-gray-300 py-2.5" type="button">
-          Batal
-        </Button>
-        <Button
-          onClick={handleSubmitOrder}
-          disabled={parseInt(cashReceived) < total || parseInt(cashReceived) == 0 || cashReceived == ''}
-          className="flex-1 rounded-lg bg-green-600 py-2.5 text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-          type="submit"
-        >
-          Proses Bayar
-        </Button>
-      </div>
+                  <div className="flex gap-3 pt-4">
+                    <Button onClick={closePaymentModal} variant="outline" className="flex-1 rounded-lg border-gray-300 py-2.5" type="button">
+                      Batal
+                    </Button>
+                    <Button
+                      onClick={handleSubmitOrder}
+                      disabled={parseInt(cashReceived) < total || parseInt(cashReceived) == 0 || cashReceived == ''}
+                      className="flex-1 rounded-lg bg-green-600 py-2.5 text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                      type="submit"
+                    >
+                      Proses Bayar
+                    </Button>
+                  </div>
                 </div >
               </DialogContent >
             </Dialog >
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          onClick={clearCart}
-          className="rounded-lg border border-red-200 bg-red-50 py-2.5 text-sm font-medium text-red-700 transition-colors hover:border-red-300 hover:bg-red-100"
-          type="button"
-        >
-          <Trash2 className="mr-1.5 h-4 w-4" />
-          Clear All
-        </Button>
-        <Button
-          className="rounded-lg border border-blue-200 bg-blue-50 py-2.5 text-sm font-medium text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100"
-          type="button"
-        >
-          <Receipt className="mr-1.5 h-4 w-4" />
-          Hold
-        </Button>
-      </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                onClick={clearCart}
+                className="rounded-lg border border-red-200 bg-red-50 py-2.5 text-sm font-medium text-red-700 transition-colors hover:border-red-300 hover:bg-red-100"
+                type="button"
+              >
+                <Trash2 className="mr-1.5 h-4 w-4" />
+                Clear All
+              </Button>
+              <Button
+                className="rounded-lg border border-blue-200 bg-blue-50 py-2.5 text-sm font-medium text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100"
+                type="button"
+              >
+                <Receipt className="mr-1.5 h-4 w-4" />
+                Hold
+              </Button>
+            </div>
           </div >
         </div >
       )
-  }
+      }
     </>
   );
 }
