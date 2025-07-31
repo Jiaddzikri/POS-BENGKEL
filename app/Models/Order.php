@@ -15,6 +15,7 @@ class Order extends Model
     protected $fillable = [
         "tenant_id",
         "buyer_id",
+        'discount',
         "user_id",
         "discount_id",
         "total_amount",
