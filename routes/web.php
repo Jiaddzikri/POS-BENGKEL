@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
             'edit' => 'tenant.edit',
             'update' => 'tenant.update',
             'destory' => 'tenant.destory'
-        ]);
+        ])->middleware(['whoCanIn:']);
 
     Route::get('/dashboard', function () {
         return Inertia::render('dashboard');
@@ -123,6 +123,11 @@ Route::middleware('auth')->group(function () {
     //     Mail::to($user->email)
     //         ->send(new VerifyEmailMail($user));
     // });
+
+
+    Route::fallback(function () {
+        return Inertia::render('error/error-page', ['status' => 404]);
+    });
 });
 
 require __DIR__ . '/settings.php';
