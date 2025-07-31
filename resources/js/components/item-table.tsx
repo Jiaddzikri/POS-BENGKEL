@@ -1,7 +1,18 @@
 import { ItemFilter, ItemList, Pagination } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { AlertTriangle, ArrowLeft, ArrowRight, Edit3, Eye, MoreVertical, Package, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, Edit3, MoreVertical, Package, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
@@ -118,18 +129,33 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-center space-x-2">
-                      <Button className="transition-colors hover:text-blue-600">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-
                       <Link href={`/item/${item.item_id}/update`}>
                         <Button className="transition-colors hover:text-green-600">
                           <Edit3 className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Button className="transition-colors hover:text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button className="transition-colors hover:text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete your item and remove your data from our servers.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => router.delete(route('item.delete', { itemId: item.item_id }))}>
+                              Continue
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button className="transition-colors">
@@ -150,9 +176,9 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
           </table>
         </div>
       </div>
-      <div className="mt-6 rounded-lg border bg-white p-4 shadow-sm">
+      <div className="mt-6 rounded-lg border p-4 shadow-sm">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm">
             Menampilkan {items.length}-{pagination.per_page} dari {pagination.total} item
           </span>
           <div className="flex gap-2">

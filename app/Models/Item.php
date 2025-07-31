@@ -23,7 +23,7 @@ class Item extends Model
         "purchase_price",
         "selling_price",
         "status",
-        "image_path"
+        'is_deleted'
     ];
 
     public function variants(): HasMany

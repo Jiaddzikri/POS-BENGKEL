@@ -3,16 +3,18 @@ import ItemStatsCard from '@/components/item-stats-card';
 import ItemTable from '@/components/item-table';
 import ItemSearchHeader from '@/components/items-search-header';
 import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem, ItemData, ItemFilter, ItemStats } from '@/types';
+import { BreadcrumbItem, Category, ItemData, ItemFilter, ItemStats } from '@/types';
 import { Head } from '@inertiajs/react';
 
 interface ItemProps {
   items: ItemData;
   stats: ItemStats;
   filters: ItemFilter;
+  categories: Category[];
 }
 
-export default function Item({ items, filters, stats }: ItemProps) {
+export default function Item({ items, filters, stats, categories }: ItemProps) {
+  console.log(items, stats, categories);
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Item Management',
