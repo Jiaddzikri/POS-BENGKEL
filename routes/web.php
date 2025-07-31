@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
             'edit' => 'tenant.edit',
             'update' => 'tenant.update',
             'destory' => 'tenant.destory'
-        ])->middleware(['whoCanIn:']);
+        ])->middleware(['whoCanIn:super_admin']);
 
     Route::get('/dashboard', function () {
         return Inertia::render('dashboard');
