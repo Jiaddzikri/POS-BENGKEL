@@ -18,7 +18,7 @@ const mainNavItems: NavItem[] = [
     title: 'Order',
     href: '/order',
     icon: ClipboardList,
-  },
+  },  
 ];
 
 const InventoryNavItems: NavItem[] = [
