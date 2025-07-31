@@ -8,17 +8,17 @@ import BuyerBasicInformation from "../buyer-basic-information";
 type FormBuyerKey = keyof FormBuyer;
 
 interface UpdateBuyerFormProps {
-  buyer?: FormBuyer;
+  buyer: FormBuyer;
   tenants: Tenant[];
 }
 
 export default function UpdateBuyerForm({ buyer, tenants }: UpdateBuyerFormProps) {
 
   const { data, setData, put, reset, errors, clearErrors } = useForm<FormBuyer>({
-    id: buyer?.id,
-    name: buyer?.name || '',
-    phone_number: buyer?.phone_number || '',
-    tenant_id: buyer?.tenant_id || '',
+    id: buyer.id,
+    name: buyer.name || '',
+    phone_number: buyer.phone_number || '',
+    tenant_id: buyer.tenant_id || '',
   });
 
 
@@ -38,8 +38,8 @@ export default function UpdateBuyerForm({ buyer, tenants }: UpdateBuyerFormProps
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
 
-    put(route('category.update', data.id), {
-      onSuccess: () => reset('name', 'tenant_id'),
+    put(route('buyer.update', data.id), {
+      onSuccess: () => reset('name', 'phone_number', 'tenant_id'),
       onError: () => console.log(errors)
     });
   }

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Buyer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Buyer\BuyerRequestValidator;
 use App\Http\Resources\BuyerResource;
+use App\Http\Resources\DiscountResource;
 use App\Http\Resources\TenantResource;
 use App\Models\Buyer;
+use App\Models\Discount;
 use App\Models\Tenant;
 use App\Request\CreateBuyerRequest;
 use App\Service\Buyer\BuyerService;
@@ -73,6 +76,7 @@ class BuyerController extends Controller
         $routeName = Route::currentRouteName();
 
         $tenants = Tenant::latest()->get()->where('is_deleted', false);
+        $disounts = Discount::latest()->get();
 
         $buyers = Buyer::with('tenant', 'discount')
             ->when($search, function ($query, $search) {
@@ -95,11 +99,42 @@ class BuyerController extends Controller
             'route_name' => $routeName,
             'buyers' => BuyerResource::collection($buyers),
             'tenants' => TenantResource::collection($tenants),
+            'discounts' => DiscountResource::collection($disounts),
             'filters' => [
                 "search" => $search,
                 'page' => $page,
                 'filter' => $filter
             ]
         ]);
+    }
+
+    public function edit(Buyer $buyer)
+    {
+        $tenants = Tenant::latest()->get();
+
+        return Inertia::render('buyer/action/update-buyer', [
+            'buyer' => $buyer,
+            'tenants' => TenantResource::collection($tenants)->resolve()
+        ]);
+    }
+
+    public function update(BuyerRequestValidator $request, string $id)
+    {
+
+        try {
+            $request->validated();
+
+            $buyerRequest = new CreateBuyerRequest();
+            $buyerRequest->name = $request->post('name');
+            $buyerRequest->phoneNumber = $request->post('phone_number');
+            $buyerRequest->tenantId = $request->post('tenant_id');
+
+            $this->buyerService->update($buyerRequest, $id);
+
+            return redirect()->route('buyer.index')->with('success', 'Buyer berhasil di ubah');
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
     }
 }
