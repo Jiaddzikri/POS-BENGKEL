@@ -54,10 +54,14 @@ class OrderController extends Controller
         ->withInput();
     }
   }
-  public function index(Request $request)
+  public function index(Request $request, string $orderId)
   {
     $tenantId = $request->user()->tenant_id;
     $search = $request->input("search");
+
+    $orderStatus = Order::select('order_status')->where('id', '=', $orderId)->first();
+
+    $isOrderCompleted = $orderStatus->order_status === 'completed';
 
     $categories = Category::query()->select(["id", "name"])->where('tenant_id', $tenantId)->limit(4)->get();
 
@@ -84,13 +88,13 @@ class OrderController extends Controller
       ->paginate(10)
       ->withQueryString();
 
-      $discounts = Discount::latest()->get();
+    $discounts = Discount::latest()->get();
 
     return Inertia::render("order", [
       "items" => VariantItemResource::collection($variants),
       "categories" => $categories,
-      'discounts' => DiscountResource::collection($discounts)
-
+      'discounts' => DiscountResource::collection($discounts),
+      'isOrderCompleted' => $isOrderCompleted
     ]);
   }
 

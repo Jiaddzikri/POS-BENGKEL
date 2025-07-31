@@ -12,34 +12,33 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { CartItem, Customer, Discount, DiscountData, ItemData, ItemList, OrderItemForm } from '@/types';
-import { } from '@headlessui/react';
+import { CartItem, Customer, DiscountData, ItemData, ItemList, OrderItemForm } from '@/types';
+import {} from '@headlessui/react';
 import { Head, router, useForm } from '@inertiajs/react';
 
-import React, { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 
 interface CashierProps {
   items: ItemData;
   discounts: DiscountData;
+  isOrderCompleted: boolean;
 }
 
-export default function Order({ items, discounts }: CashierProps) {
+export default function Order({ items, discounts, isOrderCompleted }: CashierProps) {
   const path = window.location.pathname.split('/');
   const orderId = path[path.length - 1];
 
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [isModalAfterOrderOpen, setModalAfterOrder] = useState<boolean>(false);
+  const [isOrderAlreadyProcessedModalOpen, setOrderAlreadyProcessedModal] = useState<boolean>(false);
 
   const { data, setData, post } = useForm({
     items: [] as OrderItemForm[],
     phone_number: '' as string | undefined,
     name: '' as string | undefined,
     amount_paid: 0 as number,
-    // discount: {} as Discount | undefined,
-    // discount: 0 as number,
+    discount: 0 as number,
+    payment_method: '' as string,
   });
-
-  console.log(data);
 
   const [cashReceived, setCashReceived] = useState<string>('');
 
@@ -68,10 +67,10 @@ export default function Order({ items, discounts }: CashierProps) {
 
   // }
 
-  // const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-  //   const value = parseInt(e.target.value) || 0;
-  //   setData('discount', Math.max(0, Math.min(100, value)));
-  // };
+  const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const value = parseInt(e.target.value) || 0;
+    setData('discount', Math.max(0, Math.min(100, value)));
+  };
 
   const handlePaymentMethod = (method?: string): void => {
     setData('payment_method', method || 'cash');
@@ -87,15 +86,10 @@ export default function Order({ items, discounts }: CashierProps) {
     e.preventDefault();
 
     post(route(`order.process`, { orderId: orderId }), {
-      onSuccess: (response) => {
+      onSuccess: () => {
         closePaymentModal();
-        openModalAfterOrder();
       },
     });
-  };
-
-  const openModalAfterOrder = () => {
-    setModalAfterOrder(true);
   };
 
   const handleDownloadReceipt = async () => {
@@ -118,6 +112,12 @@ export default function Order({ items, discounts }: CashierProps) {
       alert('Gagal mengunduh file.');
     }
   };
+
+  useEffect(() => {
+    if (isOrderCompleted) {
+      setOrderAlreadyProcessedModal(true);
+    }
+  }, [isOrderCompleted]);
 
   useEffect(() => {
     const items: OrderItemForm[] = [];
@@ -149,34 +149,41 @@ export default function Order({ items, discounts }: CashierProps) {
           </div>
           <div className="flex w-96 flex-col border-l">
             <OrderCart
+              discount={data.discount}
               handlePaymentMethod={handlePaymentMethod}
               setCashReceived={setCashReceived}
               clearCart={clearCart}
-              discount={data.discount}
               cart={cart}
               setCart={setCart}
+              handleDiscountChange={handleDiscountChange}
               cashReceived={cashReceived}
-              handleDiscountSelectChange={handleDiscountSelectChange}
               submitOrder={submitOrder}
               items={items.data}
-              discounts={discounts.data}
               addCustomerData={addCustomerData}
             />
           </div>
         </div>
-        <AlertDialog open={isModalAfterOrderOpen} onOpenChange={setModalAfterOrder}>
+        <AlertDialog open={isOrderAlreadyProcessedModalOpen} onOpenChange={setOrderAlreadyProcessedModal}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Lanjut membuat order?</AlertDialogTitle>
+              <AlertDialogTitle className="">Order Sudah Diproses</AlertDialogTitle>
             </AlertDialogHeader>
+            <div className="py-4">
+              <p className="text-sm">
+                Order dengan ID <strong>{orderId}</strong> sudah berhasil
+              </p>
+              <div className="mt-4 rounded-md border p-3">
+                <p className="text-sm">
+                  <strong>Status:</strong> {isOrderCompleted ? 'Completed' : 'failed'}
+                </p>
+              </div>
+            </div>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => router.get(route('dashboard'))}>Cancel</AlertDialogCancel>
-
               <Button variant="outline" onClick={handleDownloadReceipt}>
                 Download Struk
               </Button>
-
-              <AlertDialogAction onClick={() => router.get(route('order.post'))}>Continue</AlertDialogAction>
+              <AlertDialogCancel onClick={() => router.get(route('dashboard'))}>Kembali ke Dashboard</AlertDialogCancel>
+              <AlertDialogAction onClick={() => router.get(route('order.post'))}>Buat Order Baru</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
