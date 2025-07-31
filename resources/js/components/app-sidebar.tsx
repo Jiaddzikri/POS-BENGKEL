@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BarChart3, BookOpen, Building2, ClipboardList, Folder, LayoutGrid, Package, Warehouse, Users, CircleDollarSign } from 'lucide-react';
+import { BarChart3, BookOpen, Building2, CircleDollarSign, ClipboardList, Folder, LayoutGrid, Package, ScanLine, Users, Warehouse } from 'lucide-react';
 
 import AppLogo from './app-logo';
 
@@ -66,14 +66,9 @@ const AdministrationNavItems: NavItem[] = [
   {
     title: 'Buyer',
     href: '/buyer/list',
-    icon: LayoutGrid
+    icon: ScanLine
 
   }
-  // {
-  //   title: 'Discount',
-  //   href: '/discount',
-  //   icon: TicketPercent
-  // }
 ];
 
 const footerNavItems: NavItem[] = [
