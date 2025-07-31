@@ -1,7 +1,8 @@
 import { FormItem, Variant } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
 import { Button, Input } from '@headlessui/react';
-import { Plus } from 'lucide-react';
+import { SetDataAction } from '@inertiajs/react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Label } from './ui/label';
@@ -20,10 +21,18 @@ interface ValidationErrors {
 
 interface AddItemVarianProps {
   formData: FormItem;
-  handleInputChange: (field: FormDataKey, value: string | number | Variant) => void;
+  setData: SetDataAction<{
+    name: string;
+    category_id: string;
+    description: string;
+    purchase_price: any;
+    selling_price: any;
+    brand: string;
+    variants: Variant[];
+  }>;
 }
 
-export default function AddItemVariant({ formData, handleInputChange }: AddItemVarianProps) {
+export default function AddItemVariant({ formData, setData }: AddItemVarianProps) {
   const [variantForm, setVariantForm] = useState<Variant>({
     name: '',
     sku: '',
@@ -41,10 +50,10 @@ export default function AddItemVariant({ formData, handleInputChange }: AddItemV
       [field]: value,
     }));
 
-    if (errors[field]) {
+    if (errors[field as keyof ValidationErrors]) {
       setErrors((prev) => ({
         ...prev,
-        [field]: undefined,
+        [field as keyof ValidationErrors]: undefined,
       }));
     }
   };
@@ -120,7 +129,10 @@ export default function AddItemVariant({ formData, handleInputChange }: AddItemV
         sku: variantForm.sku.trim().toUpperCase(),
       };
 
-      handleInputChange('variants', cleanVariant);
+      setData((prev) => ({
+        ...prev,
+        variants: [...prev.variants, cleanVariant],
+      }));
 
       toast.success('Variant successfully added');
 
@@ -137,6 +149,17 @@ export default function AddItemVariant({ formData, handleInputChange }: AddItemV
       toast.error('Failed to add variant. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const removeVariant = (indexToRemove: number) => {
+    if (formData.variants && Array.isArray(formData.variants)) {
+      const updatedVariants = formData.variants.filter((_, index) => index !== indexToRemove);
+      setData((prev) => ({
+        ...prev,
+        variants: updatedVariants,
+      }));
+      toast.success('Variant removed successfully');
     }
   };
 
@@ -157,107 +180,163 @@ export default function AddItemVariant({ formData, handleInputChange }: AddItemV
   };
 
   return (
-    <div className="rounded-lg border">
-      <div className="border-b px-6 py-4">
-        <h3 className="text-lg font-medium">Product Variant</h3>
-        <p className="mt-1 text-sm">Add Product Variant</p>
-      </div>
+    <div className="space-y-6">
+      {/* Add Variant Form */}
+      <div className="rounded-lg border">
+        <div className="border-b px-6 py-4">
+          <h3 className="text-lg font-medium">Product Variant</h3>
+          <p className="mt-1 text-sm">Add Product Variant</p>
+        </div>
 
-      <div className="space-y-4 p-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <Label className="mb-2 block text-sm font-medium">
-              Variant Name <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              type="text"
-              value={variantForm.name}
-              onChange={(e) => handleVariantInputChange('name', e.target.value)}
-              className={getInputClassName('name')}
-              placeholder="Enter variant name"
-              maxLength={100}
-            />
-            {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
-          </div>
+        <div className="space-y-4 p-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <Label className="mb-2 block text-sm font-medium">
+                Variant Name <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="text"
+                value={variantForm.name}
+                onChange={(e) => handleVariantInputChange('name', e.target.value)}
+                className={getInputClassName('name')}
+                placeholder="Enter variant name"
+                maxLength={100}
+              />
+              {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+            </div>
 
-          <div>
-            <Label className="mb-2 block text-sm font-medium">
-              Additional Price <span className="text-red-500">*</span>
-            </Label>
-            <div className="relative">
-              <span className="absolute top-1/2 left-3 -translate-y-1/2 transform text-sm">Rp</span>
+            <div>
+              <Label className="mb-2 block text-sm font-medium">
+                Additional Price <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <span className="absolute top-1/2 left-3 -translate-y-1/2 transform text-sm">Rp</span>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={numberFormat(Number(variantForm.additional_price))}
+                  onChange={(e) => handleVariantInputChange('additional_price', getRawNumber(e.target.value))}
+                  className={getPriceInputClassName()}
+                  placeholder="0"
+                />
+              </div>
+              {errors.additional_price && <p className="mt-1 text-sm text-red-500">{errors.additional_price}</p>}
+            </div>
+
+            <div>
+              <Label className="mb-2 block text-sm font-medium">Stock</Label>
               <Input
                 type="text"
                 inputMode="numeric"
-                value={numberFormat(Number(variantForm.additional_price))}
-                onChange={(e) => handleVariantInputChange('additional_price', getRawNumber(e.target.value))}
-                className={getPriceInputClassName()}
+                value={numberFormat(Number(variantForm.stock))}
+                onChange={(e) => handleVariantInputChange('stock', getRawNumber(e.target.value))}
+                className={getInputClassName('stock')}
                 placeholder="0"
               />
+              {errors.stock && <p className="mt-1 text-sm text-red-500">{errors.stock}</p>}
             </div>
-            {errors.additional_price && <p className="mt-1 text-sm text-red-500">{errors.additional_price}</p>}
-          </div>
 
-          <div>
-            <Label className="mb-2 block text-sm font-medium">Stock</Label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              value={numberFormat(Number(variantForm.stock))}
-              onChange={(e) => handleVariantInputChange('stock', getRawNumber(e.target.value))}
-              className={getInputClassName('stock')}
-              placeholder="0"
-            />
-            {errors.stock && <p className="mt-1 text-sm text-red-500">{errors.stock}</p>}
-          </div>
-
-          <div>
-            <Label className="mb-2 block text-sm font-medium">Minimum Stock</Label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              value={numberFormat(Number(variantForm.minimum_stock))}
-              onChange={(e) => handleVariantInputChange('minimum_stock', getRawNumber(e.target.value))}
-              className={getInputClassName('minimum_stock')}
-              placeholder="0"
-            />
-            {errors.minimum_stock && <p className="mt-1 text-sm text-red-500">{errors.minimum_stock}</p>}
-          </div>
-
-          <div>
-            <Label className="mb-2 block text-sm font-medium">
-              SKU <span className="text-red-500">*</span>
-            </Label>
-            <div className="flex">
+            <div>
+              <Label className="mb-2 block text-sm font-medium">Minimum Stock</Label>
               <Input
                 type="text"
-                value={variantForm.sku}
-                onChange={(e) => handleVariantInputChange('sku', e.target.value)}
-                className={`flex-1 rounded-l-md border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:outline-none ${
-                  errors.sku ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
-                }`}
-                placeholder="Product SKU"
-                maxLength={50}
+                inputMode="numeric"
+                value={numberFormat(Number(variantForm.minimum_stock))}
+                onChange={(e) => handleVariantInputChange('minimum_stock', getRawNumber(e.target.value))}
+                className={getInputClassName('minimum_stock')}
+                placeholder="0"
               />
+              {errors.minimum_stock && <p className="mt-1 text-sm text-red-500">{errors.minimum_stock}</p>}
             </div>
-            {errors.sku && <p className="mt-1 text-sm text-red-500">{errors.sku}</p>}
+
+            <div>
+              <Label className="mb-2 block text-sm font-medium">
+                SKU <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex">
+                <Input
+                  type="text"
+                  value={variantForm.sku}
+                  onChange={(e) => handleVariantInputChange('sku', e.target.value)}
+                  className={`flex-1 rounded-l-md border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:outline-none ${
+                    errors.sku ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
+                  }`}
+                  placeholder="Product SKU"
+                  maxLength={50}
+                />
+              </div>
+              {errors.sku && <p className="mt-1 text-sm text-red-500">{errors.sku}</p>}
+            </div>
+          </div>
+
+          <div>
+            <Button
+              type="button"
+              onClick={addVariantValueHandler}
+              disabled={isSubmitting}
+              className={`flex items-center gap-1 rounded-md border px-6 py-2 text-sm font-medium transition-colors ${
+                isSubmitting ? 'cursor-not-allowed bg-gray-100 text-gray-400' : 'hover:bg-gray-50 active:bg-gray-100'
+              }`}
+            >
+              <Plus className="h-4 w-4" />
+              {isSubmitting ? 'Adding...' : 'Add Variant'}
+            </Button>
           </div>
         </div>
-
-        <div>
-          <Button
-            type="button"
-            onClick={addVariantValueHandler}
-            disabled={isSubmitting}
-            className={`flex items-center gap-1 rounded-md border px-6 py-2 text-sm font-medium transition-colors ${
-              isSubmitting ? 'cursor-not-allowed bg-gray-100 text-gray-400' : 'hover:bg-gray-50 active:bg-gray-100'
-            }`}
-          >
-            <Plus className="h-4 w-4" />
-            {isSubmitting ? 'Adding...' : 'Add Variant'}
-          </Button>
-        </div>
       </div>
+
+      {/* Variant List */}
+      {formData.variants && Array.isArray(formData.variants) && formData.variants.length > 0 && (
+        <div className="rounded-lg border">
+          <div className="border-b px-6 py-4">
+            <h3 className="text-lg font-medium">Added Variants</h3>
+            <p className="mt-1 text-sm">
+              {formData.variants.length} variant{formData.variants.length > 1 ? 's' : ''} added
+            </p>
+          </div>
+
+          <div className="p-6">
+            <div className="space-y-4">
+              {formData.variants.map((variant: Variant, index: number) => (
+                <div key={`${variant.sku}-${index}`} className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-5">
+                    <div>
+                      <Label className="text-xs font-medium">Name</Label>
+                      <p className="text-sm font-medium">{variant.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium">SKU</Label>
+                      <p className="font-mono text-sm">{variant.sku}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium">Additional Price</Label>
+                      <p className="text-sm">Rp {numberFormat(Number(variant.additional_price))}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium">Stock</Label>
+                      <p className="text-sm">{numberFormat(Number(variant.stock))}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium">Min Stock</Label>
+                      <p className="text-sm">{numberFormat(Number(variant.minimum_stock))}</p>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <Button
+                      type="button"
+                      onClick={() => removeVariant(index)}
+                      className="flex items-center justify-center rounded-md border border-red-200 p-2 text-red-600 transition-colors hover:border-red-300 hover:bg-red-50"
+                      title="Remove variant"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
