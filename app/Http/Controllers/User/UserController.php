@@ -10,7 +10,9 @@ use App\Http\Resources\UserResource;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Request\UserAttributeRequest;
+use App\Service\Mail\MailService;
 use App\Service\User\UserService;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -18,7 +20,7 @@ use Inertia\Inertia;
 class UserController extends Controller
 {
 
-    public function __construct(private UserService $userService) {}
+    public function __construct(private UserService $userService, private MailService $verifyEmailService) {}
 
     /**
      * Display a listing of the resource.
@@ -93,6 +95,11 @@ class UserController extends Controller
             $userRequest->tenant_id = $request->post('tenant_id');
 
             $user = $this->userService->store($userRequest);
+
+
+            $this->verifyEmailService->sendVerifyEmail($user);
+
+
 
             return redirect()->route('user.index')->with('success', 'Pengguna ' . $user->email . ' berhasil di tambahkan, sebagai ' . $user->role);
         } catch (\Exception $e) {

@@ -13,7 +13,8 @@ use App\Http\Controllers\Receipt\ReceiptController;
 use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Variant\VariantController;
-use App\Mail\HelloMail;
+use App\Mail\Auth\VerifyEmailMail;
+use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -99,10 +100,8 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/discount/{id}/active', [DiscountController::class, 'updateStatusActive'])->name('discount.update.active');
 
-    Route::get('/testmail', function () {
-        Mail::to('muhamadilhan02404@gmail.com')
-            ->send(new HelloMail());
-    });
+
+
     Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
     Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
 
@@ -115,6 +114,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
 
     Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
+
+
+    // Route::get('/testmail', function () {
+
+    //     $user = User::where('email', 'yukinosento02@gmail.com')->first();
+
+    //     Mail::to($user->email)
+    //         ->send(new VerifyEmailMail($user));
+    // });
 });
 
 require __DIR__ . '/settings.php';
