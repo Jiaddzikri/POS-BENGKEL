@@ -1,53 +1,50 @@
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApi } from '@/hooks/use-api';
-import { CartItem, Customer, Discount, ItemList } from '@/types';
+import { CartItem, Customer, ItemList } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
 import { Label } from '@radix-ui/react-label';
-import { CreditCard, Minus, Percent, Phone, Plus, Receipt, ShoppingCart, Smartphone, Trash2, User, Wallet } from 'lucide-react';
+import { CreditCard, Minus, Phone, Plus, Receipt, ShoppingCart, Smartphone, Trash2, User, Wallet } from 'lucide-react';
 import React, { MouseEvent, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface OrderCartProps {
   setCashReceived: (param: string) => void;
   clearCart: () => void;
-  discount: Discount;
   cashReceived: string;
   cart: CartItem[];
   setCart: (cart: CartItem[]) => void;
-  handleDiscountSelectChange: (e: string) => void;
   submitOrder: (e: MouseEvent<HTMLButtonElement>, closePaymentModal: any, customerData?: Customer) => void;
   items: ItemList[];
-  discounts: Discount[];
   addCustomerData: (customerData?: Customer) => void;
   handlePaymentMethod: (method?: string) => void;
+  discount: number;
+  handleDiscountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function OrderCart({
   items,
-  discounts,
   submitOrder,
   setCashReceived,
   clearCart,
-  discount,
   cashReceived,
+  discount,
   cart,
   setCart,
-  handleDiscountSelectChange,
   addCustomerData,
   handlePaymentMethod,
+  handleDiscountChange,
 }: OrderCartProps) {
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
   const [isPaymentModalOpen, setPaymentModalOpen] = useState<boolean>(false);
-
   const [customerPhone, setCustomerPhone] = useState<string>('');
   const [customerName, setCustomerName] = useState<string>('');
   const [isSearchingCustomer, setIsSearchingCustomer] = useState<boolean>(false);
   const [customerFound, setCustomerFound] = useState<boolean>(false);
 
   const subtotal: number = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const discountAmount: number = subtotal * (discount.discount_percent / 100);
+  const discountAmount: number = subtotal * (discount / 100);
   const total: number = subtotal - discountAmount;
   const change: number = cashReceived ? parseInt(cashReceived) - total : 0;
 
@@ -135,6 +132,11 @@ export function OrderCart({
   const closePaymentModal = () => {
     setPaymentModalOpen(false);
     resetCustomerData();
+  };
+
+  const handleCashReceivedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = getRawNumber(e.target.value);
+    setCashReceived(value);
   };
 
   const handleSubmitOrder = (e: MouseEvent<HTMLButtonElement>) => {
@@ -231,18 +233,17 @@ export function OrderCart({
       </div>
       {cart.length > 0 && (
         <div className="border-t p-4">
-
           {/* < className="flex items-center gap-2"> */}
           {/* <Percent className="h-4 w-4" /> */}
-          {/* <Input
-              type="number"
-              placeholder="Diskon %"
-              value={discount || ''}
-              onChange={handleDiscountChange}
-              className="flex-1 rounded-lg border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
-              min="0"
-              max="100"
-            /> */}
+          <Input
+            type="number"
+            placeholder="Diskon %"
+            value={discount || ''}
+            onChange={handleDiscountChange}
+            className="flex-1 rounded-lg border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            min="0"
+            max="100"
+          />
           {/* 
             <Select
               onValueChange={(value: string) => handleDiscountSelectChange(value)}
@@ -273,7 +274,6 @@ export function OrderCart({
               />
             </div>
           </div> */}
-
 
           <div className="mb-4 rounded-lg p-4 shadow-sm">
             <div className="space-y-2">
@@ -352,8 +352,9 @@ export function OrderCart({
                           type="text"
                           value={customerName}
                           onChange={handleCustomerNameChange}
-                          className={`w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${customerFound ? 'border-green-300 bg-green-50' : ''
-                            }`}
+                          className={`w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
+                            customerFound ? 'border-green-300 bg-green-50' : ''
+                          }`}
                           placeholder="Masukkan nama customer"
                           disabled={customerFound}
                         />
@@ -418,13 +419,39 @@ export function OrderCart({
                         <span>Rp {total.toLocaleString('id-ID')}</span>
                       </div>
                     </div>
-                    {
-                      discount.discount_percent > 0 && (
-                        <div className="mb-2 flex items-center justify-between text-green-600">
-                          <span>Diskon ({discount.discount_percent}%):</span>
-                          <span>-Rp {discountAmount.toLocaleString('id-ID')}</span>
+                    {discount > 0 && (
+                      <div className="mb-2 flex items-center justify-between text-green-600">
+                        <span>Diskon ({discount}%):</span>
+                        <span>-Rp {discountAmount.toLocaleString('id-ID')}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="borderp-4 rounded-xl">
+                    <Label className="mb-2 block text-sm font-medium">Uang Diterima</Label>
+                    <Input
+                      type="text"
+                      value={numberFormat(Number(cashReceived))}
+                      onChange={handleCashReceivedChange}
+                      className="w-full rounded-lg px-3 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      placeholder="Masukkan jumlah uang"
+                    />
+                    {change > 0 && (
+                      <div className="mt-2 rounded-lg border border-green-200 bg-green-50 p-3">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-green-500" />
+                          <span className="text-sm font-medium text-green-700">Kembalian: Rp {change.toLocaleString('id-ID')}</span>
                         </div>
-                      )}
+                      </div>
+                    )}
+                    {change < 0 && cashReceived && (
+                      <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-red-500" />
+                          <span className="text-sm font-medium text-red-700">Uang kurang: Rp {Math.abs(change).toLocaleString('id-ID')}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-3 pt-4">
@@ -440,9 +467,9 @@ export function OrderCart({
                       Proses Bayar
                     </Button>
                   </div>
-                </div >
-              </DialogContent >
-            </Dialog >
+                </div>
+              </DialogContent>
+            </Dialog>
 
             <div className="grid grid-cols-2 gap-3">
               <Button
@@ -461,10 +488,9 @@ export function OrderCart({
                 Hold
               </Button>
             </div>
-          </div >
-        </div >
-      )
-      }
+          </div>
+        </div>
+      )}
     </>
   );
 }

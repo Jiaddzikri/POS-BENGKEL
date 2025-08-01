@@ -1,10 +1,7 @@
-import { Category, FormItem, Variant } from '@/types';
+import { Category, FormItem } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import { toast } from 'sonner';
 import AddItemActionButton from '../../../components/add-item-action-button';
-import AddItemImage from '../../../components/add-item-image';
-import AddItemQuickStats from '../../../components/add-item-quick-stats';
 import AddItemVariant from '../../../components/add-item-variant';
 import AddItemBasicInformation from './add-item-basic-information';
 
@@ -16,8 +13,7 @@ interface AddItemFormProps {
 }
 
 export default function AddItemForm({ categories, item }: AddItemFormProps) {
-
-  const { data, setData, post, reset, processing, errors } = useForm<FormItem>({
+  const { data, setData, post, reset, processing, errors } = useForm({
     name: item?.name || '',
     category_id: item?.category_id || '',
     description: item?.description || '',
@@ -25,29 +21,13 @@ export default function AddItemForm({ categories, item }: AddItemFormProps) {
     selling_price: item?.selling_price || 0,
     brand: item?.brand || '',
     variants: item?.variants || [],
-    image: item?.image || null,
   });
-
-  const handleInputChange = (field: FormItemKey, value: string | number | Variant | File | null) => {
-    if (field === 'variants' && typeof value === 'object' && value !== null) {
-      setData((prev) => ({
-        ...prev,
-        [field as FormItemKey]: [...prev[field], value],
-      }));
-    } else {
-      setData((prev) => ({
-        ...prev,
-        [field as FormItemKey]: value,
-      }));
-    }
-  };
 
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
     post(route('item.post'), {
       onSuccess: () => {
-        toast.success('Product Succesfully Added');
-        reset('name', 'category_id', 'description', 'purchase_price', 'selling_price', 'brand', 'variants', 'image');
+        reset('name', 'category_id', 'description', 'purchase_price', 'selling_price', 'brand', 'variants');
       },
       onError: () => {
         console.log(errors);
@@ -60,12 +40,8 @@ export default function AddItemForm({ categories, item }: AddItemFormProps) {
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
-              <AddItemBasicInformation errors={errors} formData={data} categories={categories} handleInputChange={handleInputChange} />
-              <AddItemVariant formData={data} handleInputChange={handleInputChange} />
-              <div className="space-y-6 lg:col-span-1">
-                <AddItemImage handleInputChange={handleInputChange} />
-                <AddItemQuickStats formData={data} categories={categories} />
-              </div>
+              <AddItemBasicInformation errors={errors} formData={data} categories={categories} setData={setData} />
+              <AddItemVariant formData={data} setData={setData} />
             </div>
           </div>
           <AddItemActionButton />

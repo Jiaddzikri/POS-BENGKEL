@@ -2,9 +2,9 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { PageProps, type NavItem, } from '@/types';
+import { PageProps, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, BookOpen, Building2, CircleDollarSign, ClipboardList, Folder, LayoutGrid, Package, ScanLine, TicketPercent, Users, Warehouse } from 'lucide-react';
+import { BarChart3, BookOpen, Building2, CircleDollarSign, ClipboardList, Folder, LayoutGrid, Package, ScanLine, Users, Warehouse } from 'lucide-react';
 
 import AppLogo from './app-logo';
 
@@ -79,12 +79,14 @@ const AdministrationNavItems: NavItem[] = [
     roles: ['super_admin', 'admin', 'employee']
     
   },
-  {
-    title: 'Discount',
-    href: '/discount',
-    icon: TicketPercent,
-    roles: ['super_admin', 'admin', 'employee']
-  }
+  // {
+  //   title: 'Discount',
+  //   href: '/discount',
+  //   icon: TicketPercent,
+  //   roles: ['super_admin', 'admin', 'employee']
+  //   icon: ScanLine
+
+  // }
 ];
 
 const footerNavItems: NavItem[] = [

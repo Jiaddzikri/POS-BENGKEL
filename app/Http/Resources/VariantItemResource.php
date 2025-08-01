@@ -21,12 +21,12 @@ class VariantItemResource extends JsonResource
             'variant_id' => $this->id,
             'variant_name' => $this->name,
             'stock' => $this->stock,
-            'image_path' => $this->whenLoaded('item', fn() => $this->item->image_path),
             'category_name' => $this->whenLoaded('item', fn() => $this->item->category?->name ?? 'Uncategorized'),
             'price' => $this->whenLoaded('item', fn() => $this->item->selling_price + $this->additional_price),
             'low_stock' => $this->stock <= $this->minimum_stock,
             'is_active' => $this->whenLoaded('item', fn() => $this->item->status === 'active'),
             'status' => $this->whenLoaded('item', fn() => $this->item->status),
+            'last_updated' => $this->whenLoaded('item', fn() => $this->item->updated_at->format('Y-md-d H:i:s'))
         ];
     }
 }

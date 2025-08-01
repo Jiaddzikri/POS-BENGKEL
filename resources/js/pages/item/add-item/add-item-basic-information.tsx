@@ -1,5 +1,6 @@
-import { Category, FormItem } from '@/types';
+import { Category, FormItem, Variant } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
+import { SetDataAction } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -12,15 +13,19 @@ type Errors = Partial<Record<keyof FormItem, string>>;
 interface AddItemBasicInformationProps {
   formData: FormItem;
   categories: Category[];
-  handleInputChange: (field: FormItemKey, value: string | number) => void;
+  setData: SetDataAction<{
+    name: string;
+    category_id: string;
+    description: string;
+    purchase_price: any;
+    selling_price: any;
+    brand: string;
+    variants: Variant[];
+  }>;
   errors: Errors;
 }
 
-export default function AddItemBasicInformation({ categories, handleInputChange, formData, errors }: AddItemBasicInformationProps) {
-  const handleInputChangeWithValidation = (field: FormItemKey, value: string | number) => {
-    handleInputChange(field, value);
-  };
-
+export default function AddItemBasicInformation({ categories, setData, formData, errors }: AddItemBasicInformationProps) {
   const getInputClassName = (field: keyof Errors) => {
     return errors[field] ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500';
   };
@@ -38,7 +43,7 @@ export default function AddItemBasicInformation({ categories, handleInputChange,
             Category <span className="text-red-500">*</span>
           </Label>
           <div className="relative">
-            <Select value={formData.category_id} onValueChange={(value) => handleInputChangeWithValidation('category_id', value)}>
+            <Select value={formData.category_id} onValueChange={(value) => setData('category_id', value)}>
               <SelectTrigger id="category-select" className={`w-full ${getInputClassName('category_id')}`}>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
@@ -66,7 +71,7 @@ export default function AddItemBasicInformation({ categories, handleInputChange,
           <Input
             type="text"
             value={formData.brand}
-            onChange={(e) => handleInputChangeWithValidation('brand', e.target.value)}
+            onChange={(e) => setData('brand', e.target.value)}
             className={getInputClassName('brand')}
             placeholder="Product brand"
             maxLength={100}
@@ -81,7 +86,7 @@ export default function AddItemBasicInformation({ categories, handleInputChange,
           <Input
             type="text"
             value={formData.name}
-            onChange={(e) => handleInputChangeWithValidation('name', e.target.value)}
+            onChange={(e) => setData('name', e.target.value)}
             className={getInputClassName('name')}
             placeholder="Enter item name"
             maxLength={200}
@@ -99,7 +104,7 @@ export default function AddItemBasicInformation({ categories, handleInputChange,
               type="text"
               inputMode="numeric"
               value={numberFormat(formData.purchase_price)}
-              onChange={(e) => handleInputChangeWithValidation('purchase_price', getRawNumber(e.target.value))}
+              onChange={(e) => setData('purchase_price', getRawNumber(e.target.value))}
               className={`${getInputClassName('purchase_price')} w-full rounded-md border py-2 pl-8 text-sm focus:border-transparent focus:ring-2 focus:outline-none`}
               placeholder="0"
             />
@@ -116,7 +121,7 @@ export default function AddItemBasicInformation({ categories, handleInputChange,
               type="text"
               inputMode="numeric"
               value={numberFormat(formData.selling_price)}
-              onChange={(e) => handleInputChangeWithValidation('selling_price', getRawNumber(e.target.value))}
+              onChange={(e) => setData('selling_price', getRawNumber(e.target.value))}
               className={`${getInputClassName('selling_price')} w-full rounded-md border py-2 pl-8 text-sm focus:border-transparent focus:ring-2 focus:outline-none`}
               placeholder="0"
             />
@@ -131,7 +136,7 @@ export default function AddItemBasicInformation({ categories, handleInputChange,
           </Label>
           <textarea
             value={formData.description}
-            onChange={(e) => handleInputChangeWithValidation('description', e.target.value)}
+            onChange={(e) => setData('description', e.target.value)}
             rows={4}
             className={`${getInputClassName('description')} w-full rounded-md border px-3 py-2 text-sm focus:outline-none`}
             placeholder="Describe your product..."

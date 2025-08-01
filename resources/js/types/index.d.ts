@@ -53,7 +53,6 @@ export interface UserData {
   links: Link;
 }
 
-
 export interface FormUser {
   name: string;
   email?: string;
@@ -63,7 +62,6 @@ export interface FormUser {
   password_confirmation?: string;
   [key: string]: any;
 }
-
 
 export interface Dimension {
   length: string | number;
@@ -82,15 +80,14 @@ export interface Variant {
 }
 
 export interface FormItem {
-  tenant_id?: string | number;
+  tenant_id?: string;
   name: string;
   category_id: string;
   description: string;
-  purchase_price: string | number | any;
-  selling_price: string | number | any;
+  purchase_price: number | any;
+  selling_price: number | any;
   brand: string;
   variants: Variant[];
-  image: File | null;
   [key: string]: any;
 }
 
@@ -161,6 +158,18 @@ export interface ItemData {
   links: Link;
 }
 
+interface ItemFilter {
+  searchQuery?: string;
+  category?: string;
+  status?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?: string;
+  sortOrder?: string;
+}
+
 export interface ItemStats {
   total: number;
   active_items: number;
@@ -216,7 +225,6 @@ export interface FormTenant {
 }
 
 // Tenant
-
 
 // Category
 
@@ -322,13 +330,11 @@ export interface Discount {
   [key: string]: any;
 }
 
-
 export interface BuyerData {
   data: Buyer[];
   meta: Pagination;
   links: Link;
 }
-
 
 export interface Buyer {
   id: string;
@@ -347,7 +353,6 @@ export interface FormBuyer {
   tenant_id: string;
   [key: string]: any;
 }
-
 
 export interface FormDiscount {
   name: string;
