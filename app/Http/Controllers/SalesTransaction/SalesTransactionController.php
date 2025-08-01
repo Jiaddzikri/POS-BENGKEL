@@ -21,7 +21,7 @@ class SalesTransactionController extends Controller
         $page = $request->input('page');
         $filter = $request->input('filter');
 
-        $sales_transactions = SalesTransaction::with(['buyer', 'buyer.discount', 'tenant', 'details', 'details.item', 'details.variants'])
+        $sales_transactions = SalesTransaction::with(['buyer', 'buyer.discount', 'tenant', 'details', 'details.item', 'details.variant'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $searchTerm = '%' . $search . '%';
@@ -38,9 +38,6 @@ class SalesTransactionController extends Controller
             ->latest()
             ->paginate(10)
             ->withQueryString();
-        
-        
-
 
         return Inertia::render('sales-transaction', [
             'route_name' => $routeName,

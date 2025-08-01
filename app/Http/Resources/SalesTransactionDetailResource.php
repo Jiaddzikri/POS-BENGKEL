@@ -19,10 +19,9 @@ class SalesTransactionDetailResource extends JsonResource
             'quantity' => $this->quantity,
             'price_at_sale' => $this->price_at_sale,
             'sub_total' => $this->sub_total,
-            'sku' => $this->variants?->sku,
+            'sku' => $this->variant?->sku,
             'item_name' => $this->item?->name,
-            'variant_name' => $this->variants?->name,
-            'sku' => $this->variants?->sku,
+            'variant_name' => $this->variant?->name,
         ];
     }
 }
