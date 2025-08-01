@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/item', [ItemController::class, 'postItem'])->name('item.post');
     Route::get('/item/{itemId}/update', [ItemController::class, 'updateItemPage'])->name('item.update.page');
     Route::post('/item/{itemId}/update', [ItemController::class, 'putUpdateItem'])->name('item.update.put');
+    Route::delete('/item/{itemId}', [ItemController::class, 'deleteItem'])->name('item.delete');
 
     Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
     Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');

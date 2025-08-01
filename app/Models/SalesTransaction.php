@@ -19,6 +19,7 @@ class SalesTransaction extends Model
         'buyer_id',
         'order_id',
         'invoice_number',
+        'discount',
         'name',
         'total_amount',
         'final_amount',

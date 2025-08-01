@@ -14,7 +14,6 @@ class ItemService
   public function store(PostItemAttributeRequest $request)
   {
     return DB::transaction((function () use ($request) {
-      $path = $request->image->store("uploads", "public");
       $createdItem = Item::create([
         "tenant_id" => $request->tenant_id,
         "name" => $request->name,
@@ -23,7 +22,7 @@ class ItemService
         "purchase_price" => $request->purchase_price,
         "selling_price" => $request->selling_price,
         "description" => $request->desciption,
-        "image_path" => $path
+
       ]);
 
       foreach ($request->variants as $variant) {

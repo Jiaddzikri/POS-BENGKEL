@@ -12,6 +12,8 @@ use App\Request\PostItemAttributeRequest;
 use App\Request\UpdateItemRequest;
 use App\Request\VariantAttributeRequest;
 use App\Service\Item\ItemService;
+use DB;
+use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -28,48 +30,97 @@ class ItemController extends Controller
     {
         $tenantId = auth()->user()->tenant_id;
         $search = $request->input('search');
-        $page = $request->input('page');
+        $page = $request->input('page', 1);
+        $minPrice = $request->get('minPrice');
+        $maxPrice = $request->get('maxPrice');
+        $sortOrder = $request->get('sortOrder', 'desc');
+        $sortBy = $request->get('sortBy', 'created_at');
+        $category = $request->get('category');
 
+        try {
 
-        $activeItemsCount = Item::where('tenant_id', $tenantId)->where('status', "active")->count();
-        $lowStockCount = VariantItem::whereHas('item', function ($q) use ($tenantId) {
-            $q->where('tenant_id', $tenantId);
-            $q->where('is_deleted', false);
-        })->whereColumn('stock', '<=', 'minimum_stock')->count();
-        $categoriesCount = Category::where('tenant_id', $tenantId)->count();
+            $activeItemsCount = Item::where(['tenant_id' => $tenantId])->where('status', "active")->count();
+            $lowStockCount = VariantItem::whereHas('item', function ($q) use ($tenantId) {
+                $q->where('tenant_id', $tenantId);
+                $q->where('is_deleted', false);
+            })->whereColumn('stock', '<=', 'minimum_stock')->count();
+            $categories = Category::select(['categories.id', 'categories.name', 'tenants.name as tenant_name'])->leftJoin('tenants', 'categories.tenant_id', '=', 'tenants.id')->where('tenant_id', $tenantId)->get();
 
-        $variants = VariantItem::with('item.category')
-            ->whereHas('item', function ($query) use ($tenantId) {
-                $query->where('tenant_id', $tenantId);
-            })
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $searchTerm = '%' . $search . '%';
-                    $q->where('sku', 'like', $searchTerm)
-                        ->orWhere('name', 'like', $searchTerm)
-                        ->orWhereHas('item', function ($itemQuery) use ($searchTerm) {
-                            $itemQuery->where('name', 'like', $searchTerm);
-                        })
-                        ->orWhereHas('item.category', function ($categoryQuery) use ($searchTerm) {
-                            $categoryQuery->where('name', 'like', $searchTerm);
-                        });
+            $query = VariantItem::query()
+                ->select([
+                    'variant_items.*',
+                    'items.name',
+                    'categories.name'
+                ])
+                ->join('items', 'variant_items.item_id', '=', 'items.id')
+                ->leftJoin('categories', 'items.category_id', '=', 'categories.id')
+                ->where('items.tenant_id', $tenantId)
+                ->where('variant_items.is_deleted', false);
+
+            if ($search) {
+                $searchTerm = '%' . $search . '%';
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('variant_items.sku', 'like', $searchTerm)
+                        ->orWhere('variant_items.name', 'like', $searchTerm)
+                        ->orWhere('items.name', 'like', $searchTerm)
+                        ->orWhere('categories.name', 'like', $searchTerm);
                 });
-            })->where("is_deleted", false)
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            }
 
-        return Inertia::render('item', [
-            "items" => VariantItemResource::collection($variants),
-            "stats" => [
-                'total' => $variants->count(),
-                'active_items' => $activeItemsCount,
-                'low_stock' => $lowStockCount,
-                'categories' => $categoriesCount
-            ],
+            if ($category) {
+                $query->where('categories.id', $category);
+            }
+            if ($minPrice) {
+                $query->whereRaw('items.selling_price + variant_items.additional_price >= ?', [$minPrice]);
+            }
 
-            "filters" => ["search" => $search, 'page' => $page]
-        ]);
+            if ($maxPrice) {
+                $query->whereRaw('items.selling_price + variant_items.additional_price <= ?', [$maxPrice]);
+            }
+
+
+
+            switch ($sortBy) {
+                case 'name':
+                    $query->orderBy('variant_items.name', $sortOrder);
+                    break;
+                case 'price':
+                    $query->orderByRaw('items.selling_price + variant_items.additional_price' . $sortOrder);
+                    break;
+                case 'updated_at':
+                    $query->orderBy('variant_items.updated_at', $sortOrder);
+                    break;
+                default:
+                    $query->orderBy('variant_items.created_at', $sortOrder);
+            }
+
+            $variants = $query->paginate(10)->withQueryString();
+
+
+            $variants->load(['item.category']);
+            return Inertia::render('item', [
+                "items" => VariantItemResource::collection($variants),
+                "stats" => [
+                    'total' => $variants->count(),
+                    'active_items' => $activeItemsCount,
+                    'low_stock' => $lowStockCount,
+                    'categories' => $categories->count()
+                ],
+                'categories' => $categories,
+
+                "filters" => [
+                    "search" => $search,
+                    'page' => $page,
+                    'category' => $category,
+                    'minPrice' => $minPrice ? (float) $minPrice : null,
+                    'maxPrice' => $maxPrice ? (float) $maxPrice : null,
+                    'sortBy' => $sortBy,
+                    'sortOrder' => $sortOrder,
+                ]
+            ]);
+        } catch (Exception $error) {
+            dd($error->getMessage());
+        }
     }
 
     public function addItem(Request $request)
@@ -99,7 +150,6 @@ class ItemController extends Controller
             $itemRequest->purchase_price = (int) $request->post("purchase_price");
             $itemRequest->brand = $request->post("brand");
             $itemRequest->tenant_id = $tenantId;
-            $itemRequest->image = $request->file("image");
             $variants = $request->post("variants");
 
 
@@ -116,8 +166,9 @@ class ItemController extends Controller
 
             $this->itemService->store($itemRequest);
 
-            return redirect()->route('items.add')->with('success', 'Item berhasil ditambahkan!');
-        } catch (\Exception $e) {
+            return redirect()->route('item.add')->with('success', 'Item berhasil ditambahkan!');
+        } catch (Exception $e) {
+            dd($e->getMessage());
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -207,7 +258,7 @@ class ItemController extends Controller
             return redirect()->route('item.update.page', [
                 "itemId" => $itemId
             ])->with('success', 'Item berhasil ditambahkan!');
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             dd($error);
             return redirect()->back()->with('error', 'an internal server error');
         }
@@ -231,11 +282,30 @@ class ItemController extends Controller
                 $resource
             ], 200);
 
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             return response()->json([
                 "message" => $error->getMessage(),
 
             ], $error->getCode());
+        }
+    }
+
+    public function deleteItem(Request $request, string $itemId)
+    {
+        try {
+            DB::transaction(function () use ($itemId) {
+                Item::where('id', '=', $itemId)->update([
+                    "is_deleted" => true
+                ]);
+
+                VariantItem::where('item_id', '=', $itemId)->update([
+                    'is_deleted' => true
+                ]);
+            });
+
+            return redirect()->back()->with('success', 'item berhasil dihapus');
+        } catch (Exception $error) {
+            return redirect()->back()->with('error', $error->getMessage());
         }
     }
 }
