@@ -31,7 +31,6 @@ export default function SearchHeader({ filters, dropdowns, link }: SearchProps) 
       });
   }, [debouncedQuery]);
 
-  
 
 
   return (
@@ -50,7 +49,7 @@ export default function SearchHeader({ filters, dropdowns, link }: SearchProps) 
               />
             </div>
 
-            {dropdowns && (
+            {(dropdowns && dropdowns.length > 0) && (
               <FilterDropdown dropdowns={dropdowns} filters={filters} link={link} />
             )}
 

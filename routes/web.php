@@ -125,9 +125,9 @@ Route::middleware('auth')->group(function () {
     // });
 
 
-    Route::fallback(function () {
-        return Inertia::render('error/error-page', ['status' => 404]);
-    });
+    // Route::fallback(function () {
+    //     return Inertia::render('error/error-page', ['status' => 404]);
+    // });
 });
 
 require __DIR__ . '/settings.php';

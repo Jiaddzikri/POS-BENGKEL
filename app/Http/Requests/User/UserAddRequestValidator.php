@@ -4,6 +4,7 @@ namespace App\Http\Requests\User;
 
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class UserAddRequestValidator extends FormRequest
@@ -23,6 +24,16 @@ class UserAddRequestValidator extends FormRequest
      */
     public function rules(): array
     {
+
+        $user = auth()->user();
+
+        $validationTenant = [
+            'required',
+            'uuid',
+            'exists:tenants,id'
+        ];
+
+
         return [
             'name' => [
                 'required',
@@ -47,12 +58,7 @@ class UserAddRequestValidator extends FormRequest
                 'required',
                 'in:super_admin,admin,manager,employee'
             ],
-            'tenant_id' => [
-                'required',
-                'uuid',
-                'required',
-                'exists:tenants,id'
-            ]
+            'tenant_id' => $user->role !== 'super_admin' ? '' : $validationTenant
         ];
     }
 }

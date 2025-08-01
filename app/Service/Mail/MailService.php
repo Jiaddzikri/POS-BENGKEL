@@ -2,9 +2,9 @@
 
 namespace App\Service\Mail;
 
-use App\Mail\Auth\VerifyEmailMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\Auth\VerifyEmailMail;
 
 class MailService
 {

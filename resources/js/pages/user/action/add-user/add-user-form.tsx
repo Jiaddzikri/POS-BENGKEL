@@ -8,7 +8,7 @@ import UserBasicInformation from "../user-basic-information";
 type FormUserKey = keyof FormUser;
 
 interface AddUserFormProps {
-  tenants: Tenant[];
+  tenants?: Tenant[];
   roles: DropdownData[];
 }
 
@@ -21,9 +21,6 @@ export default function AddUserForm({ tenants, roles }: AddUserFormProps) {
     password: '',
     password_confirmation: '',
   });
-
-
-  console.log(data);
 
 
   const handleInputChange = (field: FormUserKey, value: string | number | null) => {
@@ -43,7 +40,10 @@ export default function AddUserForm({ tenants, roles }: AddUserFormProps) {
 
     post(route('user.store'), {
       onSuccess: () => reset('name', 'email', 'password', 'password_confirmation', 'role', 'tenant_id'),
-      onError: () => console.log(errors)
+      onError: (e) => {
+        console.log(errors);
+        console.log('Validation error', e);
+      }
     });
   }
 

@@ -12,7 +12,6 @@ use App\Models\User;
 use App\Request\UserAttributeRequest;
 use App\Service\Mail\MailService;
 use App\Service\User\UserService;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,6 +26,9 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+
+        $user = auth()->user();
+
         $routeName = Route::currentRouteName();
         $search = $request->input('search');
         $page = $request->input('page');
@@ -34,7 +36,16 @@ class UserController extends Controller
 
         $tenants = Tenant::where('is_deleted', false)->latest()->get();
 
+
+
         $users = User::with('tenant')
+            ->when($user->role === 'admin', function ($query) {
+                $query->where('role', '!=', 'super_admin');
+            })
+            ->when($user->role === 'manager', function ($query) {
+
+                $query->whereNotIn('role', ['admin', 'manager']);
+            })
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $searchTerm = '%' . $search . '%';
@@ -44,6 +55,8 @@ class UserController extends Controller
             ->when($filter, function ($query, $filter) {
                 $query->where('tenant_id', $filter);
             })
+            ->where('tenant_id','=', $user->tenant->id)
+            ->where('id', '!=', $user->id)
             ->where('is_deleted', false)
             ->latest()
             ->paginate(10)
@@ -52,7 +65,7 @@ class UserController extends Controller
 
         return Inertia::render('user', [
             'route_name' => $routeName,
-            'tenants' => TenantResource::collection($tenants)->resolve(),
+            'tenants' => $user->role !== 'super_admin' ? null : TenantResource::collection($tenants),
             'users' => UserResource::collection($users),
             'filters' => [
                 'search' => $search,
@@ -67,14 +80,20 @@ class UserController extends Controller
      */
     public function create()
     {
+
+        $user = auth()->user();
+
         $roleEnums = get_enum_values('users', 'role');
         $tenants = Tenant::where('is_deleted', false)->latest()->get();
+
+        $filterRoleByUser = filter_role_by_user($roleEnums, $user);
+
 
         return Inertia::render(
             'user/action/add-user',
             [
-                'roles' => $roleEnums,
-                'tenants' => $tenants
+                'roles' => $filterRoleByUser,
+                'tenants' => $user->role !== 'super_admin' ? null : $tenants
             ]
         );
     }
@@ -85,6 +104,9 @@ class UserController extends Controller
     public function store(UserAddRequestValidator $request)
     {
         try {
+
+            $userAuth = auth()->user();
+
             $request->validated();
 
             $userRequest = new UserAttributeRequest();
@@ -92,10 +114,14 @@ class UserController extends Controller
             $userRequest->email = $request->post('email');
             $userRequest->password = $request->post('password');
             $userRequest->role = $request->post('role');
-            $userRequest->tenant_id = $request->post('tenant_id');
+
+            if ($userAuth->role === 'super_admin') {
+                $userRequest->tenant_id = $request->post('tenant_id');
+            } else {
+                $userRequest->tenant_id = $userAuth->tenant->id;
+            }
 
             $user = $this->userService->store($userRequest);
-
 
             $this->verifyEmailService->sendVerifyEmail($user);
 
@@ -121,17 +147,22 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $roleEnums = get_enum_values('users', 'role');
-        $tenants = Tenant::where('is_deleted', false)->latest()->get();
-
         $routeName = Route::currentRouteName();
+
+        // $userAuth = auth()->user();
+
+        $roleEnums = get_enum_values('users', 'role');
+        // $tenants = Tenant::where('is_deleted', false)->latest()->get();
+
+
+        $filterRoleByUser = filter_role_by_user($roleEnums, $user);
 
         return Inertia::render(
             'user/action/update-user',
             [
                 'user' => $user,
-                'roles' => $roleEnums,
-                'tenants' => $tenants,
+                'roles' => $filterRoleByUser,
+                // 'tenants' => $user->role !== 'super_admin' ? null : $tenants,
                 'route_name' => $routeName
             ]
         );
@@ -150,10 +181,11 @@ class UserController extends Controller
 
             $userRequest->name = $request->post('name');
             $userRequest->role = $request->post('role');
+            $userRequest->tenant_id = $request->post('tenant_id');
 
-            if (is_null($request->input('tenant_id'))) {
-                $userRequest->tenant_id = $request->post('tenant_id');
-            }
+            // if (is_null($request->input('tenant_id'))) {
+            //     $userRequest->tenant_id = $request->post('tenant_id');
+            // }
 
             $user = $this->userService->update($userRequest, $id);
 

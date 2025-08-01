@@ -1,12 +1,12 @@
 import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, FormUser, Tenant } from "@/types";
+import { BreadcrumbItem, DropdownData, FormUser, Tenant } from "@/types";
 import { Head } from "@inertiajs/react";
 import FormHeader from "@/components/form-header";
 import UpdateUserForm from "./update-user/update-user-form";
 
 interface UpdateUserProps {
   tenants: Tenant[];
-  roles: string[];
+  roles: DropdownData[];
   user: FormUser;
 }
 

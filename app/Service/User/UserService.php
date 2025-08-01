@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\Hash;
 class UserService
 {
 
+
+  public function index () {
+    
+  }
+
+
   public function store(UserAttributeRequest $request)
   {
 

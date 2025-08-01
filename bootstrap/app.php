@@ -31,16 +31,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (Throwable $e, Request $request) {
-            if ($request->expectsJson() || !$request->isMethod('GET')) {
-                return null; // biar default error handler yang ambil alih
-            }
+        // $exceptions->render(function (Throwable $e, Request $request) {
+        //     if ($request->expectsJson() || !$request->isMethod('GET')) {
+        //         return null; // biar default error handler yang ambil alih
+        //     }
 
-            $status = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
+        //     $status = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
 
-            return Inertia::render('error/error-page', [
-                'status' => $status,
-                'message' => config('app.debug') ? $e->getMessage() : null,
-            ])->toResponse($request)->setStatusCode($status);
-        });
+        //     return Inertia::render('error/error-page', [
+        //         'status' => $status,
+        //         'message' => config('app.debug') ? $e->getMessage() : null,
+        //     ])->toResponse($request)->setStatusCode($status);
+        // });
     })->create();
