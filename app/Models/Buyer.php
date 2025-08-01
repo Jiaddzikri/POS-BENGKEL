@@ -19,6 +19,7 @@ class Buyer extends Model
         'discount_id',
         'name',
         'phone_number',
+        // 'is_deleted'
     ];
 
     public function discount()

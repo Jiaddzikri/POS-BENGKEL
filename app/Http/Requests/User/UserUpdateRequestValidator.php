@@ -21,6 +21,15 @@ class UserUpdateRequestValidator extends FormRequest
      */
     public function rules(): array
     {
+
+        $user = auth()->user();
+
+        $validationTenant = [
+            'required',
+            'uuid',
+            'exists:tenants,id'
+        ];
+
         return [
             'name' => [
                 'required',
@@ -31,11 +40,7 @@ class UserUpdateRequestValidator extends FormRequest
                 'required',
                 'in:super_admin,admin,manager,employee'
             ],
-            'tenant_id' => [
-                'uuid',
-                'exists:tenants,id',
-                'nullable'
-            ]
+            'tenant_id' => $user->role !== 'super_admin' ? '' : $validationTenant
         ];
     }
 }

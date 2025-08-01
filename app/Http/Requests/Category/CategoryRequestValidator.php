@@ -21,6 +21,16 @@ class CategoryRequestValidator extends FormRequest
      */
     public function rules(): array
     {
+
+        $user = auth()->user();
+
+        $validationTenant = [
+            'required',
+            'uuid',
+            'exists:tenants,id'
+        ];
+
+
         return [
             'name' => [
                 'required',
@@ -28,11 +38,7 @@ class CategoryRequestValidator extends FormRequest
                 'max:255',
                 'min:3'
             ],
-            'tenant_id' => [
-                'required',
-                'uuid',
-                'exists:tenants,id'
-            ]
+            'tenant_id' => $user->role !== 'super_admin' ? '' : $validationTenant
         ];
     }
 }

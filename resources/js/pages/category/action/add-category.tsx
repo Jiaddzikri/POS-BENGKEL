@@ -5,7 +5,7 @@ import FormHeader from '@/components/form-header';
 import AddCategoryForm from './add-category/add-category-form';
 
 interface AddCategoryProps {
-  tenants: Tenant[]
+  tenants?: Tenant[]
 }
 
 export default function AddCategory({ tenants }: AddCategoryProps) {

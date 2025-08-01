@@ -68,6 +68,7 @@ class BuyerController extends Controller
 
     public function index(Request $request)
     {
+        $user = auth()->user();
 
         $search = $request->input('search');
         $page = $request->input('page');
@@ -91,6 +92,7 @@ class BuyerController extends Controller
             ->when($filter, function ($query, $filter) {
                 $query->where('tenant_id', $filter);
             })
+            ->where('tenant_id', '=', $user->tenant->id)
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -98,7 +100,7 @@ class BuyerController extends Controller
         return Inertia::render('buyer', [
             'route_name' => $routeName,
             'buyers' => BuyerResource::collection($buyers),
-            'tenants' => TenantResource::collection($tenants),
+            'tenants' => $user->role !== 'super_admin' ? '' : TenantResource::collection($tenants),
             'discounts' => DiscountResource::collection($disounts),
             'filters' => [
                 "search" => $search,
@@ -110,11 +112,13 @@ class BuyerController extends Controller
 
     public function edit(Buyer $buyer)
     {
+        $user = auth()->user();
+
         $tenants = Tenant::latest()->get();
 
         return Inertia::render('buyer/action/update-buyer', [
             'buyer' => $buyer,
-            'tenants' => TenantResource::collection($tenants)->resolve()
+            'tenants' => $user->role !== 'super_admin' ? '' : TenantResource::collection($tenants)->resolve()
         ]);
     }
 
@@ -132,6 +136,16 @@ class BuyerController extends Controller
             $this->buyerService->update($buyerRequest, $id);
 
             return redirect()->route('buyer.index')->with('success', 'Buyer berhasil di ubah');
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
+    }
+
+    public function destroy(string $id)
+    {
+        try {
+            $this->buyerService->delete($id);
         } catch (\Exception $e) {
             dd($e);
             return redirect()->back()->with('error', 'an internal server error');

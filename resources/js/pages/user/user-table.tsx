@@ -1,6 +1,6 @@
 import { FormUser, User } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
-import { Edit3, Package, Trash2 } from 'lucide-react';
+import { Edit3, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from "@/components/modal";
 
@@ -38,14 +38,7 @@ export default function UserTable({ users }: UserTableProps) {
               {users.map((user, index) => (
                 <tr key={index} className="">
                   <td className="px-4 py-4">
-                    <div className="flex items-center">
-                      <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg">
-                        <Package className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium">{user.name}</div>
-                      </div>
-                    </div>
+                    <span className="text-sm font-medium">{user.name}</span>
                   </td>
                   <td className="px-4 py-4">
                     <span className="text-sm">{user.email}</span>

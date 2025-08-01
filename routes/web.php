@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Buyer\BuyerController;
-use App\Http\Controllers\Discount\DiscountController;
+// use App\Http\Controllers\Discount\DiscountController;
 use App\Http\Controllers\Invetory\InventoryController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
@@ -13,7 +13,8 @@ use App\Http\Controllers\Receipt\ReceiptController;
 use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Variant\VariantController;
-use App\Mail\HelloMail;
+use App\Mail\Auth\VerifyEmailMail;
+use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -33,7 +34,7 @@ Route::middleware('auth')->group(function () {
             'edit' => 'tenant.edit',
             'update' => 'tenant.update',
             'destory' => 'tenant.destory'
-        ]);
+        ])->middleware(['whoCanIn:super_admin']);
 
     Route::get('/dashboard', function () {
         return Inertia::render('dashboard');
@@ -65,7 +66,11 @@ Route::middleware('auth')->group(function () {
             'edit' => 'category.edit',
             'update' => 'category.update',
             'destroy' => 'category.destroy'
-        ]);
+        ])->middleware(['whoCanIn:super_admin,admin,manager']);
+
+
+    
+
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 
     Route::get('/buyer/list', [BuyerController::class, 'index'])->name('buyer.index');
@@ -73,6 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/buyer/{buyer}/edit', [BuyerController::class, 'edit'])->name('buyer.edit');
 
     Route::put('/buyer/{id}', [BuyerController::class, 'update'])->name('buyer.update');
+    // Route::delete('/buyer/{id}', [BuyerController::class, 'destroy'])->name('buyer.destroy');
 
     Route::resource('/user', UserController::class)
         ->except(['show'])
@@ -83,30 +89,25 @@ Route::middleware('auth')->group(function () {
             'edit' => 'user.edit',
             'update' => 'user.update',
             'destroy' => 'user.destroy'
-        ]);
+        ])->middleware('whoCanIn:super_admin,admin,manager');
 
     Route::get('/transaction', [SalesTransactionController::class, 'salesTransaction'])->name('transaction.index');
 
-    Route::resource('/discount', DiscountController::class)
-        ->except(['show'])
-        ->names([
-            'index' => 'discount.index',
-            'create' => 'discount.create',
-            'store' => 'discount.store',
-            'edit' => 'discount.edit',
-            'update' => 'discount.update',
-            'destroy' => 'discount.destroy'
-        ]);
+    // Route::resource('/discount', DiscountController::class)
+    //     ->except(['show'])
+    //     ->names([
+    //         'index' => 'discount.index',
+    //         'create' => 'discount.create',
+    //         'store' => 'discount.store',
+    //         'edit' => 'discount.edit',
+    //         'update' => 'discount.update',
+    //         'destroy' => 'discount.destroy'
+    //     ]);
 
-    Route::patch('/discount/{id}/active', [DiscountController::class, 'updateStatusActive'])->name('discount.update.active');
 
-    Route::get('/testmail', function () {
-        Mail::to('muhamadilhan02404@gmail.com')
-            ->send(new HelloMail());
-    });
     Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
     Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
-
+    
     Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
 
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
@@ -114,8 +115,25 @@ Route::middleware('auth')->group(function () {
     Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
 
     Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
-
+    
     Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
+
+    
+    
+    // Route::patch('/discount/{id}/active', [DiscountController::class, 'updateStatusActive'])->name('discount.update.active');
+
+    // Route::get('/testmail', function () {
+
+    //     $user = User::where('email', 'yukinosento02@gmail.com')->first();
+
+    //     Mail::to($user->email)
+    //         ->send(new VerifyEmailMail($user));
+    // });
+
+
+    // Route::fallback(function () {
+    //     return Inertia::render('error/error-page', ['status' => 404]);
+    // });
 });
 
 require __DIR__ . '/settings.php';

@@ -5,7 +5,7 @@ import FormHeader from '@/components/form-header';
 import AddUserForm from './add-user/add-user-form';
 
 interface AddUserProps {
-  tenants: Tenant[];
+  tenants?: Tenant[];
   roles: DropdownData[];
 }
 

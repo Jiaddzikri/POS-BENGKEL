@@ -20,6 +20,7 @@ export interface NavItem {
   href: string;
   icon?: LucideIcon | null;
   isActive?: boolean;
+  roles?: string[]
 }
 
 export interface SharedData {
@@ -39,10 +40,12 @@ export interface User {
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
+  tenant_id: string | null; 
   tenant_name: string;
   role: string;
   [key: string]: unknown; // This allows for additional properties...
 }
+
 
 export interface UserData {
   data: User[];
@@ -54,7 +57,7 @@ export interface FormUser {
   name: string;
   email?: string;
   role: string;
-  tenant_id: string;
+  tenant_id?: string;
   password?: string;
   password_confirmation?: string;
   [key: string]: any;
@@ -502,4 +505,12 @@ interface StockMovementData {
   data: StockMovementRecord[];
   meta: Pagination;
   links: Link;
+}
+
+
+export interface PageProps {
+  auth: {
+    user: User | null;
+  };
+  [key: string]: any;
 }

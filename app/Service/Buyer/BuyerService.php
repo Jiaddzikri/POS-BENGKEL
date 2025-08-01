@@ -36,4 +36,13 @@ class BuyerService
       ]);
     }));;
   }
+
+  public function delete(string $id)
+  {
+    return DB::transaction((function () use ($id) {
+      Buyer::findOrFail($id)->update([
+        'is_deleted' => true,
+      ]);
+    }));
+  }
 }

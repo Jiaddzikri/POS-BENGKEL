@@ -24,6 +24,9 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
+
+        $user = auth()->user();
+
         $routeName = Route::currentRouteName();
         $search = $request->input('search');
         $page = $request->input('page');
@@ -42,6 +45,7 @@ class CategoryController extends Controller
             ->when($filter, function ($query, $filter) {
                 $query->where('tenant_id', $filter);
             })
+            ->where('tenant_id', '=', $user->tenant->id)
             ->where('is_deleted', false)
             ->latest()
             ->paginate(10)
@@ -53,7 +57,7 @@ class CategoryController extends Controller
         return Inertia::render('category', [
             'route_name' => $routeName,
             'categories' => CategoryResource::collection($categories),
-            'tenants' => TenantResource::collection($tenants),
+            'tenants' => $user->tenant->id !== 'super_admin' ? '' : TenantResource::collection($tenants),
             'filters' => [
                 "search" => $search,
                 'page' => $page,
@@ -67,10 +71,12 @@ class CategoryController extends Controller
      */
     public function create()
     {
+        $user = auth()->user();
+
         $tenants = Tenant::latest()->get();
 
         return Inertia::render('category/action/add-category', [
-            'tenants' => TenantResource::collection($tenants)->resolve()
+            'tenants' => $user->role !== 'super_admin' ? '' : $tenants
         ]);
     }
 
@@ -81,12 +87,20 @@ class CategoryController extends Controller
     {
         try {
 
+            $user = auth()->user();
+
             $request->validated();
 
             $categoryRequest = new CategoryAttributeRequest();
 
             $categoryRequest->name = $request->post('name');
-            $categoryRequest->tenant_id = $request->post('tenant_id');
+
+            if ($user->role === 'super_admin') {
+                $categoryRequest->tenant_id = $request->post('tenant_id');
+            } else {
+                $categoryRequest->tenant_id = $user->tenant->id;
+            }
+
 
             $this->categoryService->store($categoryRequest);
 
@@ -125,11 +139,18 @@ class CategoryController extends Controller
     {
         try {
 
+            $user = auth()->user();
+
             $request->validated();
 
             $categoryRequest = new CategoryAttributeRequest();
             $categoryRequest->name = $request->post('name');
-            $categoryRequest->tenant_id = $request->post('tenant_id');
+
+            if ($user->role === 'super_admin') {
+                $categoryRequest->tenant_id = $request->post('tenant_id');
+            } else {
+                $categoryRequest->tenant_id = $user->tenant->id;
+            }
 
             $this->categoryService->update($categoryRequest, $id);
 
