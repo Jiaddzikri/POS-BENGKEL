@@ -2,15 +2,9 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-<<<<<<< HEAD
 import { PageProps, type NavItem, } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, BookOpen, Building2, CircleDollarSign, ClipboardList, Folder, LayoutGrid, Package, ScanLine, TicketPercent, Users, Warehouse } from 'lucide-react';
-=======
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
 import { BarChart3, BookOpen, Building2, CircleDollarSign, ClipboardList, Folder, LayoutGrid, Package, ScanLine, Users, Warehouse } from 'lucide-react';
->>>>>>> main
 
 import AppLogo from './app-logo';
 
@@ -19,13 +13,13 @@ const mainNavItems: NavItem[] = [
     title: 'Dashboard',
     href: '/dashboard',
     icon: LayoutGrid,
-    roles: ['super_admin', 'admin', 'employee']
+    roles: ['super_admin', 'admin', 'manager', 'employee']
   },
   {
     title: 'Order',
     href: '/order',
     icon: ClipboardList,
-    roles: ['super_admin', 'admin', 'employee']
+    roles: ['super_admin', 'admin', 'manager', 'employee']
   },
 ];
 
@@ -34,13 +28,13 @@ const InventoryNavItems: NavItem[] = [
     title: 'Item',
     href: '/item',
     icon: Package,
-    roles: ['super_admin', 'admin', 'employee']
+    roles: ['super_admin', 'admin', 'manager', 'employee']
   },
   {
     title: 'Inventory',
     href: '/inventory',
     icon: Warehouse,
-    roles: ['super_admin', 'admin', 'employee']
+    roles: ['super_admin', 'admin', 'manager', 'employee']
   },
 ];
 
@@ -49,7 +43,7 @@ const SalesAndCustomerNavItems: NavItem[] = [
     title: 'Reports',
     href: '/analytics-report',
     icon: BarChart3,
-    roles: ['super_admin', 'admin', 'employee']
+    roles: ['super_admin', 'admin', 'manager']
   },
 ];
 
@@ -58,41 +52,40 @@ const AdministrationNavItems: NavItem[] = [
     title: 'Tenant',
     href: '/tenant',
     icon: Building2,
-    roles: ['super_admin', 'admin', 'employee']
+    roles: ['super_admin', 'admin']
   },
   {
     title: 'User',
     href: '/user',
     icon: Users,
-    roles: ['super_admin', 'admin', 'employee']
+    roles: ['super_admin', 'admin']
   },
   {
     title: 'Category',
     href: '/category',
     icon: LayoutGrid,
-    roles: ['super_admin', 'admin', 'employee']
+    roles: ['super_admin', 'admin', 'manager']
   },
   {
     title: 'Transaction',
     href: '/transaction',
     icon: CircleDollarSign,
-    roles: ['super_admin', 'admin', 'employee']
+    roles: ['super_admin', 'admin', 'manager', 'employee']
   },
   {
     title: 'Buyer',
     href: '/buyer/list',
     icon: ScanLine,
-    roles: ['super_admin', 'admin', 'employee']
-    
-  },
-  {
-    title: 'Discount',
-    href: '/discount',
-    icon: TicketPercent,
-    roles: ['super_admin', 'admin', 'employee']
-    // icon: ScanLine
+    roles: ['super_admin', 'admin', 'manager', 'employee']
 
-  }
+  },
+  // {
+  //   title: 'Discount',
+  //   href: '/discount',
+  //   icon: TicketPercent,
+  //   roles: ['super_admin', 'admin', 'employee']
+  //   // icon: ScanLine
+  // }
 ];
 
 const footerNavItems: NavItem[] = [
