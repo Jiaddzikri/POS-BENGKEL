@@ -52,7 +52,7 @@ const AdministrationNavItems: NavItem[] = [
     title: 'Tenant',
     href: '/tenant',
     icon: Building2,
-    roles: ['super_admin', 'admin']
+    roles: ['super_admin']
   },
   {
     title: 'User',
