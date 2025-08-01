@@ -28,7 +28,7 @@ export default function BuyerTable({ buyers }: BuyerTableProps) {
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Store Name</th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Name</th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Phone Number</th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Discount</th>
+                {/* <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Discount</th> */}
                 <th className="px-4 py-3 text-center text-xs font-medium tracking-wider uppercase">Actions</th>
               </tr>
             </thead>
@@ -44,9 +44,9 @@ export default function BuyerTable({ buyers }: BuyerTableProps) {
                   <td className="px-4 py-4">
                     <span className="text-sm">{buyer.phone_number}</span>
                   </td>
-                  <td className="px-4 py-4">
+                  {/* <td className="px-4 py-4">
                     <span className="text-sm">{buyer.discount?.name || 'None'}</span>
-                  </td>
+                  </td> */}
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-center space-x-2">
                       <Link href={`/buyer/${buyer.id}/edit`}>
@@ -55,7 +55,7 @@ export default function BuyerTable({ buyers }: BuyerTableProps) {
                         </Button>
                       </Link>
 
-                      <Modal
+                      {/* <Modal
                         title={`Apakah kamu yakin ingin Menghapus Category ${buyer.name}?`}
                         description={'Tindakan ini tidak dapat dibatalkan.'}
                         onConfirm={() => handleDelete(buyer.id)}
@@ -63,7 +63,7 @@ export default function BuyerTable({ buyers }: BuyerTableProps) {
                         <Button type={'button'} className="transition-colors hover:text-red-600">
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </Modal>
+                      </Modal> */}
                     </div>
                   </td>
                 </tr>

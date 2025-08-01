@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/buyer/{buyer}/edit', [BuyerController::class, 'edit'])->name('buyer.edit');
 
     Route::put('/buyer/{id}', [BuyerController::class, 'update'])->name('buyer.update');
+    // Route::delete('/buyer/{id}', [BuyerController::class, 'destroy'])->name('buyer.destroy');
 
     Route::resource('/user', UserController::class)
         ->except(['show'])
