@@ -8,14 +8,13 @@ import CategoryBasicInformation from "../category-basic-information";
 type FormCategoryKey = keyof FormCategory;
 
 interface AddCategoryFormProps {
-  category?: FormCategory;
-  tenants: Tenant[];
+  tenants?: Tenant[];
 }
 
-export default function AddCategoryForm({ category, tenants }: AddCategoryFormProps) {
+export default function AddCategoryForm({ tenants }: AddCategoryFormProps) {
   const { data, setData, post, reset, errors, clearErrors } = useForm<FormCategory>({
-    name: category?.name || '',
-    tenant_id: category?.tenant_id || '',
+    name: '',
+    tenant_id: '',
   });
 
 

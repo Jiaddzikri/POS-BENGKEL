@@ -66,7 +66,11 @@ Route::middleware('auth')->group(function () {
             'edit' => 'category.edit',
             'update' => 'category.update',
             'destroy' => 'category.destroy'
-        ]);
+        ])->middleware(['whoCanIn:super_admin,admin,manager']);
+
+
+    
+
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 
     Route::get('/buyer/list', [BuyerController::class, 'index'])->name('buyer.index');
@@ -85,7 +89,7 @@ Route::middleware('auth')->group(function () {
             'edit' => 'user.edit',
             'update' => 'user.update',
             'destroy' => 'user.destroy'
-        ]);
+        ])->middleware('whoCanIn:super_admin,admin,manager');
 
     Route::get('/transaction', [SalesTransactionController::class, 'salesTransaction'])->name('transaction.index');
 
@@ -100,13 +104,10 @@ Route::middleware('auth')->group(function () {
     //         'destroy' => 'discount.destroy'
     //     ]);
 
-    Route::patch('/discount/{id}/active', [DiscountController::class, 'updateStatusActive'])->name('discount.update.active');
-
-
 
     Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
     Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
-
+    
     Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
 
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
@@ -114,9 +115,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
 
     Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
-
+    
     Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
 
+    
+    
+    // Route::patch('/discount/{id}/active', [DiscountController::class, 'updateStatusActive'])->name('discount.update.active');
 
     // Route::get('/testmail', function () {
 

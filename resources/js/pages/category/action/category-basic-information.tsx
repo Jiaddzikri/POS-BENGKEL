@@ -11,7 +11,7 @@ type Errors = Partial<Record<keyof FormTenant, string>>
 
 interface CategoryBasicInformation {
   formData: FormCategory;
-  tenants: Tenant[];
+  tenants?: Tenant[];
   handleInputChange: (field: FormTenantKey, value: string | number) => void,
   errors: Errors,
   action: string;
@@ -50,31 +50,34 @@ export default function CategoryBasicInformation({ action, handleInputChange, fo
           />
           {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
         </div>
-        <div>
-          <Label className="mb-2 block text-sm font-medium">
-            Tenant <span className="text-red-500">*</span>
-          </Label>
-          <div className="relative">
-            <Select value={formData.tenant_id} onValueChange={(value) => handleInputChangeWithValidation('tenant_id', value)}>
 
-              <SelectTrigger id="tenant-select" className={`w-full ${getInputClassName('tenant')}`}>
-                <SelectValue placeholder="Select Tenant" />
-              </SelectTrigger>
+        {tenants && (
+          <div>
+            <Label className="mb-2 block text-sm font-medium">
+              Tenant <span className="text-red-500">*</span>
+            </Label>
+            <div className="relative">
+              <Select value={formData.tenant_id} onValueChange={(value) => handleInputChangeWithValidation('tenant_id', value)}>
 
-              <SelectContent>
-                {tenants && tenants.map((data) => (
-                  <SelectItem key={data.id} value={data.id}>
-                    {data.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+                <SelectTrigger id="tenant-select" className={`w-full ${getInputClassName('tenant')}`}>
+                  <SelectValue placeholder="Select Tenant" />
+                </SelectTrigger>
 
-            </Select>
-            <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
+                <SelectContent>
+                  {tenants && tenants.map((data) => (
+                    <SelectItem key={data.id} value={data.id}>
+                      {data.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
 
+              </Select>
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
+
+            </div>
+            {errors.tenant && <p className="mt-1 text-sm text-red-500">{errors.tenant}</p>}
           </div>
-          {errors.tenant && <p className="mt-1 text-sm text-red-500">{errors.tenant}</p>}
-        </div>
+        )}
       </div>
 
     </div>
