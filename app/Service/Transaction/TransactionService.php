@@ -23,6 +23,7 @@ class TransactionService
         "invoice_number" => $request->invoiceNumber,
         "payment_method" => $request->paymentMethod,
         "total_amount" => $request->totalAmount,
+        'discount' => $request->discount,
         "final_amount" => $request->finalAmount,
         "amount_paid" => $request->amountPaid,
         "change" => $request->change,

@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\SalesTransaction;
 use App\Request\CreateReceiptRequest;
 use Exception;
+use Log;
 
 class ReceiptService
 {
@@ -38,7 +39,7 @@ class ReceiptService
         }),
         'summary' => [
           'subtotal' => $transaction->total_amount,
-          'discount' => 0,
+          'discount' => $transaction->discount,
           'total' => $transaction->final_amount,
           'amountPaid' => $transaction->amount_paid,
           'change' => $transaction->change,

@@ -67,14 +67,11 @@
 
 <body>
   <div class="receipt-container">
-    {{-- Header Struk --}}
     <div class="header">
       <h2>{{ $receiptData['tenant']['name'] }}</h2>
     </div>
 
     <div class="separator"></div>
-
-    {{-- Info Transaksi --}}
     <div>
       <div class="info-row">
         <span>No: {{ $receiptData['invoiceNumber'] }}</span>
@@ -90,7 +87,6 @@
 
     <div class="separator"></div>
 
-    {{-- Daftar Item --}}
     <div class="items-table">
       @foreach($receiptData['items'] as $item)
       <div>
@@ -105,7 +101,6 @@
 
     <div class="separator"></div>
 
-    {{-- Ringkasan Pembayaran --}}
     <div>
       <div class="summary-row">
         <span>Subtotal</span>
@@ -114,7 +109,7 @@
       @if($receiptData['summary']['discount'] > 0)
       <div class="summary-row">
       <span>Diskon</span>
-      <span>-{{ number_format($receiptData['summary']['discount'], 0, ',', '.') }}</span>
+      <span>{{ number_format($receiptData['summary']['discount'], 0, ',', '.') }}%</span>
       </div>
     @endif
       <div class="summary-row total">
@@ -135,8 +130,6 @@
     </div>
 
     <div class="separator"></div>
-
-    {{-- Footer --}}
     <div class="footer">
       <p>TERIMA KASIH</p>
     </div>

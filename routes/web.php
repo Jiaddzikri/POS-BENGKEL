@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Buyer\BuyerController;
-use App\Http\Controllers\Discount\DiscountController;
+// use App\Http\Controllers\Discount\DiscountController;
 use App\Http\Controllers\Invetory\InventoryController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/item', [ItemController::class, 'postItem'])->name('item.post');
     Route::get('/item/{itemId}/update', [ItemController::class, 'updateItemPage'])->name('item.update.page');
     Route::post('/item/{itemId}/update', [ItemController::class, 'putUpdateItem'])->name('item.update.put');
+    Route::delete('/item/{itemId}', [ItemController::class, 'deleteItem'])->name('item.delete');
 
     Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
     Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
@@ -87,16 +88,16 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/transaction', [SalesTransactionController::class, 'salesTransaction'])->name('transaction.index');
 
-    Route::resource('/discount', DiscountController::class)
-        ->except(['show'])
-        ->names([
-            'index' => 'discount.index',
-            'create' => 'discount.create',
-            'store' => 'discount.store',
-            'edit' => 'discount.edit',
-            'update' => 'discount.update',
-            'destroy' => 'discount.destroy'
-        ]);
+    // Route::resource('/discount', DiscountController::class)
+    //     ->except(['show'])
+    //     ->names([
+    //         'index' => 'discount.index',
+    //         'create' => 'discount.create',
+    //         'store' => 'discount.store',
+    //         'edit' => 'discount.edit',
+    //         'update' => 'discount.update',
+    //         'destroy' => 'discount.destroy'
+    //     ]);
 
     Route::patch('/discount/{id}/active', [DiscountController::class, 'updateStatusActive'])->name('discount.update.active');
 
