@@ -98,7 +98,7 @@ class AnalyticalService
     $trend = 'stable';
     $percentageChange = 0.0;
 
-    if ($previousGrossProfit != 0) {
+    if ($previousGrossProfit > 0) {
       $percentageChange = (($currentGrossProfit - $previousGrossProfit) / abs($previousGrossProfit)) * 100;
     } elseif ($currentGrossProfit > 0) {
 
@@ -224,7 +224,7 @@ class AnalyticalService
       ->select(
         'categories.name as category',
         DB::raw('SUM(sales_transaction_details.quantity) as total_quantity'),
-        DB::raw('SUM(sales_transaction_details.price_at_sale) * SUM(sales_transaction_details.quantity) as total_revenue')
+        DB::raw('SUM(sales_transaction_details.price_at_sale * sales_transaction_details.quantity) as total_revenue')
       )
       ->join('sales_transactions', 'sales_transaction_details.sales_transaction_id', '=', 'sales_transactions.id')
       ->join('items', 'sales_transaction_details.item_id', '=', 'items.id')

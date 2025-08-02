@@ -2,9 +2,22 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { PageProps, type NavItem, } from '@/types';
+import { PageProps, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, BookOpen, Building2, CircleDollarSign, ClipboardList, Folder, LayoutGrid, Package, ScanLine, Users, Warehouse } from 'lucide-react';
+import {
+  BarChart3,
+  BookOpen,
+  Building2,
+  CircleDollarSign,
+  ClipboardList,
+  Folder,
+  HistoryIcon,
+  LayoutGrid,
+  Package,
+  ScanLine,
+  Users,
+  Warehouse,
+} from 'lucide-react';
 
 import AppLogo from './app-logo';
 
@@ -13,7 +26,7 @@ const mainNavItems: NavItem[] = [
     title: 'Dashboard',
     href: '/dashboard',
     icon: LayoutGrid,
-    roles: ['super_admin', 'admin', 'manager', 'employee']
+    roles: ['super_admin', 'admin', 'manager', 'employee'],
   },
   {
     title: 'Order',
@@ -43,7 +56,13 @@ const SalesAndCustomerNavItems: NavItem[] = [
     title: 'Reports',
     href: '/analytics-report',
     icon: BarChart3,
-    roles: ['admin', 'manager']
+    roles: ['super_admin', 'admin', 'manager'],
+  },
+  {
+    title: 'Order History',
+    href: '/order-history',
+    icon: HistoryIcon,
+    roles: ['super_admin', 'admin', 'employee', 'manager'],
   },
 ];
 
@@ -52,32 +71,31 @@ const AdministrationNavItems: NavItem[] = [
     title: 'Tenant',
     href: '/tenant',
     icon: Building2,
-    roles: ['super_admin']
+    roles: ['super_admin'],
   },
   {
     title: 'User',
     href: '/user',
     icon: Users,
-    roles: ['super_admin', 'admin']
+    roles: ['super_admin', 'admin'],
   },
   {
     title: 'Category',
     href: '/category',
     icon: LayoutGrid,
-    roles: ['super_admin', 'admin', 'manager']
+    roles: ['super_admin', 'admin', 'manager'],
   },
   {
     title: 'Transaction',
     href: '/transaction',
     icon: CircleDollarSign,
-    roles: ['super_admin', 'admin', 'manager', 'employee']
+    roles: ['super_admin', 'admin', 'manager', 'employee'],
   },
   {
     title: 'Buyer',
     href: '/buyer/list',
     icon: ScanLine,
-    roles: ['super_admin', 'admin', 'manager', 'employee']
-
+    roles: ['super_admin', 'admin', 'manager', 'employee'],
   },
   // {
   //   title: 'Discount',
@@ -100,7 +118,6 @@ const footerNavItems: NavItem[] = [
     icon: BookOpen,
   },
 ];
-
 
 const filterByRole = (items: NavItem[], role: string | undefined): NavItem[] => {
 
@@ -128,16 +145,18 @@ const filterByRole = (items: NavItem[], role: string | undefined): NavItem[] => 
   // }
 
 
-  return items.filter(item => item.roles?.includes(role ?? ''));
+  return items.filter((item) => item.roles?.includes(role ?? ''));
 };
 
 export function AppSidebar() {
-
   const { auth } = usePage<PageProps>().props;
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 05d831fab9652dad99d8b26f16ac48c88ff06d71
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>

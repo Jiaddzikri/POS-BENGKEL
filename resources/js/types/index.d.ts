@@ -20,7 +20,7 @@ export interface NavItem {
   href: string;
   icon?: LucideIcon | null;
   isActive?: boolean;
-  roles?: string[]
+  roles?: string[];
 }
 
 export interface SharedData {
@@ -40,12 +40,11 @@ export interface User {
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
-  tenant_id: string | null; 
+  tenant_id: string | null;
   tenant_name: string;
   role: string;
   [key: string]: unknown; // This allows for additional properties...
 }
-
 
 export interface UserData {
   data: User[];
@@ -507,10 +506,48 @@ interface StockMovementData {
   links: Link;
 }
 
-
 export interface PageProps {
   auth: {
     user: User | null;
   };
   [key: string]: any;
 }
+
+// order
+
+export interface OrderHistories {
+  data: Order[];
+  meta: Pagination;
+  links: Link;
+}
+
+export interface OrderItem {
+  item_name: string;
+  variant_name: string;
+  sku: string | null;
+  quantity: number;
+  price_at_sale: number;
+}
+
+export interface Order {
+  id: string;
+  buyer_name: string;
+  buyer_phone_number: string;
+  total_amount: number;
+  final_amount: number;
+  discount: number;
+  cashier_name: string;
+  created_at: string;
+  status: string;
+  details: OrderItem[];
+}
+
+export interface OrderHistoryFilter {
+  page: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  search: string;
+}
+
+// order

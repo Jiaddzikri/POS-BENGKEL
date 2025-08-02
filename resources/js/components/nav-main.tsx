@@ -9,15 +9,14 @@ interface NavMainProps {
   administrationItems: NavItem[];
 }
 
-
 export function NavMain({ mainItems = [], inventoryItems = [], salesAndCustomerItems, administrationItems }: NavMainProps) {
   const page = usePage();
 
-
   return (
     <>
-
-      {mainItems.length < 1 ? '' : (
+      {mainItems.length < 1 ? (
+        ''
+      ) : (
         <SidebarGroup className="px-2 py-0">
           <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarMenu>
@@ -35,7 +34,9 @@ export function NavMain({ mainItems = [], inventoryItems = [], salesAndCustomerI
         </SidebarGroup>
       )}
 
-      {inventoryItems.length < 1 ? '' : (
+      {inventoryItems.length < 1 ? (
+        ''
+      ) : (
         <SidebarGroup className="px-2 py-0">
           <SidebarGroupLabel>Inventory Management</SidebarGroupLabel>
           <SidebarMenu>
@@ -53,7 +54,9 @@ export function NavMain({ mainItems = [], inventoryItems = [], salesAndCustomerI
         </SidebarGroup>
       )}
 
-      {salesAndCustomerItems.length < 1 ? '' : (
+      {salesAndCustomerItems.length < 1 ? (
+        ''
+      ) : (
         <SidebarGroup className="px-2 py-0">
           <SidebarGroupLabel>Sales And Customer</SidebarGroupLabel>
           <SidebarMenu>
@@ -71,7 +74,9 @@ export function NavMain({ mainItems = [], inventoryItems = [], salesAndCustomerI
         </SidebarGroup>
       )}
 
-      {administrationItems.length < 1 ? '' : (
+      {administrationItems.length < 1 ? (
+        ''
+      ) : (
         <SidebarGroup className="px-2 py-0">
           <SidebarGroupLabel>Administration</SidebarGroupLabel>
           <SidebarMenu>
