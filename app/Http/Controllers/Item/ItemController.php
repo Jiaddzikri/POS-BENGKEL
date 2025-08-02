@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Item;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Item\PostItemRequest;
+use App\Http\Resources\TenantResource;
 use App\Http\Resources\VariantItemResource;
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\Tenant;
 use App\Models\VariantItem;
 use App\Request\PostItemAttributeRequest;
 use App\Request\UpdateItemRequest;
@@ -15,20 +17,18 @@ use App\Service\Item\ItemService;
 use DB;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 
 class ItemController extends Controller
 {
 
-    public function __construct(private ItemService $itemService)
-    {
-
-    }
+    public function __construct(private ItemService $itemService) {}
 
     public function showItem(Request $request)
     {
-        $tenantId = auth()->user()->tenant_id;
+        $tenantId = auth()->user()->tenant_id ?? $request->get('tenant_id');
         $search = $request->input('search');
         $page = $request->input('page', 1);
         $minPrice = $request->get('minPrice');
@@ -107,7 +107,6 @@ class ItemController extends Controller
                     'categories' => $categories->count()
                 ],
                 'categories' => $categories,
-
                 "filters" => [
                     "search" => $search,
                     'page' => $page,
@@ -116,7 +115,8 @@ class ItemController extends Controller
                     'maxPrice' => $maxPrice ? (float) $maxPrice : null,
                     'sortBy' => $sortBy,
                     'sortOrder' => $sortOrder,
-                ]
+                ],
+                'tenant_id' => $tenantId
             ]);
         } catch (Exception $error) {
             dd($error->getMessage());
@@ -281,7 +281,6 @@ class ItemController extends Controller
             return response()->json([
                 $resource
             ], 200);
-
         } catch (Exception $error) {
             return response()->json([
                 "message" => $error->getMessage(),
@@ -308,4 +307,48 @@ class ItemController extends Controller
             return redirect()->back()->with('error', $error->getMessage());
         }
     }
+
+
+    // public function listSuper(Request $request)
+    // {
+    //     $routeName = Route::currentRouteName();
+    //     $search = $request->input('search');
+    //     $page = $request->input('page');
+    //     $filter = $request->input('filter');
+
+    //     $tenants = Tenant::when($search, function ($query, $search) {
+    //         $query->where(function ($q) use ($search) {
+    //             $searchTerm = '%' . $search . '%';
+    //             $q->where('name', 'like', $searchTerm);
+    //         });
+    //     })
+    //         ->when($filter, function ($query, $filter) {
+    //             $query->where('status', $filter);
+    //         })
+    //         ->where('is_deleted', false)
+    //         ->latest()
+    //         ->paginate(10)
+    //         ->withQueryString();
+
+    //     $statusEnums = get_enum_values('tenants', 'status');
+
+    //     return Inertia::render('super-list/super-list', [
+    //         'route_name' => $routeName,
+    //         'title' => 'Item',
+    //         'bread_crumbs' => [
+    //             [
+    //                 'title' => 'Item',
+    //                 'href' => 'item/list'
+    //             ]
+    //         ],
+    //         'route' => 'item',
+    //         'tenants' => TenantResource::collection($tenants),
+    //         'status' => $statusEnums,
+    //         'filters' => [
+    //             'search' => $search,
+    //             'page' => $page,
+    //             'filter' => $filter,
+    //         ]
+    //     ]);
+    // }
 }

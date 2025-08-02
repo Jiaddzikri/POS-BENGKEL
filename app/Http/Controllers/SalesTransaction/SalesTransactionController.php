@@ -16,6 +16,8 @@ class SalesTransactionController extends Controller
     public function salesTransaction(Request $request)
     {
 
+        $user = auth()->user();
+
         $routeName = Route::currentRouteName();
         $search = $request->input('search');
         $page = $request->input('page');
@@ -35,11 +37,14 @@ class SalesTransactionController extends Controller
             ->when($filter, function ($query, $filter) {
                 $query->where('tenant_id', $filter);
             })
+            ->when($user->role !== 'super_admin', function ($query) use ($user) {
+                $query->where('tenant_id', '=', $user->tenant->id);
+            })
             ->latest()
             ->paginate(10)
             ->withQueryString();
-        
-        
+
+
 
 
         return Inertia::render('sales-transaction', [

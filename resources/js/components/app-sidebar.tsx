@@ -19,7 +19,7 @@ const mainNavItems: NavItem[] = [
     title: 'Order',
     href: '/order',
     icon: ClipboardList,
-    roles: ['super_admin', 'admin', 'manager', 'employee']
+    roles: ['admin', 'manager', 'employee']
   },
 ];
 
@@ -28,13 +28,13 @@ const InventoryNavItems: NavItem[] = [
     title: 'Item',
     href: '/item',
     icon: Package,
-    roles: ['super_admin', 'admin', 'manager', 'employee']
+    roles: ['admin', 'manager', 'employee']
   },
   {
     title: 'Inventory',
     href: '/inventory',
     icon: Warehouse,
-    roles: ['super_admin', 'admin', 'manager', 'employee']
+    roles: ['admin', 'manager', 'employee']
   },
 ];
 
@@ -43,7 +43,7 @@ const SalesAndCustomerNavItems: NavItem[] = [
     title: 'Reports',
     href: '/analytics-report',
     icon: BarChart3,
-    roles: ['super_admin', 'admin', 'manager']
+    roles: ['admin', 'manager']
   },
 ];
 
@@ -103,12 +103,39 @@ const footerNavItems: NavItem[] = [
 
 
 const filterByRole = (items: NavItem[], role: string | undefined): NavItem[] => {
+
+
+
+
+  // if (role === 'super_admin') {
+
+  //   const targetsToModify = ['order', 'inventory', 'item'] //sementara
+
+  //   return items.map(item => {
+
+  //     const isTarget = targetsToModify.includes(item.title.toLowerCase());
+
+  //     if (isTarget) {
+  //       return {
+  //         ...item,
+  //         href: `${item.href}/lists`
+  //       }
+  //     }
+
+  //     return item;
+  //   })
+  //     .filter(item => item?.roles?.includes('super_admin'))
+  // }
+
+
   return items.filter(item => item.roles?.includes(role ?? ''));
 };
 
 export function AppSidebar() {
 
   const { auth } = usePage<PageProps>().props;
+
+
 
 
   return (

@@ -14,7 +14,6 @@ interface ItemProps {
 }
 
 export default function Item({ items, filters, stats, categories }: ItemProps) {
-  console.log(items, stats, categories);
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Item Management',

@@ -55,7 +55,9 @@ class UserController extends Controller
             ->when($filter, function ($query, $filter) {
                 $query->where('tenant_id', $filter);
             })
-            ->where('tenant_id','=', $user->tenant->id)
+            ->when($user->role !== 'super_admin', function ($query) use ($user) {
+                $query->where('tenant_id', '=', $user->tenant->id);
+            })
             ->where('id', '!=', $user->id)
             ->where('is_deleted', false)
             ->latest()
