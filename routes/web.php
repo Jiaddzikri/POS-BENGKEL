@@ -40,22 +40,9 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('/order', [OrderController::class, 'createOrder'])->name('order.post');
-    Route::get('/order/{orderId}', [OrderController::class, 'index'])->name('menu');
-    Route::post('/order/process/{orderId}', [OrderController::class, 'processOrder'])->name('order.process');
-    Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.histories');
 
-    Route::get('/item', [ItemController::class, 'showItem'])->name('item.index');
 
-    Route::get('/item/add', [ItemController::class, 'addItem'])->name('item.add');
-    Route::post('/item', [ItemController::class, 'postItem'])->name('item.post');
-    Route::get('/item/{itemId}/update', [ItemController::class, 'updateItemPage'])->name('item.update.page');
-    Route::post('/item/{itemId}/update', [ItemController::class, 'putUpdateItem'])->name('item.update.put');
-    Route::delete('/item/{itemId}', [ItemController::class, 'deleteItem'])->name('item.delete');
 
-    Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
-    Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
-    Route::get('/item/variant', [ItemController::class, 'findItem'])->prefix('api');
 
 
     Route::resource('/category', CategoryController::class)
@@ -71,6 +58,38 @@ Route::middleware('auth')->group(function () {
 
 
 
+    Route::middleware(['whoCanIn:admin,manager,employee'])->group(function () {
+
+        Route::get('/order', [OrderController::class, 'createOrder'])->name('order.post');
+        Route::get('/order/{orderId}', [OrderController::class, 'index'])->name('menu');
+        Route::post('/order/process/{orderId}', [OrderController::class, 'processOrder'])->name('order.process');
+
+        Route::get('/item', [ItemController::class, 'showItem'])->name('item.index');
+        Route::get('/item/add', [ItemController::class, 'addItem'])->name('item.add');
+        Route::post('/item', [ItemController::class, 'postItem'])->name('item.post');
+        Route::get('/item/{itemId}/update', [ItemController::class, 'updateItemPage'])->name('item.update.page');
+        Route::post('/item/{itemId}/update', [ItemController::class, 'putUpdateItem'])->name('item.update.put');
+        Route::delete('/item/{itemId}', [ItemController::class, 'deleteItem'])->name('item.delete');
+        Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
+        Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
+        Route::get('/item/variant', [ItemController::class, 'findItem'])->prefix('api');
+
+
+        Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
+        Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
+
+        Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
+
+        Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+
+        Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
+
+        Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
+
+        Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
+    });
+
+
 
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 
@@ -79,6 +98,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/buyer/{buyer}/edit', [BuyerController::class, 'edit'])->name('buyer.edit');
 
     Route::put('/buyer/{id}', [BuyerController::class, 'update'])->name('buyer.update');
+
     // Route::delete('/buyer/{id}', [BuyerController::class, 'destroy'])->name('buyer.destroy');
 
     Route::resource('/user', UserController::class)
@@ -106,18 +126,6 @@ Route::middleware('auth')->group(function () {
     //     ]);
 
 
-    Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
-    Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
-
-    Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
-
-    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
-
-    Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
-
-    Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
-
-    Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
 
 
 

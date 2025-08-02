@@ -45,7 +45,9 @@ class CategoryController extends Controller
             ->when($filter, function ($query, $filter) {
                 $query->where('tenant_id', $filter);
             })
-            ->where('tenant_id', '=', $user->tenant->id)
+            ->when($user->role !== 'super_admin', function ($query) use ($user) {
+                $query->where('tenant_id', '=', $user->tenant->id);
+            })
             ->where('is_deleted', false)
             ->latest()
             ->paginate(10)
@@ -57,7 +59,7 @@ class CategoryController extends Controller
         return Inertia::render('category', [
             'route_name' => $routeName,
             'categories' => CategoryResource::collection($categories),
-            'tenants' => $user->tenant->id !== 'super_admin' ? '' : TenantResource::collection($tenants),
+            'tenants' => $user->role !== 'super_admin' ? '' : TenantResource::collection($tenants),
             'filters' => [
                 "search" => $search,
                 'page' => $page,
