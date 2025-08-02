@@ -37,4 +37,9 @@ class Order extends Model
     {
         return $this->belongsTo(Tenant::class, 'tenant_id', 'id');
     }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

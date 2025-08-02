@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/order', [OrderController::class, 'createOrder'])->name('order.post');
     Route::get('/order/{orderId}', [OrderController::class, 'index'])->name('menu');
     Route::post('/order/process/{orderId}', [OrderController::class, 'processOrder'])->name('order.process');
+    Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.histories');
 
     Route::get('/item', [ItemController::class, 'showItem'])->name('item.index');
 
@@ -69,7 +70,7 @@ Route::middleware('auth')->group(function () {
         ])->middleware(['whoCanIn:super_admin,admin,manager']);
 
 
-    
+
 
     Route::get('/buyer', [BuyerController::class, 'findBuyerByPhone'])->name('buyer.find')->prefix('api');
 
@@ -107,7 +108,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
     Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
-    
+
     Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
 
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
@@ -115,11 +116,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
 
     Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
-    
+
     Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
 
-    
-    
+
+
     // Route::patch('/discount/{id}/active', [DiscountController::class, 'updateStatusActive'])->name('discount.update.active');
 
     // Route::get('/testmail', function () {
