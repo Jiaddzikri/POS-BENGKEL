@@ -88,6 +88,7 @@ class OrderService
         'total_amount' => $totalAmount,
         'final_amount' => $finalAmount,
         'order_status' => 'completed',
+        'buyer_id' => $request->buyerId
       ]);
 
       $createSalesTransactionRequest = new CreateSalesTransactionRequest();

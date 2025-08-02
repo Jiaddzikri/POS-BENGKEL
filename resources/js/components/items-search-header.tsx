@@ -42,7 +42,6 @@ export default function ItemSearchHeader({ filters, categories = [] }: ItemProps
       sortOrder: sortOrder || undefined,
     };
 
-    // Remove empty values
     Object.keys(filterParams).forEach((key) => {
       if (filterParams[key] === '' || filterParams[key] === undefined) {
         delete filterParams[key];
@@ -76,7 +75,6 @@ export default function ItemSearchHeader({ filters, categories = [] }: ItemProps
     );
   };
 
-  // Check if any filters are active
   const hasActiveFilters = selectedCategory || selectedStatus || minPrice || maxPrice || querySearch;
 
   useEffect(() => {
