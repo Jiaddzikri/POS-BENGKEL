@@ -1,5 +1,15 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 import { X } from 'lucide-react';
 import { MouseEvent, useState } from 'react';
@@ -13,31 +23,33 @@ export default function Submit({ handleUpdate }: SubmitProps) {
 
   return (
     <div className="space-y-3 py-4">
-      <Dialog onOpenChange={setShowUpdateModal} open={isUpdateModalOpen}>
-        <DialogTrigger asChild>
-          <Button
-            onClick={() => setShowUpdateModal(true)}
-            className="flex items-center justify-center gap-2 rounded-lg border px-4 py-3 font-semibold transition-colors"
-            type="button"
-          >
+      <AlertDialog open={isUpdateModalOpen} onOpenChange={setShowUpdateModal}>
+        <AlertDialogTrigger asChild>
+          <Button onClick={() => setShowUpdateModal(true)} type="button">
             Update
           </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Konfirmasi Update Item?</DialogTitle>
-          </DialogHeader>
-          <DialogFooter className="flex w-full justify-center gap-2">
-            <Button onClick={() => setShowUpdateModal(false)} className="w-full bg-red-500 transition outline-none hover:bg-red-600 dark:text-white">
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Update Item?</AlertDialogTitle>
+            <AlertDialogDescription>Apakah Anda yakin ingin mengupdate item ini?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowUpdateModal(false)}>
               <X className="h-4 w-4" />
               Batal
-            </Button>
-            <Button onClick={(e) => handleUpdate(e, setShowUpdateModal(false))} type="button" className="w-full border transition">
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                handleUpdate(e, setShowUpdateModal(false));
+              }}
+              type="button"
+            >
               Update
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

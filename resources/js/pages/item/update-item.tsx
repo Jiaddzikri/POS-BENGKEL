@@ -7,12 +7,10 @@ import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import AddVariant from './update-item/add-variant';
 import BasicInformation from './update-item/basic-information';
-import ImageUpload from './update-item/image-upload';
 import MainContent from './update-item/main-content';
 import Sidebar from './update-item/sidebar';
 import Status from './update-item/status';
 import Submit from './update-item/submit';
-import Summary from './update-item/summary';
 import VariantContent from './update-item/variant';
 import VariantList from './update-item/variant-list';
 
@@ -36,7 +34,6 @@ export default function UpdateItem({ categories, item }: UpdateItemProps) {
     variants: item.variants,
     new_image: null,
   });
-
 
   const [variants, setVariants] = useState<Variant[]>(item.variants);
 
@@ -105,19 +102,10 @@ export default function UpdateItem({ categories, item }: UpdateItemProps) {
     );
   };
 
-  const handleUpdate = (e: MouseEvent<HTMLButtonElement>, closePaymentModal: any): void => {
+  const handleUpdate = (e: MouseEvent<HTMLButtonElement>, closeModal: any): void => {
     post(route('item.update.put', { itemId: item.id }), {
-      onSuccess: () => {
-        toast.success('Data Berhasil diupdate');
-      },
-      onError: (e) => {
-        if (typeof e == 'object') {
-        } else {
-          toast.error('Data Gagal Diupdate karena kesalahan server');
-        }
-      },
       onFinish: () => {
-        closePaymentModal();
+        closeModal();
       },
     });
   };
@@ -155,9 +143,7 @@ export default function UpdateItem({ categories, item }: UpdateItemProps) {
         </VariantContent>
 
         <Sidebar>
-          <ImageUpload errors={errors} handleItemChange={handleItemChange} existingImage={item.image_path} />
           <Status data={data} handleItemChange={handleItemChange} />
-          <Summary variants={variants} />
           <Submit handleUpdate={handleUpdate} />
         </Sidebar>
         <Toaster />
