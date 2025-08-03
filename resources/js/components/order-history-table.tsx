@@ -1,8 +1,10 @@
 import { Order, OrderItem } from '@/types';
 import { convertCurrency } from '@/utils/currency-convert';
 import { convertDate } from '@/utils/date-convert';
+import { router } from '@inertiajs/react';
 import React, { useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem } from './ui/accordion';
+import { Button } from './ui/button';
 
 interface OrderHistoryTable {
   orderHistories: Order[];
@@ -92,8 +94,8 @@ export default function OrderHistoryTable({ orderHistories }: OrderHistoryTable)
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Cashier Name</th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Buyer Name</th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Status</th>
-
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -118,6 +120,15 @@ export default function OrderHistoryTable({ orderHistories }: OrderHistoryTable)
                     </td>
                     <td>
                       <span className="text-sm">{convertDate(history.created_at)}</span>
+                    </td>
+                    <td className="px-3">
+                      <Button
+                        className={'w-full bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-600'}
+                        onClick={() => router.get(route('menu', { orderId: history.id }))}
+                        disabled={history.status === 'completed'}
+                      >
+                        {history.status === 'completed' ? 'Done' : 'Continue'}
+                      </Button>
                     </td>
                   </tr>
 
