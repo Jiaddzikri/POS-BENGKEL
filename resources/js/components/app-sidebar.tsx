@@ -32,7 +32,7 @@ const mainNavItems: NavItem[] = [
     title: 'Order',
     href: '/order',
     icon: ClipboardList,
-    roles: ['admin', 'manager', 'employee']
+    roles: ['admin', 'manager', 'employee'],
   },
 ];
 
@@ -41,13 +41,13 @@ const InventoryNavItems: NavItem[] = [
     title: 'Item',
     href: '/item',
     icon: Package,
-    roles: ['admin', 'manager', 'employee']
+    roles: ['admin', 'manager', 'employee'],
   },
   {
     title: 'Inventory',
     href: '/inventory',
     icon: Warehouse,
-    roles: ['admin', 'manager', 'employee']
+    roles: ['admin', 'manager', 'employee'],
   },
 ];
 
@@ -120,10 +120,6 @@ const footerNavItems: NavItem[] = [
 ];
 
 const filterByRole = (items: NavItem[], role: string | undefined): NavItem[] => {
-
-
-
-
   // if (role === 'super_admin') {
 
   //   const targetsToModify = ['order', 'inventory', 'item'] //sementara
@@ -144,19 +140,12 @@ const filterByRole = (items: NavItem[], role: string | undefined): NavItem[] => 
   //     .filter(item => item?.roles?.includes('super_admin'))
   // }
 
-
   return items.filter((item) => item.roles?.includes(role ?? ''));
 };
 
 export function AppSidebar() {
   const { auth } = usePage<PageProps>().props;
 
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> 05d831fab9652dad99d8b26f16ac48c88ff06d71
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>

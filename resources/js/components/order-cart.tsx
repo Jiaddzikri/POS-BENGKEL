@@ -2,9 +2,11 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { useApi } from '@/hooks/use-api';
 import { CartItem, Customer, ItemList } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
+import { router } from '@inertiajs/react';
 import { Label } from '@radix-ui/react-label';
 import { CreditCard, Minus, Phone, Plus, Receipt, ShoppingCart, Smartphone, Trash2, User, Wallet } from 'lucide-react';
 import React, { MouseEvent, useEffect, useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import { Button } from './ui/button';
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
@@ -36,6 +38,8 @@ export function OrderCart({
   handlePaymentMethod,
   handleDiscountChange,
 }: OrderCartProps) {
+  const path = window.location.pathname.split('/');
+  const orderId = path[path.length - 1];
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
   const [isPaymentModalOpen, setPaymentModalOpen] = useState<boolean>(false);
   const [customerPhone, setCustomerPhone] = useState<string>('');
@@ -106,19 +110,33 @@ export function OrderCart({
     return findItem.stock === findItemOnCart.quantity;
   };
 
+  const debouncedUpdateStock = useDebouncedCallback((item: ItemList) => {
+    router.put(route('order.put.detail.quantity', { orderId: orderId }), {
+      item_id: item.item_id,
+      variant_id: item.variant_id,
+      quantity: item.quantity,
+      price_at_sale: item.price,
+    });
+  }, 500);
+
   const updateQuantity = (sku: string, change: number): void => {
     if (checkIsStockOutOfQuantity(sku)) return;
-    setCart(
-      cart
-        .map((c) => {
-          if (c.sku === sku) {
-            const newQuantity = c.quantity + change;
-            return newQuantity > 0 ? { ...c, quantity: newQuantity } : c;
-          }
-          return c;
-        })
-        .filter((item) => item.quantity > 0),
-    );
+    const newCart = cart
+      .map((c) => {
+        if (c.sku === sku) {
+          const newQuantity = c.quantity + change;
+          return newQuantity > 0 ? { ...c, quantity: newQuantity } : c;
+        }
+        return c;
+      })
+      .filter((item) => item.quantity > 0);
+
+    setCart(newCart);
+
+    const updatedItem = newCart.find((item) => item.sku === sku);
+    if (updatedItem) {
+      debouncedUpdateStock(updatedItem);
+    }
   };
 
   const removeFromCart = (sku: string): void => {

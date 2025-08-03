@@ -10,10 +10,10 @@ import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
 
 interface CashierHeaderProps {
-  addToCart: (item: ItemList) => void;
+  handleAddItem: (item: ItemList) => void;
 }
 
-export default function CashierHeader({ addToCart }: CashierHeaderProps) {
+export default function CashierHeader({ handleAddItem }: CashierHeaderProps) {
   const path = window.location.pathname.split('/');
   const orderId = path[path.length - 1];
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -45,7 +45,7 @@ export default function CashierHeader({ addToCart }: CashierHeaderProps) {
   useEffect(() => {
     if (findItemData == null) return;
 
-    addToCart(findItemData[0]);
+    handleAddItem(findItemData[0]);
 
     setSku('');
   }, [findItemData]);

@@ -61,8 +61,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['whoCanIn:admin,manager,employee'])->group(function () {
 
         Route::get('/order', [OrderController::class, 'createOrder'])->name('order.post');
+        Route::post('/order/{orderId}/detail', [OrderController::class, 'addOrderDetail'])->name('order.post.detail');
+        Route::put('/order/{orderId}/detail/quantity', [OrderController::class, 'updateQuantity'])->name('order.put.detail.quantity');
         Route::get('/order/{orderId}', [OrderController::class, 'index'])->name('menu');
         Route::post('/order/process/{orderId}', [OrderController::class, 'processOrder'])->name('order.process');
+        Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.histories');
 
         Route::get('/item', [ItemController::class, 'showItem'])->name('item.index');
         Route::get('/item/add', [ItemController::class, 'addItem'])->name('item.add');

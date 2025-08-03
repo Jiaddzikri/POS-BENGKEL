@@ -185,6 +185,10 @@ export interface CartItem extends ItemList {
   quantity: number;
 }
 
+export interface OrderCart {
+  data: CartItem[];
+}
+
 export interface OrderItemForm {
   item_id: string;
   variant_item_id: string;
