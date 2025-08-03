@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DiscountResource;
+use App\Http\Resources\OrderItemResource;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\VariantItemResource;
 use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\VariantItem;
+use App\Request\addOrderDetailRequest;
 use App\Request\CreateBuyerRequest;
 use App\Request\CreateOrderRequest;
 use App\Request\ProcessOrderRequest;
@@ -19,6 +22,7 @@ use App\Service\Receipt\ReceiptService;
 use App\Service\Transaction\TransactionService;
 use Carbon\Carbon;
 use DB;
+use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -85,13 +89,15 @@ class OrderController extends Controller
       ->paginate(10)
       ->withQueryString();
 
+    $orderDetail = OrderItem::with(['item', 'variant'])->where('order_id', '=', $orderId)->get();
     $discounts = Discount::latest()->get();
 
     return Inertia::render("order", [
       "items" => VariantItemResource::collection($variants),
       "categories" => $categories,
       'discounts' => DiscountResource::collection($discounts),
-      'isOrderCompleted' => $isOrderCompleted
+      'isOrderCompleted' => $isOrderCompleted,
+      'orderDetail' => OrderItemResource::collection($orderDetail)
     ]);
   }
 
@@ -113,7 +119,6 @@ class OrderController extends Controller
       $processOrderRequest = new ProcessOrderRequest();
       $processOrderRequest->orderId = $orderId;
       $processOrderRequest->buyerId = $findBuyer->id;
-      $processOrderRequest->orderItems = $request->post("items");
       $processOrderRequest->payment = [
         "amount_paid" => (int) $request->post("amount_paid", 0),
         "payment_method" => $request->post('payment_method', 'cash')
@@ -123,8 +128,45 @@ class OrderController extends Controller
       $this->orderService->processOrder($processOrderRequest);
 
       return redirect()->route('menu', ['orderId' => $orderId])->with(["success" => "pesanan berhasil diproses"]);
-    } catch (\Exception $error) {
+    } catch (Exception $error) {
       return redirect()->back()->with("error", $error->getMessage());
+    }
+  }
+
+  public function addOrderDetail(Request $request, $orderId)
+  {
+    try {
+      $detailRequest = new addOrderDetailRequest();
+      $detailRequest->orderId = $orderId;
+      $detailRequest->itemId = $request->post('item_id');
+      $detailRequest->variantItemId = $request->post('variant_id');
+      $detailRequest->quantity = (int) $request->post('quantity');
+      $detailRequest->priceAtSale = (int) $request->post('price_at_sale');
+
+      $this->orderService->addOrderDetail($detailRequest);
+
+
+      return redirect()->back()->with('success', 'sukses menambahkan item');
+    } catch (Exception $error) {
+      return redirect()->back()->with('error', $error->getMessage());
+    }
+  }
+
+  public function updateQuantity(Request $request, $orderId)
+  {
+    try {
+      $detailRequest = new addOrderDetailRequest();
+      $detailRequest->orderId = $orderId;
+      $detailRequest->itemId = $request->post('item_id');
+      $detailRequest->variantItemId = $request->post('variant_id');
+      $detailRequest->quantity = (int) $request->post('quantity');
+      $detailRequest->priceAtSale = (int) $request->post('price_at_sale');
+
+      $this->orderService->updateQuantity($detailRequest);
+
+      return redirect()->back()->with('success', 'sukses menambahkan stock');
+    } catch (Exception $error) {
+      return redirect()->back()->with('error', $error->getMessage());
     }
   }
 
@@ -185,7 +227,7 @@ class OrderController extends Controller
         ]
       ]);
 
-    } catch (\Exception $error) {
+    } catch (Exception $error) {
       return redirect()->back()->with('error', $error->getMessage());
     }
   }

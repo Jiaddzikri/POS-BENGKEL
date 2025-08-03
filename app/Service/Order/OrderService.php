@@ -6,6 +6,7 @@ use App\Models\ItemRecord;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\VariantItem;
+use App\Request\addOrderDetailRequest;
 use App\Request\CreateOrderDetailRequest;
 use App\Request\CreateOrderRequest;
 use App\Request\CreateSalesTransactionDetailRequest;
@@ -14,6 +15,7 @@ use App\Request\ProcessOrderRequest;
 use App\Service\Transaction\TransactionService;
 use DB;
 use DiscountUsageHistoryAttributeRequest;
+use Exception;
 use Log;
 
 class OrderService
@@ -38,7 +40,9 @@ class OrderService
 
     return DB::transaction(function () use ($request, $order) {
 
-      $variantIds = collect($request->orderItems)->pluck('variant_item_id');
+      $orderItems = $order->orderItem;
+
+      $variantIds = $orderItems->pluck('variant_item_id');
       $variants = VariantItem::whereIn('id', $variantIds)
         ->lockForUpdate()
         ->get()
@@ -47,35 +51,27 @@ class OrderService
       $totalAmount = 0;
       $transactionDetails = [];
 
-      foreach ($request->orderItems as $orderItem) {
-        $variant = $variants->get($orderItem['variant_item_id']);
+      foreach ($orderItems as $orderItem) {
+        $variant = $variants->get($orderItem->variant_item_id);
 
-        if (!$variant || $variant->stock < $orderItem['quantity']) {
-          throw new \Exception('Stok tidak mencukupi untuk produk: ' . ($variant->item->name ?? 'N/A'));
-        }
-
-        $subtotal = $orderItem['price_at_sale'] * $orderItem['quantity'];
+        $subtotal = $orderItem->price_at_sale * $orderItem->quantity;
         $totalAmount += $subtotal;
 
-        $variant->decrement('stock', $orderItem['quantity']);
 
         $transactionDetails[] = [
-          'item_id' => $orderItem['item_id'],
-          'variant_item_id' => $orderItem['variant_item_id'],
-          'variant_id' => $orderItem['variant_item_id'],
-          'quantity' => $orderItem['quantity'],
-          'price_at_sale' => $orderItem['price_at_sale'],
+          'item_id' => $orderItem->item_id,
+          'variant_id' => $orderItem->variant_item_id,
+          'quantity' => $orderItem->quantity,
+          'price_at_sale' => $orderItem->price_at_sale,
           'sub_total' => $subtotal,
         ];
 
         ItemRecord::create([
-          'variant_item_id' => $orderItem['variant_item_id'],
-          'stock_out' => $orderItem['quantity'],
+          'variant_item_id' => $orderItem->variant_item_id,
+          'stock_out' => $orderItem->quantity,
           'stock_record' => $variant->stock,
         ]);
       }
-
-      $order->orderItem()->createMany($transactionDetails);
 
       $finalAmount = $request->discount > 0 && $request->discount <= 100
         ? $totalAmount * (1 - ($request->discount / 100))
@@ -109,6 +105,69 @@ class OrderService
       $transaction->details()->createMany($transactionDetails);
 
       return $transaction;
+    });
+  }
+
+  public function addOrderDetail(addOrderDetailRequest $request)
+  {
+    return DB::transaction(function () use ($request) {
+      $orderItem = OrderItem::where('item_id', $request->itemId)
+        ->where('order_id', $request->orderId)
+        ->first();
+      $variant = VariantItem::where('id', $request->variantItemId)
+        ->lockForUpdate()
+        ->first();
+
+      if ($orderItem) {
+        $newQuantity = $orderItem->quantity + $request->quantity;
+
+        $request->quantity = $newQuantity;
+
+        return $this->updateQuantity($request);
+      }
+
+      $createOrderItem = OrderItem::create([
+        'order_id' => $request->orderId,
+        'item_id' => $request->itemId,
+        'variant_item_id' => $request->variantItemId,
+        'quantity' => $request->quantity,
+        'price_at_sale' => $request->priceAtSale,
+        'sub_total' => $request->priceAtSale * $request->quantity
+      ]);
+
+      $variant->decrement('stock', $request->quantity);
+
+      return $createOrderItem;
+    });
+  }
+
+  public function updateQuantity(addOrderDetailRequest $request)
+  {
+    return DB::transaction(function () use ($request) {
+      $orderItem = OrderItem::where('item_id', $request->itemId)
+        ->where('order_id', $request->orderId)
+        ->first();
+      $variant = VariantItem::where('id', $request->variantItemId)
+        ->lockForUpdate()
+        ->first();
+
+      $difference = $request->quantity - $orderItem->quantity;
+
+      if ($difference === 0) {
+        return;
+      }
+      if ($difference > 0 && $variant->stock < $difference) {
+        throw new Exception('Stock is not enough', 400);
+      }
+
+      if ($difference > 0) {
+        $variant->decrement('stock', $difference);
+      } else {
+        $variant->increment('stock', abs($difference));
+      }
+      $orderItem->update(['quantity' => $request->quantity, 'price_at_sale' => $request->priceAtSale, 'sub_total' => $request->priceAtSale * $request->quantity]);
+
+      return $orderItem->refresh();
     });
   }
 }

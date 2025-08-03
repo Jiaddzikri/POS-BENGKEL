@@ -8,8 +8,6 @@ class ProcessOrderRequest
 
   public string $buyerId;
 
-  public array $orderItems;
-
   public array $payment;
 
   public int $discount;

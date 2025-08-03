@@ -3,10 +3,10 @@ import { PackageX } from 'lucide-react';
 
 interface CashierListItemProps {
   items: ItemList[];
-  addToCart: (item: ItemList) => void;
+  handleAddItem: (item: ItemList) => void;
 }
 
-export default function CashierListItem({ items, addToCart }: CashierListItemProps) {
+export default function CashierListItem({ items, handleAddItem }: CashierListItemProps) {
   const storagePath = import.meta.env.VITE_STORAGE_URL;
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -16,7 +16,7 @@ export default function CashierListItem({ items, addToCart }: CashierListItemPro
           <button
             key={index}
             disabled={isOutOfStock}
-            onClick={() => addToCart(item)}
+            onClick={() => handleAddItem(item)}
             className={`group relative overflow-hidden rounded-xl border transition-all duration-300 ${
               isOutOfStock
                 ? 'cursor-not-allowed border-gray-200 bg-indigo-600'
