@@ -80,8 +80,16 @@ class ItemService
       }
       return $item->load('variants');
     }));
+  }
 
+  public function getLowStockItem(string $tenantId)
+  {
+    $lowStockCount = VariantItem::whereHas('item', function ($q) use ($tenantId) {
+      $q->where('tenant_id', $tenantId);
+      $q->where('is_deleted', false);
+    })->whereColumn('stock', '<=', 'minimum_stock')->where('is_deleted', false)->get();
 
+    return $lowStockCount;
   }
 
 }

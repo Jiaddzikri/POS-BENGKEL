@@ -46,4 +46,32 @@ class TransactionService
       return $transactionDetail;
     });
   }
+
+  public function getNewestTransaction(string $tenantId, int $limit)
+  {
+    $transactions = SalesTransaction::select([
+      'sales_transactions.id as transaction_id',
+      DB::raw('DATE_FORMAT(sales_transactions.created_at, "%H:%i") as transaction_time'),
+      'buyers.name as buyer_name',
+      'sales_transactions.final_amount as final_amount',
+      DB::raw('COUNT(sales_transaction_details.id) as total_items')
+    ])
+
+      ->leftJoin('sales_transaction_details', 'sales_transactions.id', '=', 'sales_transaction_details.sales_transaction_id')
+      ->leftJoin('buyers', 'sales_transactions.buyer_id', '=', 'buyers.id')
+      ->where('sales_transactions.tenant_id', '=', $tenantId)
+      ->groupBy(
+        'sales_transactions.id',
+        'transaction_time',
+        'buyers.name',
+        'sales_transactions.final_amount',
+        'sales_transactions.created_at'
+      )
+      ->orderBy('sales_transactions.created_at', 'desc')
+      ->limit($limit)
+      ->get();
+
+    return $transactions;
+
+  }
 }
