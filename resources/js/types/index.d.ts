@@ -111,6 +111,7 @@ export interface ItemList {
   status: string;
   image_path: string;
   quantity?: number;
+  minimum_stock: number;
   description: string;
 }
 
@@ -422,6 +423,18 @@ interface AnalyticsAverageTransaction {
   percentage: number;
 }
 
+interface AnalyticsCompletedTransaction {
+  total: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
+interface AnalyticActiveCustomer {
+  total: number;
+  trend: 'increase' | 'decrease';
+  percentage: number;
+}
+
 interface AnalyticsFilter {
   startDate?: string;
   endDate?: string;
@@ -553,5 +566,40 @@ export interface OrderHistoryFilter {
   endDate: string;
   search: string;
 }
-
 // order
+
+// Dashboard
+interface DashboardSalesRevenue {
+  date: string;
+  revenue: number;
+  transactions: number;
+}
+
+interface DashboardCategoryProductSales {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface DashboardTopProduct {
+  name: string;
+  sold: number;
+  revenue: number;
+}
+
+interface DashboardLowStockItem {
+  name: string;
+  stock: number;
+  minStock: number;
+  status: 'critical' | 'warning';
+}
+
+interface DashboardTransaction {
+  transaction_id: string;
+  transaction_time: string;
+  buyer_name: string;
+  total_items: number;
+  final_amount: number;
+}
+
+//

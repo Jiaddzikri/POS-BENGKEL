@@ -24,6 +24,7 @@ class VariantItemResource extends JsonResource
             'category_name' => $this->whenLoaded('item', fn() => $this->item->category?->name ?? 'Uncategorized'),
             'price' => $this->whenLoaded('item', fn() => $this->item->selling_price + $this->additional_price),
             'low_stock' => $this->stock <= $this->minimum_stock,
+            'minimum_stock' => $this->minimum_stock,
             'is_active' => $this->whenLoaded('item', fn() => $this->item->status === 'active'),
             'status' => $this->whenLoaded('item', fn() => $this->item->status),
             'last_updated' => $this->whenLoaded('item', fn() => $this->item->updated_at->format('Y-md-d H:i:s'))

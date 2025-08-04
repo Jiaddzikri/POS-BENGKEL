@@ -2,12 +2,15 @@
 
 namespace App\Service\Analytical;
 
+use App\Models\Order;
 use App\Models\SalesTransaction;
 use App\Models\SalesTransactionDetail;
 use App\Request\GetAnalyticalRequest;
 
+use App\Response\GetActiveCustomerResponse;
 use App\Response\GetAverageTransactionResponse;
 use App\Response\GetBestSellingCategoryResponse;
+use App\Response\GetCompletedTransactionResponse;
 use App\Response\GetGrossProfitResponse;
 use App\Response\GetProductBestSellerResponse;
 use App\Response\GetRevenueResponse;
@@ -157,24 +160,49 @@ class AnalyticalService
 
   public function getSalesTrend(GetAnalyticalRequest $request)
   {
-    $salesData = SalesTransaction::query()
-      ->select(
-        DB::raw('HOUR(created_at) as hour'),
-        DB::raw('SUM(final_amount) as total_sales')
-      )
-      ->where('tenant_id', $request->tenantId)
-      ->whereDate('created_at', today())
-      ->groupBy('hour')
-      ->orderBy('hour', 'asc')
-      ->pluck('total_sales', 'hour');
+    [$currentStart, $currentEnd] = $this->getDateRanges($request);
 
-    $hours = range(8, 17);
     $labels = [];
     $data = [];
 
-    foreach ($hours as $hour) {
-      $labels[] = str_pad($hour, 2, '0', STR_PAD_LEFT) . ':00';
-      $data[] = (float) ($salesData[$hour] ?? 0);
+    $durationInDays = $currentStart->diffInDays($currentEnd);
+
+    if ($durationInDays < 1) {
+      $salesData = SalesTransaction::query()
+        ->select(
+          DB::raw('HOUR(created_at) as hour'),
+          DB::raw('SUM(final_amount) as total_sales')
+        )
+        ->where('tenant_id', $request->tenantId)
+        ->whereBetween('created_at', [$currentStart, $currentEnd])
+        ->groupBy('hour')
+        ->orderBy('hour', 'asc')
+        ->pluck('total_sales', 'hour');
+
+      for ($hour = 0; $hour < 24; $hour++) {
+        $labels[] = str_pad($hour, 2, '0', STR_PAD_LEFT) . ':00';
+        $data[] = (float) ($salesData[$hour] ?? 0);
+      }
+
+    } else {
+      $salesData = SalesTransaction::query()
+        ->select(
+          DB::raw('DATE(created_at) as sale_date'),
+          DB::raw('SUM(final_amount) as total_sales')
+        )
+        ->where('tenant_id', $request->tenantId)
+        ->whereBetween('created_at', [$currentStart, $currentEnd])
+        ->groupBy('sale_date')
+        ->orderBy('sale_date', 'asc')
+        ->pluck('total_sales', 'sale_date');
+
+      $period = Carbon::parse($currentStart)->toPeriod($currentEnd);
+
+      foreach ($period as $date) {
+        $dateString = $date->toDateString();
+        $labels[] = $date->format('d M');
+        $data[] = (float) ($salesData[$dateString] ?? 0);
+      }
     }
 
     $getSalesTrendResponse = new GetSalesTrendResponse();
@@ -182,7 +210,6 @@ class AnalyticalService
     $getSalesTrendResponse->value = $data;
 
     return $getSalesTrendResponse;
-
   }
 
   public function getBestSellingItem(GetAnalyticalRequest $request)
@@ -243,6 +270,86 @@ class AnalyticalService
 
     return $getBestSellingCategoryResponse;
   }
+
+  public function getCompletedTransaction(GetAnalyticalRequest $request)
+  {
+    [$currentStart, $currentEnd, $previousStart, $previousEnd] = $this->getDateRanges($request);
+
+    $currentCompleted = $this->calculateCompletedTransaction($currentStart, $currentEnd, $request->tenantId);
+    $previousCompleted = $this->calculateCompletedTransaction($previousStart, $previousEnd, $request->tenantId);
+
+    $trend = 'stable';
+    $percentageChange = 0.0;
+
+    if ($previousCompleted > 0) {
+      $percentageChange = (($currentCompleted - $previousCompleted) / $previousCompleted) * 100;
+    } elseif ($currentCompleted > 0) {
+      $percentageChange = 100.0;
+    }
+
+    if ($percentageChange > 0) {
+      $trend = 'increase';
+    } elseif ($percentageChange < 0) {
+      $trend = 'decrease';
+    }
+
+    $response = new GetCompletedTransactionResponse();
+    $response->total = $currentCompleted;
+    $response->percentage = $percentageChange;
+    $response->trend = $trend;
+
+    return $response;
+  }
+
+  public function getActiveCustomers(GetAnalyticalRequest $request)
+  {
+    [$currentStart, $currentEnd, $previousStart, $previousEnd] = $this->getDateRanges($request);
+
+    $currentActiveCustomers = $this->calculateActiveCustomers($currentStart, $currentEnd, $request->tenantId);
+    $previousActiveCustomers = $this->calculateActiveCustomers($previousStart, $previousEnd, $request->tenantId);
+
+    $trend = 'stable';
+    $percentageChange = 0.0;
+
+    if ($previousActiveCustomers > 0) {
+      $percentageChange = (($currentActiveCustomers - $previousActiveCustomers) / $previousActiveCustomers) * 100;
+    } elseif ($currentActiveCustomers > 0) {
+      $percentageChange = 100.0;
+    }
+
+    if ($percentageChange > 0) {
+      $trend = 'increase';
+    } elseif ($percentageChange < 0) {
+      $trend = 'decrease';
+    }
+
+    $response = new GetActiveCustomerResponse();
+    $response->total = $currentActiveCustomers;
+    $response->percentage = $percentageChange;
+    $response->trend = $trend;
+
+    return $response;
+  }
+
+
+  private function calculateActiveCustomers($startDate, $endDate, $tenantId)
+  {
+    return SalesTransaction::where('tenant_id', $tenantId)
+
+      ->whereBetween('created_at', [$startDate, $endDate])
+      ->distinct('buyer_id')
+      ->count('buyer_id');
+  }
+
+
+  private function calculateCompletedTransaction($startDate, $endDate, $tenantId)
+  {
+    return Order::where('tenant_id', $tenantId)
+      ->where('order_status', 'completed')
+      ->whereBetween('created_at', [$startDate, $endDate])
+      ->count();
+  }
+
 
   private function calculateTotalTransaction($startDate, $endDate, $tenantId)
   {

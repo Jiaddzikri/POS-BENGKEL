@@ -3,6 +3,7 @@
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Buyer\BuyerController;
 // use App\Http\Controllers\Discount\DiscountController;
+use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Invetory\InventoryController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\Order\OrderController;
@@ -36,14 +37,7 @@ Route::middleware('auth')->group(function () {
             'destory' => 'tenant.destory'
         ])->middleware(['whoCanIn:super_admin']);
 
-    Route::get('/dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
-
-
-
-
-
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('/category', CategoryController::class)
         ->except(['show'])
