@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { CartItem, Customer, DiscountData, ItemData, ItemList, OrderItemForm } from '@/types';
+import { CartItem, Customer, DiscountData, ItemData, ItemList, OrderCart as OrderCartType, OrderItemForm } from '@/types';
 import {} from '@headlessui/react';
 import { Head, router, useForm } from '@inertiajs/react';
 
@@ -22,13 +22,15 @@ interface CashierProps {
   items: ItemData;
   discounts: DiscountData;
   isOrderCompleted: boolean;
+  orderDetail: OrderCartType;
 }
 
-export default function Order({ items, discounts, isOrderCompleted }: CashierProps) {
+export default function Order({ items, discounts, isOrderCompleted, orderDetail }: CashierProps) {
+  console.log(orderDetail);
   const path = window.location.pathname.split('/');
   const orderId = path[path.length - 1];
 
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(orderDetail.data);
   const [isOrderAlreadyProcessedModalOpen, setOrderAlreadyProcessedModal] = useState<boolean>(false);
 
   const { data, setData, post } = useForm({
@@ -41,6 +43,17 @@ export default function Order({ items, discounts, isOrderCompleted }: CashierPro
   });
 
   const [cashReceived, setCashReceived] = useState<string>('');
+
+  const handleAddItem = (item: ItemList): void => {
+    addToCart(item);
+
+    router.post(route('order.post.detail', { orderId: orderId }), {
+      item_id: item.item_id,
+      variant_id: item.variant_id,
+      quantity: 1,
+      price_at_sale: item.price,
+    });
+  };
 
   const addToCart = (item: ItemList): void => {
     if (item.stock === 0) return;
@@ -56,16 +69,6 @@ export default function Order({ items, discounts, isOrderCompleted }: CashierPro
     setData('phone_number', customerData?.phone_number || '');
     setData('name', customerData?.name || '');
   };
-
-  // const handleDiscountSelectChange = (value: string): void => {
-
-  //   const findDiscount: Discount | undefined = discounts.data.find(dsc => dsc.id === value);
-
-  //   // setData('discount', Math.max(0, Math.min(100, findDiscount?.discount_percent ?? 0)));
-
-  //   setData('discount', findDiscount);
-
-  // }
 
   const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = parseInt(e.target.value) || 0;
@@ -144,8 +147,8 @@ export default function Order({ items, discounts, isOrderCompleted }: CashierPro
       <div className="min-h-screen">
         <div className="flex h-screen">
           <div className="flex-1 overflow-y-auto p-6">
-            <CashierHeader addToCart={addToCart} />
-            <CashierListItem addToCart={addToCart} items={items.data} />
+            <CashierHeader handleAddItem={handleAddItem} />
+            <CashierListItem handleAddItem={handleAddItem} items={items.data} />
           </div>
           <div className="flex w-96 flex-col border-l">
             <OrderCart

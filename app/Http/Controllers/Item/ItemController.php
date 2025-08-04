@@ -24,7 +24,9 @@ use Inertia\Inertia;
 class ItemController extends Controller
 {
 
-    public function __construct(private ItemService $itemService) {}
+    public function __construct(private ItemService $itemService)
+    {
+    }
 
     public function showItem(Request $request)
     {
@@ -257,7 +259,7 @@ class ItemController extends Controller
             $this->itemService->update($itemRequest, $itemId);
             return redirect()->route('item.update.page', [
                 "itemId" => $itemId
-            ])->with('success', 'Item berhasil ditambahkan!');
+            ])->with('success', 'Item berhasil diupdate!');
         } catch (Exception $error) {
             dd($error);
             return redirect()->back()->with('error', 'an internal server error');
