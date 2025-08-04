@@ -24,6 +24,7 @@ class ReceiptController extends Controller
 
             $pdf = Pdf::loadView('receipts.template', ['receiptData' => $transaction]);
 
+
             $width = 204.09;
             $pdf->setPaper([0, 0, $width, $estimatedHeight], 'portrait');
 

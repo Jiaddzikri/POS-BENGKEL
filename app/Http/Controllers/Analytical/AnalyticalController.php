@@ -79,7 +79,6 @@ class AnalyticalController extends Controller
         'startDate' => $request->get('startDate'),
         'endDate' => $request->get('endDate'),
         'range' => ''
-
       ];
     } else {
       $range = $request->get('range', 'today') ?? 'today';

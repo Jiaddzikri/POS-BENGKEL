@@ -56,13 +56,13 @@ const SalesAndCustomerNavItems: NavItem[] = [
     title: 'Reports',
     href: '/analytics-report',
     icon: BarChart3,
-    roles: ['super_admin', 'admin', 'manager'],
+    roles: ['admin', 'manager'],
   },
   {
     title: 'Order History',
     href: '/order-history',
     icon: HistoryIcon,
-    roles: ['super_admin', 'admin', 'employee', 'manager'],
+    roles: ['admin', 'employee', 'manager'],
   },
 ];
 

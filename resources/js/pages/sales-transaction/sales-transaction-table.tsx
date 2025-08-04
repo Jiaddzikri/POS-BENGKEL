@@ -3,6 +3,8 @@ import { Accordion, AccordionContent, AccordionItem } from '@/components/ui/acco
 import React, { useState } from 'react';
 import { convertDate } from '@/utils/date-convert';
 import { convertCurrency } from '@/utils/currency-convert';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
 
 interface SalesTransactionProps {
   sales_transaction: SalesTransaction[];
@@ -41,6 +43,7 @@ export default function SalesTransactionTable({ sales_transaction }: SalesTransa
                       <th className='px-2 py-2 text-center'>Quantity</th>
                       <th className='px-2 py-2'>Price</th>
                       <th className='px-2 py-2'>Total</th>
+
                     </tr>
                   </thead>
                   <tbody>
@@ -99,6 +102,29 @@ export default function SalesTransactionTable({ sales_transaction }: SalesTransa
   }
 
 
+  const handleDownloadReceipt = async (orderId: string) => {
+    try {
+      const response = await fetch(route('transaction.receipt.download', { orderId }));
+
+      if (!response.ok) {
+        throw new Error('Gagal mengunduh struk dari server.');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `struk-${orderId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Gagal mengunduh file.');
+    }
+  };
+
+
 
   return (
     <div className="px-6 py-2">
@@ -112,6 +138,7 @@ export default function SalesTransactionTable({ sales_transaction }: SalesTransa
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Name</th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Payment</th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -132,6 +159,18 @@ export default function SalesTransactionTable({ sales_transaction }: SalesTransa
                     </td>
                     <td>
                       <span className="text-sm">{convertDate(sales.date)}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <Button
+                        variant="outline"
+                        className="hover:bg-accent-foreground hover:text-background"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadReceipt(sales.order_id);
+                        }}
+                      >
+                        <Download />
+                      </Button>
                     </td>
                   </tr>
 
