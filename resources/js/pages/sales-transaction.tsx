@@ -1,5 +1,5 @@
 import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, Filter, SalesTransactionData, Tenant } from "@/types";
+import { AnalyticsFilter, BreadcrumbItem, Filter, SalesTransactionData, Tenant } from "@/types";
 import { Head } from "@inertiajs/react";
 import SearchHeader from "@/components/ui/search-header";
 import { Pagination } from "@/components/ui/pagination";
@@ -11,9 +11,10 @@ interface SalesProps {
   tenants: Tenant[];
   filters: Filter;
   route_name: string;
+  date?: AnalyticsFilter;
 }
 
-export default function Sales({ route_name, filters, tenants, sales_transactions }: SalesProps) {
+export default function Sales({ route_name, filters, tenants, sales_transactions, date }: SalesProps) {
 
   const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -28,7 +29,7 @@ export default function Sales({ route_name, filters, tenants, sales_transactions
       <Head title={'Sales Management'} />
       <SalesTransactionHeader />
 
-      <SearchHeader link={route_name} filters={filters} dropdowns={tenants} />
+      <SearchHeader link={route_name} filters={filters} dropdowns={tenants} date={date} />
 
       <SalesTransactionTable sales_transaction={sales_transactions.data} />
 

@@ -24,6 +24,7 @@ class SalesTransactionResource extends JsonResource
             'change' => $this->change,
             'date' => $this->created_at,
             'tenant_name' => $this->tenant?->name,
+            'order_id' => $this->order_id,
             'transaction_details' => SalesTransactionDetailResource::collection($this->whenLoaded('details')),
             'buyer' => new BuyerResource($this->whenLoaded('buyer'))
         ];

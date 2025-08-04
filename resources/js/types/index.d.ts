@@ -419,9 +419,9 @@ interface AnalyticsAverageTransaction {
 }
 
 interface AnalyticsFilter {
-  startDate: string;
-  endDate: string;
-  range: string;
+  startDate?: string;
+  endDate?: string;
+  range?: string;
 }
 
 interface AnalyticsSalesTrend {

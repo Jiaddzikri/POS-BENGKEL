@@ -56,13 +56,13 @@ const SalesAndCustomerNavItems: NavItem[] = [
     title: 'Reports',
     href: '/analytics-report',
     icon: BarChart3,
-    roles: ['super_admin', 'admin', 'manager'],
+    roles: ['admin', 'manager'],
   },
   {
     title: 'Order History',
     href: '/order-history',
     icon: HistoryIcon,
-    roles: ['super_admin', 'admin', 'employee', 'manager'],
+    roles: ['admin', 'employee', 'manager'],
   },
 ];
 
@@ -151,12 +151,6 @@ const filterByRole = (items: NavItem[], role: string | undefined): NavItem[] => 
 export function AppSidebar() {
   const { auth } = usePage<PageProps>().props;
 
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> 05d831fab9652dad99d8b26f16ac48c88ff06d71
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>

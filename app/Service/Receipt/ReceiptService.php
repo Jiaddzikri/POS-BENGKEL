@@ -14,9 +14,12 @@ class ReceiptService
   {
     try {
       $transaction = SalesTransaction::with(['details', 'tenant', 'details.item', 'details.variant'])->where('order_id', "=", $orderId)->firstOrFail();
+      
+      // dd($transaction);
 
       if ($transaction == null)
         throw new Exception('transaction not found', 404);
+
 
       return [
         'receiptNumber' => $transaction->invoice_number . '-' . date('YmdHis'),
