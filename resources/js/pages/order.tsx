@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { CartItem, Customer, DiscountData, ItemData, ItemList, OrderCart as OrderCartType, OrderItemForm } from '@/types';
+import { CartItem, Customer, ItemData, ItemList, OrderCart as OrderCartType, OrderItemForm } from '@/types';
 import {} from '@headlessui/react';
 import { Head, router, useForm } from '@inertiajs/react';
 
@@ -20,25 +20,27 @@ import { MouseEvent, useEffect, useState } from 'react';
 
 interface CashierProps {
   items: ItemData;
-  discounts: DiscountData;
+  discount: number;
   isOrderCompleted: boolean;
+  isOrderHold: boolean;
+  isOrderCancelled: boolean;
   orderDetail: OrderCartType;
 }
 
-export default function Order({ items, discounts, isOrderCompleted, orderDetail }: CashierProps) {
-  console.log(orderDetail);
+export default function Order({ items, discount, isOrderCompleted, orderDetail, isOrderHold, isOrderCancelled }: CashierProps) {
   const path = window.location.pathname.split('/');
   const orderId = path[path.length - 1];
 
   const [cart, setCart] = useState<CartItem[]>(orderDetail.data);
   const [isOrderAlreadyProcessedModalOpen, setOrderAlreadyProcessedModal] = useState<boolean>(false);
+  const [isOrderHoldModalOpen, setOrderHoldModal] = useState<boolean>(false);
+  const [isOrderCancelledModalOpen, setOrderCancelledModal] = useState<boolean>(false);
 
   const { data, setData, post } = useForm({
-    items: [] as OrderItemForm[],
     phone_number: '' as string | undefined,
     name: '' as string | undefined,
     amount_paid: 0 as number,
-    discount: 0 as number,
+    discount: discount as number,
     payment_method: '' as string,
   });
 
@@ -83,6 +85,12 @@ export default function Order({ items, discounts, isOrderCompleted, orderDetail 
     setCart([]);
     setData('discount', 0);
     setCashReceived('');
+
+    router.delete(
+      route('order.detail.clear', {
+        orderId: orderId,
+      }),
+    );
   };
 
   const submitOrder = (e: MouseEvent<HTMLButtonElement>, closePaymentModal: any, customerData?: Customer) => {
@@ -123,6 +131,18 @@ export default function Order({ items, discounts, isOrderCompleted, orderDetail 
   }, [isOrderCompleted]);
 
   useEffect(() => {
+    if (isOrderHold) {
+      setOrderHoldModal(true);
+    }
+  }, [isOrderHold]);
+
+  useEffect(() => {
+    if (isOrderCancelled) {
+      setOrderCancelledModal(true);
+    }
+  }, [isOrderCancelled]);
+
+  useEffect(() => {
     const items: OrderItemForm[] = [];
     cart.map((c) => {
       const item: OrderItemForm = {
@@ -134,8 +154,6 @@ export default function Order({ items, discounts, isOrderCompleted, orderDetail 
 
       items.push(item);
     });
-
-    setData('items', items);
   }, [cart]);
 
   useEffect(() => {
@@ -186,6 +204,57 @@ export default function Order({ items, discounts, isOrderCompleted, orderDetail 
                 Download Struk
               </Button>
               <AlertDialogCancel onClick={() => router.get(route('dashboard'))}>Kembali ke Dashboard</AlertDialogCancel>
+              <AlertDialogAction onClick={() => router.get(route('order.post'))}>Buat Order Baru</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={isOrderHoldModalOpen} onOpenChange={setOrderHoldModal}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-yellow-600">Order Sedang Ditahan</AlertDialogTitle>
+            </AlertDialogHeader>
+            <div className="py-4">
+              <p className="text-sm">
+                Order dengan ID <strong>{orderId}</strong> sedang dalam status hold
+              </p>
+              <div className="border-yellow- mt-4 rounded-md border p-3">
+                <p className="text-sm">
+                  <strong>Status:</strong> On Hold
+                </p>
+                <p className="mt-1 text-xs">Order ini dapat dilanjutkan atau dibatalkan</p>
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => router.get(route('dashboard'))}>Kembali ke Dashboard</AlertDialogCancel>
+              <Button variant="outline" onClick={() => setOrderHoldModal(false)}>
+                Lanjutkan Order
+              </Button>
+              <AlertDialogAction onClick={() => router.get(route('order.post'))}>Buat Order Baru</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Modal Order Cancelled */}
+        <AlertDialog open={isOrderCancelledModalOpen} onOpenChange={setOrderCancelledModal}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-red-600">Order Dibatalkan</AlertDialogTitle>
+            </AlertDialogHeader>
+            <div className="py-4">
+              <p className="text-sm">
+                Order dengan ID <strong>{orderId}</strong> telah dibatalkan
+              </p>
+              <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3">
+                <p className="text-sm">
+                  <strong>Status:</strong> Cancelled
+                </p>
+                <p className="mt-1 text-xs text-gray-600">Order ini dapat dipulihkan jika diperlukan</p>
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => router.get(route('dashboard'))}>Kembali ke Dashboard</AlertDialogCancel>
+              <Button variant="outline">Pulihkan Order</Button>
               <AlertDialogAction onClick={() => router.get(route('order.post'))}>Buat Order Baru</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

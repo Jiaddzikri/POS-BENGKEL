@@ -60,11 +60,12 @@ class OrderController extends Controller
     $tenantId = $request->user()->tenant_id;
     $search = $request->input("search");
 
-    $orderStatus = Order::select('order_status')->where('id', '=', $orderId)->first();
+    $order = Order::select(['order_status', 'discount'])->where('id', '=', $orderId)->first();
 
-    $isOrderCompleted = $orderStatus->order_status === 'completed';
-
-    $categories = Category::query()->select(["id", "name"])->where('tenant_id', $tenantId)->limit(4)->get();
+    $isOrderCompleted = $order->order_status === 'completed';
+    $isOrderHold = $order->order_status === 'awaiting_payment';
+    $isOrderCancelled = $order->order_status === 'cancelled';
+    $discount = $order->discount;
 
     $variants = VariantItem::with('item.category')
       ->where('is_deleted', false)
@@ -90,13 +91,13 @@ class OrderController extends Controller
       ->withQueryString();
 
     $orderDetail = OrderItem::with(['item', 'variant'])->where('order_id', '=', $orderId)->get();
-    $discounts = Discount::latest()->get();
 
     return Inertia::render("order", [
       "items" => VariantItemResource::collection($variants),
-      "categories" => $categories,
-      'discounts' => DiscountResource::collection($discounts),
+      'discount' => $discount,
       'isOrderCompleted' => $isOrderCompleted,
+      'isOrderHold' => $isOrderHold,
+      'isOrderCancelled' => $isOrderCancelled,
       'orderDetail' => OrderItemResource::collection($orderDetail)
     ]);
   }
@@ -228,7 +229,41 @@ class OrderController extends Controller
       ]);
 
     } catch (Exception $error) {
-      return redirect()->back()->with('error', $error->getMessage());
+      return redirect()->back()->with('error', 'an internal server error');
+    }
+  }
+
+  public function holdOrder(Request $request, string $orderId)
+  {
+    try {
+      $discount = $request->post('discount', 0);
+      $this->orderService->holdOrder($orderId, $discount);
+      return redirect()->back()->with('success', 'order berhasil dihold');
+    } catch (Exception $error) {
+      return redirect()->back()->with('error', 'an internal server error');
+    }
+  }
+
+  public function deleteOrderItem(Request $request, string $orderId, $variantId)
+  {
+    try {
+      $this->orderService->deleteOrderDetail($orderId, $variantId);
+      return redirect()->back()->with('success', 'item berhasil dihapus');
+    } catch (Exception $error) {
+      dd($error->getMessage());
+      return redirect()->back()->with('error', 'an internal server error');
+
+    }
+  }
+
+  public function deleteAllOrderItem(Request $request, string $orderId)
+  {
+    try {
+      $this->orderService->deleteAllOrderItems($orderId);
+      return redirect()->back()->with('success', 'item berhasil dihapus');
+    } catch (Exception $error) {
+      return redirect()->back()->with('error', 'an internal server error');
+
     }
   }
 

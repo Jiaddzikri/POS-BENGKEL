@@ -101,13 +101,20 @@ export function OrderCart({
     setIsSearchingCustomer(false);
   };
 
-  const checkIsStockOutOfQuantity = (sku: string): boolean => {
-    const findItem: ItemList = items.filter((i) => {
-      return i.sku === sku;
-    })[0];
-    const findItemOnCart: ItemList = cart.filter((c) => c.sku === sku)[0];
+  const canAddMoreQuantity = (sku: string): boolean => {
+    const findItem: ItemList | undefined = items.find((i) => i.sku === sku);
 
-    return findItem.stock === findItemOnCart.quantity;
+    if (!findItem) return false;
+
+    return findItem.stock > 0;
+  };
+
+  const getCurrentStock = (sku: string): number => {
+    const findItem: ItemList | undefined = items.find((i) => i.sku === sku);
+
+    if (!findItem) return 0;
+
+    return findItem.stock;
   };
 
   const debouncedUpdateStock = useDebouncedCallback((item: ItemList) => {
@@ -120,7 +127,8 @@ export function OrderCart({
   }, 500);
 
   const updateQuantity = (sku: string, change: number): void => {
-    if (checkIsStockOutOfQuantity(sku)) return;
+    if (change > 0 && !canAddMoreQuantity(sku)) return;
+
     const newCart = cart
       .map((c) => {
         if (c.sku === sku) {
@@ -139,8 +147,22 @@ export function OrderCart({
     }
   };
 
+  const holdOrder = () => {
+    router.put(route('order.hold', { orderId: orderId }), {
+      discount: discount,
+    });
+  };
+
   const removeFromCart = (sku: string): void => {
+    const findItem = cart.find((item) => item.sku === sku);
     setCart(cart.filter((c) => c.sku !== sku));
+
+    router.delete(
+      route('order.detail.delete', {
+        orderId: orderId,
+        variantId: findItem?.variant_id,
+      }),
+    );
   };
 
   const showPaymentModal = () => {
@@ -192,67 +214,78 @@ export function OrderCart({
             </div>
           </div>
         ) : (
-          cart.map((item: CartItem, index: number) => (
-            <div key={item.sku} className="group rounded-xl border p-4 transition-all duration-200 hover:shadow-md">
-              <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100">
-                  <div className="text-lg font-bold text-blue-600">{item.variant_name.charAt(0).toUpperCase()}</div>
-                </div>
+          cart.map((item: CartItem, index: number) => {
+            const canAddMore = canAddMoreQuantity(item.sku);
+            const currentStock = getCurrentStock(item.sku);
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between">
-                    <div className="min-w-0 flex-1">
-                      <h4 className="truncate text-sm font-semibold">{item.variant_name}</h4>
-                      <p className="text-xs font-medium">SKU: {item.sku}</p>
+            return (
+              <div key={item.sku} className="group rounded-xl border p-4 transition-all duration-200 hover:shadow-md">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100">
+                    <div className="text-lg font-bold text-blue-600">{item.variant_name.charAt(0).toUpperCase()}</div>
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="truncate text-sm font-semibold">{item.variant_name}</h4>
+                        <p className="text-xs font-medium">SKU: {item.sku}</p>
+                        {/* Stock indicator */}
+                        <p className="text-xs text-gray-500">
+                          Stock tersedia: {currentStock}
+                          {!canAddMore && <span className="ml-1 text-red-500">(Habis)</span>}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => removeFromCart(item.sku)}
+                        className="ml-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-100"
+                        type="button"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
 
+                    <p className="mt-1 font-bold text-green-600">Rp {item.price.toLocaleString('id-ID')}</p>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="flex items-center gap-1 rounded-lg border p-1">
                     <button
-                      onClick={() => removeFromCart(item.sku)}
-                      className="ml-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-100"
+                      onClick={() => updateQuantity(item.sku, -1)}
+                      className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 text-white shadow-sm transition-colors active:scale-95"
                       type="button"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Minus className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="mx-2 min-w-[24px] text-center text-sm font-bold">{item.quantity}</span>
+                    <button
+                      onClick={() => updateQuantity(item.sku, 1)}
+                      disabled={!canAddMore}
+                      className={`flex h-7 w-7 items-center justify-center rounded-md shadow-sm transition-colors active:scale-95 ${
+                        !canAddMore ? 'cursor-not-allowed bg-gray-300 text-gray-500' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      }`}
+                      type="button"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
                     </button>
                   </div>
 
-                  <p className="mt-1 font-bold text-green-600">Rp {item.price.toLocaleString('id-ID')}</p>
+                  <div className="text-right">
+                    <p className="text-sm font-bold">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</p>
+                    <p className="text-xs">
+                      {item.quantity} × Rp {item.price.toLocaleString('id-ID')}
+                    </p>
+                  </div>
                 </div>
               </div>
-
-              <div className="mt-3 flex items-center justify-between">
-                <div className="flex items-center gap-1 rounded-lg border p-1">
-                  <button
-                    onClick={() => updateQuantity(item.sku, -1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 text-white shadow-sm transition-colors active:scale-95"
-                    type="button"
-                  >
-                    <Minus className="h-3.5 w-3.5" />
-                  </button>
-                  <span className="mx-2 min-w-[24px] text-center text-sm font-bold">{item.quantity}</span>
-                  <button
-                    onClick={() => updateQuantity(item.sku, 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 text-white shadow-sm transition-colors hover:bg-gray-100 active:scale-95"
-                    type="button"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-
-                <div className="text-right">
-                  <p className="text-sm font-bold">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</p>
-                  <p className="text-xs">
-                    {item.quantity} × Rp {item.price.toLocaleString('id-ID')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
       {cart.length > 0 && (
         <div className="border-t p-4">
-          {/* < className="flex items-center gap-2"> */}
-          {/* <Percent className="h-4 w-4" /> */}
           <Input
             type="number"
             placeholder="Diskon %"
@@ -262,36 +295,6 @@ export function OrderCart({
             min="0"
             max="100"
           />
-          {/* 
-            <Select
-              onValueChange={(value: string) => handleDiscountSelectChange(value)}
-              value={discount.id}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={"Diskon %"} />
-              </SelectTrigger>
-              <SelectContent>
-                {discounts.map(dsc => (
-                  <SelectItem key={dsc.id} value={dsc.id}>{dsc.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-          <div className="mb-4">
-            <label className="mb-2 block text-sm font-medium">Diskon</label>
-            <div className="relative">
-              <Percent className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <Input
-                type="number"
-                placeholder="Masukkan diskon (%)"
-                value={discount || ''}
-                onChange={handleDiscountChange}
-                className="w-full rounded-lg py-2.5 pr-4 pl-10 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                min="0"
-                max="100"
-              />
-            </div>
-          </div> */}
 
           <div className="mb-4 rounded-lg p-4 shadow-sm">
             <div className="space-y-2">
@@ -370,8 +373,8 @@ export function OrderCart({
                           type="text"
                           value={customerName}
                           onChange={handleCustomerNameChange}
-                          className={`w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
-                            customerFound ? 'border-green-300 bg-green-50' : ''
+                          className={`w-full rounded-lg border py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
+                            customerFound ? 'border-green-300' : ''
                           }`}
                           placeholder="Masukkan nama customer"
                           disabled={customerFound}
@@ -379,7 +382,7 @@ export function OrderCart({
                         {customerFound && (
                           <div className="absolute top-1/2 right-3 -translate-y-1/2">
                             <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
-                              <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 8 8">
+                              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 8 8">
                                 <path d="M6.5 0l-.5.5-2 2-1-1-.5-.5-1 1 .5.5 1.5 1.5.5.5.5-.5 2.5-2.5.5-.5-1-1z" />
                               </svg>
                             </div>
@@ -501,6 +504,7 @@ export function OrderCart({
               <Button
                 className="rounded-lg border border-blue-200 bg-blue-50 py-2.5 text-sm font-medium text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100"
                 type="button"
+                onClick={holdOrder}
               >
                 <Receipt className="mr-1.5 h-4 w-4" />
                 Hold
