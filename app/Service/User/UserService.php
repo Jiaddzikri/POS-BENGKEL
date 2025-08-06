@@ -12,9 +12,7 @@ class UserService
 {
 
 
-  public function index () {
-    
-  }
+  public function index() {}
 
 
   public function store(UserAttributeRequest $request)
@@ -39,7 +37,6 @@ class UserService
 
   public function update(UserAttributeRequest $request, string $id)
   {
-
     $user = DB::transaction(function () use ($request, $id) {
       $user = User::findOrFail($id);
       $user->update([
@@ -61,5 +58,21 @@ class UserService
         'is_deleted' => true,
       ]);
     }));
+  }
+
+
+  public function updateTenantId(string $userId, string $tenantId)
+  {
+    $user = DB::transaction(function () use ($userId, $tenantId) {
+      $user = User::findOrFail($userId);
+
+      $user->update([
+        'tenant_id' => $tenantId
+      ]);
+
+      return $user; // ✅ INI WAJIB AGAR $user TIDAK NULL
+    });
+
+    return $user;
   }
 }

@@ -210,4 +210,23 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
+
+    public function updateTenantForLogin(Request $request, string $id)
+    {
+        try {
+
+            
+            // dd($request->post('tenant_id'));
+
+            $tenant_Id = $request->post('tenant_id');
+
+            $user = $this->userService->updateTenantId($id, $tenant_Id);
+
+            return redirect('dashboard')->with('success', 'Sukses masuk ke ' . $user->tenant_id);
+
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
+    }
 }

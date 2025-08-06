@@ -1,23 +1,57 @@
-import { FormTenant, Tenant } from '@/types';
+import { FormTenant, FormUser, Tenant, User } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
-import { Edit3, Package, Trash2 } from 'lucide-react';
+import { Edit3, LogInIcon, Package, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from "@/components/modal";
 import { convertDate } from '@/utils/date-convert';
+import { toast } from 'sonner';
 
 interface TenantTableProps {
   tenants: Tenant[];
+  user?: User;
 }
 
-export default function TenantTable({ tenants }: TenantTableProps) {
+export default function TenantTable({ tenants, user }: TenantTableProps) {
 
-  const { errors, delete: destroy } = useForm<FormTenant>();
+
+
+  const { errors: errorTenant, delete: destroy } = useForm<FormTenant>();
+
+  const { errors: errorUser, put, setData, data } = useForm<FormUser>({
+    name: user?.name || '',
+    email: user?.email || '',
+    role: user?.role || '',
+    tenant_id: user?.tenant_id ?? undefined
+  });
+
+
+
 
   const handleDelete = (id: string) => {
     destroy(route('tenant.destroy', id), {
-      onError: () => console.log(errors)
+      onError: () => console.log(errorTenant)
     });
   };
+
+  const handleLoginInToTenant = (id: string | number | undefined, tenant_id: string) => {
+
+    setData('tenant_id', tenant_id);
+
+    console.log(data.tenant_id != tenant_id);
+
+    if (data.tenant_id != tenant_id) {
+      toast.error('Terlalu banyak permintaan');
+    } else {
+      put(route('user.login.tenant', id), {
+        preserveScroll: true,
+        onError: (errors) => {
+          console.error('[Login to Tenant Error]', errors, errorUser);
+        },
+      });
+    }
+  };
+
+  console.log(data);
 
 
   return (
@@ -73,9 +107,20 @@ export default function TenantTable({ tenants }: TenantTableProps) {
                   </td> */}
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-center space-x-2">
-                      {/* <Button className="transition-colors hover:text-blue-600">
-                        <Eye className="h-4 w-4" />
-                      </Button> */}
+
+
+                      {user?.role !== 'super_admin' ? null : (
+                        <Modal
+                          title={`Login ke toko ${tnt.name}?`}
+                          // description={'Tindakan ini tidak dapat dibatalkan.'}
+                          onConfirm={() => handleLoginInToTenant(user?.id, tnt.id)}
+                        >
+                          <Button className="transition-colors hover:text-blue-600">
+                            <LogInIcon className="h-4 w-4" />
+                          </Button>
+                        </Modal>
+                      )}
+
 
                       <Link href={`/tenant/${tnt.id}/edit`}>
                         <Button className="transition-colors hover:text-green-600">

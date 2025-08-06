@@ -85,7 +85,7 @@ export default function SearchHeader({ filters, dropdowns, link, date }: SearchP
     });
   };
 
-  console.log(date);
+  // console.log(date);
 
   
 
