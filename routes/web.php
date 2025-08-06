@@ -52,7 +52,7 @@ Route::middleware('auth')->group(function () {
 
 
 
-    Route::middleware(['whoCanIn:admin,manager,employee'])->group(function () {
+    // Route::middleware(['whoCanIn:admin,manager,employee'])->group(function () {
 
         Route::get('/order', [OrderController::class, 'createOrder'])->name('order.post');
         Route::post('/order/{orderId}/detail', [OrderController::class, 'addOrderDetail'])->name('order.post.detail');
@@ -87,7 +87,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
 
         Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
-    });
+    // });
 
 
 
@@ -111,6 +111,8 @@ Route::middleware('auth')->group(function () {
             'update' => 'user.update',
             'destroy' => 'user.destroy'
         ])->middleware('whoCanIn:super_admin,admin,manager');
+
+    Route::put('/user/login/to/{userId}', [UserController::class, 'updateTenantForLogin'])->name('user.login.tenant')->middleware('whoCanIn:super_admin');
 
     Route::get('/transaction', [SalesTransactionController::class, 'salesTransaction'])->name('transaction.index');
     Route::get('/receipt/download/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('transaction.receipt.download');

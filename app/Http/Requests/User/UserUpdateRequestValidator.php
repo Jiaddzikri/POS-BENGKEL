@@ -40,7 +40,7 @@ class UserUpdateRequestValidator extends FormRequest
                 'required',
                 'in:super_admin,admin,manager,employee'
             ],
-            'tenant_id' => $user->role !== 'super_admin' ? '' : $validationTenant
+            'tenant_id' => $user->role !== 'super_admin' ? ['nullable'] : $validationTenant
         ];
     }
 }

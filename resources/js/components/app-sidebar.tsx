@@ -32,7 +32,7 @@ const mainNavItems: NavItem[] = [
     title: 'Order',
     href: '/order',
     icon: ClipboardList,
-    roles: ['admin', 'manager', 'employee'],
+    roles: ['super_admin', 'admin', 'manager', 'employee'],
   },
 ];
 
@@ -41,13 +41,13 @@ const InventoryNavItems: NavItem[] = [
     title: 'Item',
     href: '/item',
     icon: Package,
-    roles: ['admin', 'manager', 'employee'],
+    roles: ['super_admin', 'admin', 'manager', 'employee'],
   },
   {
     title: 'Inventory',
     href: '/inventory',
     icon: Warehouse,
-    roles: ['admin', 'manager', 'employee'],
+    roles: ['super_admin', 'admin', 'manager', 'employee'],
   },
 ];
 
@@ -56,13 +56,13 @@ const SalesAndCustomerNavItems: NavItem[] = [
     title: 'Reports',
     href: '/analytics-report',
     icon: BarChart3,
-    roles: ['admin', 'manager'],
+    roles: ['super_admin', 'admin', 'manager'],
   },
   {
     title: 'Order History',
     href: '/order-history',
     icon: HistoryIcon,
-    roles: ['admin', 'employee', 'manager'],
+    roles: ['super_admin', 'admin', 'employee', 'manager'],
   },
 ];
 
