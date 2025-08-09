@@ -218,9 +218,11 @@ class UserController extends Controller
             
             // dd($request->post('tenant_id'));
 
-            $tenant_Id = $request->post('tenant_id');
+            $tenant_id = $request->post('tenant_id');
 
-            $user = $this->userService->updateTenantId($id, $tenant_Id);
+            // dd($tenant_id);
+
+            $user = $this->userService->updateTenantId($id, $tenant_id);
 
             return redirect('dashboard')->with('success', 'Sukses masuk ke ' . $user->tenant_id);
 

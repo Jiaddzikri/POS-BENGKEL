@@ -26,13 +26,13 @@ const mainNavItems: NavItem[] = [
     title: 'Dashboard',
     href: '/dashboard',
     icon: LayoutGrid,
-    roles: ['super_admin', 'admin', 'manager', 'employee'],
+    roles: ['super_admin', 'admin', 'manager', 'cashier'],
   },
   {
     title: 'Order',
     href: '/order',
     icon: ClipboardList,
-    roles: ['super_admin', 'admin', 'manager', 'employee'],
+    roles: ['super_admin', 'admin', 'manager', 'cashier'],
   },
 ];
 
@@ -41,13 +41,13 @@ const InventoryNavItems: NavItem[] = [
     title: 'Item',
     href: '/item',
     icon: Package,
-    roles: ['super_admin', 'admin', 'manager', 'employee'],
+    roles: ['super_admin', 'admin', 'manager', 'cashier'],
   },
   {
     title: 'Inventory',
     href: '/inventory',
     icon: Warehouse,
-    roles: ['super_admin', 'admin', 'manager', 'employee'],
+    roles: ['super_admin', 'admin', 'manager', 'cashier'],
   },
 ];
 
@@ -62,7 +62,7 @@ const SalesAndCustomerNavItems: NavItem[] = [
     title: 'Order History',
     href: '/order-history',
     icon: HistoryIcon,
-    roles: ['super_admin', 'admin', 'employee', 'manager'],
+    roles: ['super_admin', 'admin', 'cashier', 'manager'],
   },
 ];
 
@@ -89,19 +89,19 @@ const AdministrationNavItems: NavItem[] = [
     title: 'Transaction',
     href: '/transaction',
     icon: CircleDollarSign,
-    roles: ['super_admin', 'admin', 'manager', 'employee'],
+    roles: ['super_admin', 'admin', 'manager', 'cashier'],
   },
   {
     title: 'Buyer',
     href: '/buyer/list',
     icon: ScanLine,
-    roles: ['super_admin', 'admin', 'manager', 'employee'],
+    roles: ['super_admin', 'admin', 'manager', 'cashier'],
   },
   // {
   //   title: 'Discount',
   //   href: '/discount',
   //   icon: TicketPercent,
-  //   roles: ['super_admin', 'admin', 'employee']
+  //   roles: ['super_admin', 'admin', 'cashier']
   //   // icon: ScanLine
   // }
 ];
