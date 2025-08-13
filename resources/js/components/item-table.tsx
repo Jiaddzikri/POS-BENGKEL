@@ -1,5 +1,5 @@
 import { ItemFilter, ItemList, Pagination } from '@/types';
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { AlertTriangle, ArrowLeft, ArrowRight, Edit3, MoreVertical, Package, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -129,11 +129,18 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-center space-x-2">
-                      <Link href={`/item/${item.item_id}/update`}>
-                        <Button className="transition-colors hover:text-green-600">
-                          <Edit3 className="h-4 w-4" />
-                        </Button>
-                      </Link>
+                      <Button
+                        onClick={() =>
+                          router.get(
+                            route('item.edit', {
+                              item: item.item_id,
+                            }),
+                          )
+                        }
+                        className="transition-colors hover:text-green-600"
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
 
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -150,7 +157,7 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => router.delete(route('item.delete', { itemId: item.item_id }))}>
+                            <AlertDialogAction onClick={() => router.delete(route('item.destroy', { item: item.item_id }))}>
                               Continue
                             </AlertDialogAction>
                           </AlertDialogFooter>

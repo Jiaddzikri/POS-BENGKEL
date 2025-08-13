@@ -37,4 +37,21 @@ class CategoryService
       ]);
     }));
   }
+
+  public function selectAllCategories($tenantId)
+  {
+    return $this->findCategoryBaseQuery($tenantId)->get();
+  }
+
+  public function countAllCategories($tenantId)
+  {
+    return $this->findCategoryBaseQuery($tenantId)->count();
+  }
+
+  private function findCategoryBaseQuery($tenantId)
+  {
+    return Category::query()->when($tenantId, function ($query, $tenant) {
+      $query->where('tenant_id', $tenant);
+    });
+  }
 }
