@@ -81,15 +81,92 @@ class ItemService
       return $item->load('variants');
     }));
   }
+  private function baseLowStockQuery(string $tenantId)
+  {
+    return VariantItem::whereHas('item', function ($q) use ($tenantId) {
+      $q->where('tenant_id', $tenantId);
+      $q->where('is_deleted', false);
+    })->whereColumn('stock', '<=', 'minimum_stock')->where('is_deleted', false);
+
+  }
 
   public function getLowStockItem(string $tenantId)
   {
-    $lowStockCount = VariantItem::whereHas('item', function ($q) use ($tenantId) {
-      $q->where('tenant_id', $tenantId);
-      $q->where('is_deleted', false);
-    })->whereColumn('stock', '<=', 'minimum_stock')->where('is_deleted', false)->get();
+    return $this->baseLowStockQuery($tenantId)->get();
+  }
 
-    return $lowStockCount;
+  public function getLowStockCount(string $tenantId)
+  {
+    return $this->baseLowStockQuery($tenantId)->count();
+  }
+
+
+  public function getActiveItemCount(string $tenantId)
+  {
+    return Item::where(['tenant_id' => $tenantId])->where('status', "active")->where('is_deleted', false)->count();
+  }
+
+  public function getPaginatedVariants(string $tenantId, array $filters = [])
+  {
+    $query = $this->baseVariantQuery($tenantId, $filters);
+
+    $variants = $query->paginate(10)->withQueryString();
+
+    $variants->load(['item.category']);
+
+    return $variants;
+  }
+
+  private function baseVariantQuery(string $tenantId, array $filters = [])
+  {
+    $query = VariantItem::query()
+      ->select([
+        'variant_items.*',
+        'items.name as item_name',
+        'categories.name as category_name'
+      ])
+      ->join('items', 'variant_items.item_id', '=', 'items.id')
+      ->leftJoin('categories', 'items.category_id', '=', 'categories.id')
+      ->where('items.tenant_id', $tenantId)
+      ->where('variant_items.is_deleted', false);
+
+    if (isset($filters['search'])) {
+      $searchTerm = '%' . $filters['search'] . '%';
+      $query->where(function ($q) use ($searchTerm) {
+        $q->where('variant_items.sku', 'like', $searchTerm)
+          ->orWhere('variant_items.name', 'like', $searchTerm)
+          ->orWhere('items.name', 'like', $searchTerm)
+          ->orWhere('categories.name', 'like', $searchTerm);
+      });
+    }
+    if (isset($filters['category'])) {
+      $query->where('categories.id', $filters['category']);
+    }
+    if (isset($filters['minPrice'])) {
+      $query->whereRaw('items.selling_price + variant_items.additional_price >= ?', [$filters['minPrice']]);
+    }
+    if (isset($filters['maxPrice'])) {
+      $query->whereRaw('items.selling_price + variant_items.additional_price <= ?', [$filters['maxPrice']]);
+    }
+
+    $sortBy = $filters['sortBy'] ?? 'created_at';
+    $sortOrder = $filters['sortOrder'] ?? 'desc';
+
+    switch ($sortBy) {
+      case 'name':
+        $query->orderBy('variant_items.name', $sortOrder);
+        break;
+      case 'price':
+        $query->orderByRaw('items.selling_price + variant_items.additional_price ' . $sortOrder);
+        break;
+      case 'updated_at':
+        $query->orderBy('variant_items.updated_at', $sortOrder);
+        break;
+      default:
+        $query->orderBy('variant_items.created_at', $sortOrder);
+    }
+
+    return $query;
   }
 
 }
