@@ -64,15 +64,15 @@ Route::middleware('auth')->group(function () {
         Route::put('/order/{orderId}/hold', [OrderController::class, 'holdOrder'])->name('order.hold');
         Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.histories');
 
-        Route::get('/item', [ItemController::class, 'showItem'])->name('item.index');
-        Route::get('/item/add', [ItemController::class, 'addItem'])->name('item.add');
-        Route::post('/item', [ItemController::class, 'postItem'])->name('item.post');
-        Route::get('/item/{itemId}/update', [ItemController::class, 'updateItemPage'])->name('item.update.page');
-        Route::post('/item/{itemId}/update', [ItemController::class, 'putUpdateItem'])->name('item.update.put');
-        Route::delete('/item/{itemId}', [ItemController::class, 'deleteItem'])->name('item.delete');
-        Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
-        Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
-        Route::get('/item/variant', [ItemController::class, 'findItem'])->prefix('api');
+        // Route::get('/item', [ItemController::class, 'showItem'])->name('item.index');
+        // Route::get('/item/add', [ItemController::class, 'addItem'])->name('item.add');
+        // Route::post('/item', [ItemController::class, 'store'])->name('item.post');
+        // Route::get('/item/{itemId}/update', [ItemController::class, 'updateItemPage'])->name('item.update.page');
+        // Route::post('/item/{itemId}/update', [ItemController::class, 'putUpdateItem'])->name('item.update.put');
+        // Route::delete('/item/{itemId}', [ItemController::class, 'deleteItem'])->name('item.delete');
+        // Route::post('/item/{itemId}/variant', [VariantController::class, 'post'])->name('variant.post');
+        // Route::delete('/item/{itemId}/variant/{variantId}', [VariantController::class, 'delete'])->name('variant.delete');
+        // Route::get('/item/variant', [ItemController::class, 'findItem'])->prefix('api');
 
 
         Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
@@ -151,3 +151,4 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
+require __DIR__ . '/item.php';

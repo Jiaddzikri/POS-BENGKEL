@@ -4,7 +4,6 @@ import { Head, router, useForm } from '@inertiajs/react';
 import { MouseEvent, useEffect, useState } from 'react';
 
 import { Toaster } from '@/components/ui/sonner';
-import { toast } from 'sonner';
 import AddVariant from './update-item/add-variant';
 import BasicInformation from './update-item/basic-information';
 import MainContent from './update-item/main-content';
@@ -20,7 +19,7 @@ interface UpdateItemProps {
 }
 
 export default function UpdateItem({ categories, item }: UpdateItemProps) {
-  const { data, setData, post, errors } = useForm<Item>({
+  const { data, setData, post, errors, put } = useForm<Item>({
     id: item.id,
     item_name: item.item_name,
     brand: item.brand,
@@ -32,7 +31,6 @@ export default function UpdateItem({ categories, item }: UpdateItemProps) {
     image_path: item.image_path,
     description: item.description,
     variants: item.variants,
-    new_image: null,
   });
 
   const [variants, setVariants] = useState<Variant[]>(item.variants);
@@ -45,12 +43,17 @@ export default function UpdateItem({ categories, item }: UpdateItemProps) {
     post: postVariant,
     reset: resetVariantData,
   } = useForm<Variant>({
+    item_id: item.id,
     name: '',
     minimum_stock: 0,
     stock: 0,
     additional_price: 0,
     sku: '',
   });
+
+  useEffect(() => {
+    setVariants(item.variants);
+  }, [item.variants]);
 
   const handleItemChange = (field: keyof Item, value: string | number | File): void => {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -62,39 +65,26 @@ export default function UpdateItem({ categories, item }: UpdateItemProps) {
 
   const handleAddVariant = (e: MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
-    postVariant(
-      route('variant.post', {
-        itemId: item.id,
+    router.post(
+      route('item.variant.store', {
+        item: item.id,
       }),
+      { ...newVariantData },
       {
-        onSuccess: () => {
-          toast.success('sukses menambahkan variant baru');
-        },
-        onError: () => {
-          toast.error('gagal menambahkan variant baru');
-        },
         onFinish: () => {
-          resetVariantData('name', 'minimum_stock', 'stock', 'additional_price', 'sku');
-          setShowAddVariant(false);
+          resetVariantData();
         },
       },
     );
   };
 
-  const handleDeleteVariant = (e: MouseEvent<HTMLButtonElement>, handleCloseDeleteModal: any, variantId?: string): void => {
-    e.preventDefault();
+  const handleDeleteVariant = (handleCloseDeleteModal: any, variantId?: string): void => {
     router.delete(
-      route('variant.delete', {
-        itemId: item.id,
-        variantId: variantId,
+      route('item.variant.destroy', {
+        item: item.id,
+        variant: variantId,
       }),
       {
-        onSuccess: () => {
-          toast.success('sukses menghapus variant');
-        },
-        onError: () => {
-          toast.error('gagal menghapus variant');
-        },
         onFinish: () => {
           handleCloseDeleteModal();
         },
@@ -103,7 +93,7 @@ export default function UpdateItem({ categories, item }: UpdateItemProps) {
   };
 
   const handleUpdate = (e: MouseEvent<HTMLButtonElement>, closeModal: any): void => {
-    post(route('item.update.put', { itemId: item.id }), {
+    put(route('item.update', { item: item.id }), {
       onFinish: () => {
         closeModal();
       },
