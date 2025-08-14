@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Order;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DiscountResource;
 use App\Http\Resources\OrderItemResource;
@@ -22,17 +23,14 @@ use App\Service\Receipt\ReceiptService;
 use App\Service\Transaction\TransactionService;
 use Carbon\Carbon;
 use DB;
-use Exception;
+use Throwable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 
 class OrderController extends Controller
 {
-  public function __construct(private OrderService $orderService, private TransactionService $transactionService, private BuyerService $buyerService, private ReceiptService $receiptService)
-  {
-
-  }
+  public function __construct(private OrderService $orderService, private TransactionService $transactionService, private BuyerService $buyerService, private ReceiptService $receiptService) {}
   public function createOrder(Request $request)
   {
     $user = $request->user();
@@ -48,8 +46,10 @@ class OrderController extends Controller
       return redirect()
         ->route("menu", ["orderId" => $order->id])
         ->with('success', 'Order successfully created!');
-
     } catch (\Throwable $e) {
+
+      AppLog::execption($e);
+
       return back()
         ->with('error', 'There was a problem creating your order. Please try again.')
         ->withInput();
@@ -129,7 +129,10 @@ class OrderController extends Controller
       $this->orderService->processOrder($processOrderRequest);
 
       return redirect()->route('menu', ['orderId' => $orderId])->with(["success" => "pesanan berhasil diproses"]);
-    } catch (Exception $error) {
+    } catch (Throwable $error) {
+
+      AppLog::execption($error);
+
       return redirect()->back()->with("error", $error->getMessage());
     }
   }
@@ -148,7 +151,10 @@ class OrderController extends Controller
 
 
       return redirect()->back()->with('success', 'sukses menambahkan item');
-    } catch (Exception $error) {
+    } catch (Throwable $error) {
+
+      AppLog::execption($error);
+
       return redirect()->back()->with('error', $error->getMessage());
     }
   }
@@ -166,7 +172,8 @@ class OrderController extends Controller
       $this->orderService->updateQuantity($detailRequest);
 
       return redirect()->back()->with('success', 'sukses menambahkan stock');
-    } catch (Exception $error) {
+    } catch (Throwable $error) {
+      AppLog::execption($error);
       return redirect()->back()->with('error', $error->getMessage());
     }
   }
@@ -227,8 +234,9 @@ class OrderController extends Controller
           'status' => $status
         ]
       ]);
+    } catch (Throwable $error) {
 
-    } catch (Exception $error) {
+      AppLog::execption($error);
       return redirect()->back()->with('error', 'an internal server error');
     }
   }
@@ -239,7 +247,8 @@ class OrderController extends Controller
       $discount = $request->post('discount', 0);
       $this->orderService->holdOrder($orderId, $discount);
       return redirect()->back()->with('success', 'order berhasil dihold');
-    } catch (Exception $error) {
+    } catch (Throwable $error) {
+      AppLog::execption($error);
       return redirect()->back()->with('error', 'an internal server error');
     }
   }
@@ -249,10 +258,10 @@ class OrderController extends Controller
     try {
       $this->orderService->deleteOrderDetail($orderId, $variantId);
       return redirect()->back()->with('success', 'item berhasil dihapus');
-    } catch (Exception $error) {
-      dd($error->getMessage());
+    } catch (Throwable $error) {
+      AppLog::execption($error);
+      // dd($error->getMessage());
       return redirect()->back()->with('error', 'an internal server error');
-
     }
   }
 
@@ -261,10 +270,9 @@ class OrderController extends Controller
     try {
       $this->orderService->deleteAllOrderItems($orderId);
       return redirect()->back()->with('success', 'item berhasil dihapus');
-    } catch (Exception $error) {
+    } catch (Throwable $error) {
+      AppLog::execption($error);
       return redirect()->back()->with('error', 'an internal server error');
-
     }
   }
-
 }

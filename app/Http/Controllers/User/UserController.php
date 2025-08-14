@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\UserAddRequestValidator;
 use App\Http\Requests\User\UserUpdateRequestValidator;
@@ -130,8 +131,9 @@ class UserController extends Controller
 
 
             return redirect()->route('user.index')->with('success', 'Pengguna ' . $user->email . ' berhasil di tambahkan, sebagai ' . $user->role);
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -192,8 +194,9 @@ class UserController extends Controller
             $user = $this->userService->update($userRequest, $id);
 
             return redirect()->route('user.index')->with('success', 'Mengubah pengguna ' . $user->email);
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -205,8 +208,9 @@ class UserController extends Controller
     {
         try {
             $this->userService->delete($id);
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -226,8 +230,9 @@ class UserController extends Controller
 
             return redirect('dashboard')->with('success', 'Sukses masuk ke ' . $user->tenant_id);
 
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
