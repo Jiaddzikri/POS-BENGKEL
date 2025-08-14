@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Category;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Category\CategoryRequestValidator;
 use App\Http\Resources\CategoryResource;
@@ -107,8 +108,9 @@ class CategoryController extends Controller
             $this->categoryService->store($categoryRequest);
 
             return redirect()->route('category.index')->with('success', 'Category berhasil di buat');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -157,8 +159,9 @@ class CategoryController extends Controller
             $this->categoryService->update($categoryRequest, $id);
 
             return redirect()->route('category.index')->with('success', 'Category berhasil di ubah');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -172,8 +175,9 @@ class CategoryController extends Controller
             $this->categoryService->delete($id);
 
             return redirect()->route('category.index')->with('success', 'Category berhasil di hapus');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }

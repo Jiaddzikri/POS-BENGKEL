@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Tenant;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\PostTenatRequest;
 use App\Http\Requests\Tenant\PutTenantRequest;
@@ -90,8 +91,9 @@ class TenantController extends Controller
 
 
             return redirect()->route('tenant.index')->with('success', 'Toko berhasil di tambahkan');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -133,8 +135,11 @@ class TenantController extends Controller
             $this->tenantService->update($tenantRequest, $id);
 
             return redirect()->route('tenant.index')->with('success', 'Toko berhasil di ubah');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+
+            AppLog::execption($e);
+
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -148,9 +153,12 @@ class TenantController extends Controller
             $this->tenantService->delete($id);
 
             return redirect()->route('tenant.index')->with('success', 'Toko berhasil di hapus');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+
+            AppLog::execption($e);
+
             return redirect()->back()->with('error', 'an internal server error');
-        }
+        } 
     }
 }

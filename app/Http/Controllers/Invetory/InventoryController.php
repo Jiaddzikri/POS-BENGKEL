@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Invetory;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ItemRecordResource;
 use App\Http\Resources\VariantItemResource;
@@ -11,7 +12,7 @@ use App\Models\VariantItem;
 use App\Request\AdjustStockRequest;
 use App\Service\Inventory\InventoryService;
 use Carbon\Carbon;
-use Exception;
+use Throwable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -145,7 +146,10 @@ class InventoryController extends Controller
 
         try {
             return redirect()->route('inventory.index')->with('success', 'Stock Successfully Adjusted, new stock : ' . $response->stock);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
+
+            AppLog::execption($e);
+
             return redirect()->back()->with('error', $e->getMessage());
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Item;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Item\PostItemRequest;
 use App\Http\Resources\TenantResource;
@@ -15,7 +16,7 @@ use App\Request\UpdateItemRequest;
 use App\Request\VariantAttributeRequest;
 use App\Service\Item\ItemService;
 use DB;
-use Exception;
+use Throwable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,9 +25,7 @@ use Inertia\Inertia;
 class ItemController extends Controller
 {
 
-    public function __construct(private ItemService $itemService)
-    {
-    }
+    public function __construct(private ItemService $itemService) {}
 
     public function showItem(Request $request)
     {
@@ -120,8 +119,9 @@ class ItemController extends Controller
                 ],
                 'tenant_id' => $tenantId
             ]);
-        } catch (Exception $error) {
-            dd($error->getMessage());
+        } catch (Throwable $error) {
+            // dd($error->getMessage());
+            AppLog::execption($error);
         }
     }
 
@@ -169,8 +169,9 @@ class ItemController extends Controller
             $this->itemService->store($itemRequest);
 
             return redirect()->route('item.add')->with('success', 'Item berhasil ditambahkan!');
-        } catch (Exception $e) {
-            dd($e->getMessage());
+        } catch (Throwable $e) {
+            // dd($e->getMessage());
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -260,8 +261,9 @@ class ItemController extends Controller
             return redirect()->route('item.update.page', [
                 "itemId" => $itemId
             ])->with('success', 'Item berhasil diupdate!');
-        } catch (Exception $error) {
-            dd($error);
+        } catch (Throwable $error) {
+            // dd($error);
+            AppLog::execption($error);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -283,7 +285,10 @@ class ItemController extends Controller
             return response()->json([
                 $resource
             ], 200);
-        } catch (Exception $error) {
+        } catch (Throwable $error) {
+
+            AppLog::execption($error);
+
             return response()->json([
                 "message" => $error->getMessage(),
 
@@ -305,7 +310,8 @@ class ItemController extends Controller
             });
 
             return redirect()->back()->with('success', 'item berhasil dihapus');
-        } catch (Exception $error) {
+        } catch (Throwable $error) {
+            AppLog::execption($error);
             return redirect()->back()->with('error', $error->getMessage());
         }
     }
