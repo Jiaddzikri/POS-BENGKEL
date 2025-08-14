@@ -16,11 +16,21 @@ use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Variant\VariantController;
 use App\Mail\Auth\VerifyEmailMail;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+
+    // Log::channel('app')->info('Info min dari app log');
+
+    // Log::channel('app')->info('Hello from custom app log!', ['foo' => 'bar']);
+
+    \Log::channel('app')->info('Pesan dari channel app');
+
+
+
     return Inertia::render('welcome');
 })->name('home');
 
@@ -54,15 +64,15 @@ Route::middleware('auth')->group(function () {
 
     // Route::middleware(['whoCanIn:admin,manager,employee'])->group(function () {
 
-        Route::get('/order', [OrderController::class, 'createOrder'])->name('order.post');
-        Route::post('/order/{orderId}/detail', [OrderController::class, 'addOrderDetail'])->name('order.post.detail');
-        Route::put('/order/{orderId}/detail/quantity', [OrderController::class, 'updateQuantity'])->name('order.put.detail.quantity');
-        Route::get('/order/{orderId}', [OrderController::class, 'index'])->name('menu');
-        Route::post('/order/process/{orderId}', [OrderController::class, 'processOrder'])->name('order.process');
-        Route::delete('/order/{orderId}/variant/{variantId}', [OrderController::class, 'deleteOrderItem'])->name('order.detail.delete');
-        Route::delete('/order/{orderId}/variant', [OrderController::class, 'deleteAllOrderItem'])->name('order.detail.clear');
-        Route::put('/order/{orderId}/hold', [OrderController::class, 'holdOrder'])->name('order.hold');
-        Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.histories');
+    Route::get('/order', [OrderController::class, 'createOrder'])->name('order.post');
+    Route::post('/order/{orderId}/detail', [OrderController::class, 'addOrderDetail'])->name('order.post.detail');
+    Route::put('/order/{orderId}/detail/quantity', [OrderController::class, 'updateQuantity'])->name('order.put.detail.quantity');
+    Route::get('/order/{orderId}', [OrderController::class, 'index'])->name('menu');
+    Route::post('/order/process/{orderId}', [OrderController::class, 'processOrder'])->name('order.process');
+    Route::delete('/order/{orderId}/variant/{variantId}', [OrderController::class, 'deleteOrderItem'])->name('order.detail.delete');
+    Route::delete('/order/{orderId}/variant', [OrderController::class, 'deleteAllOrderItem'])->name('order.detail.clear');
+    Route::put('/order/{orderId}/hold', [OrderController::class, 'holdOrder'])->name('order.hold');
+    Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.histories');
 
         // Route::get('/item', [ItemController::class, 'showItem'])->name('item.index');
         // Route::get('/item/add', [ItemController::class, 'addItem'])->name('item.add');
@@ -75,18 +85,18 @@ Route::middleware('auth')->group(function () {
         // Route::get('/item/variant', [ItemController::class, 'findItem'])->prefix('api');
 
 
-        Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
-        Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
+    Route::get('/analytics-report', [AnalyticalController::class, 'index'])->name('analytical.index');
+    Route::get('/analytics-report/preview', [AnalyticalController::class, 'pdfPreview'])->name('analytical.preview');
 
-        Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
+    Route::get('/qr-code/{text}', [QrController::class, 'generate'])->name('QrCode.generate');
 
-        Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
 
-        Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
+    Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock'])->name('inventory.adjust');
 
-        Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
+    Route::get('/inventory/preview', [InventoryController::class, 'showPdfPreview'])->name('inventory.print');
 
-        Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
+    Route::get('/receipt/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('receipt.download');
     // });
 
 

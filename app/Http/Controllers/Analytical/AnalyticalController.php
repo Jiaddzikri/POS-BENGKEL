@@ -12,10 +12,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AnalyticalController extends Controller
 {
-  public function __construct(private AnalyticalService $analyticalService)
-  {
-
-  }
+  public function __construct(private AnalyticalService $analyticalService) {}
   public function index(Request $request)
   {
     $startDate = null;
@@ -117,29 +114,35 @@ class AnalyticalController extends Controller
 
   public function export(Request $request)
   {
-    $startDate = null;
-    $endDate = null;
-    $range = null;
-    $fileName = null;
+    try {
+      $startDate = null;
+      $endDate = null;
+      $range = null;
+      $fileName = null;
 
 
-    if ($request->filled('startDate') && $request->filled('endDate')) {
-      $startDate = $request->get('startDate', null);
-      $endDate = $request->get('endDate', null);
+      if ($request->filled('startDate') && $request->filled('endDate')) {
+        $startDate = $request->get('startDate', null);
+        $endDate = $request->get('endDate', null);
+      }
+
+      if ($request->filled('range')) {
+        $range = $request->get('range', 'today') ?? 'today';
+      }
+
+      $tenantId = $request->user()->tenant_id;
+
+      if ($range) {
+        $fileName = 'Laporan_Analitik_' . $range . '.xlsx';
+      } else {
+        $fileName = 'Laporan Analitik_' . $startDate . ' - ' . $endDate . '.xlsx';
+      }
+      return Excel::download(new AnalyticsReportExport($range, $tenantId, $startDate, $endDate), $fileName);
+    } catch (\Throwable $e) {
+
+      AppLog::execption($e);
+
+      return back()->with('error', 'Export gagal, silakan coba lagi');
     }
-
-    if ($request->filled('range')) {
-      $range = $request->get('range', 'today') ?? 'today';
-
-    }
-
-    $tenantId = $request->user()->tenant_id;
-
-    if ($range) {
-      $fileName = 'Laporan_Analitik_' . $range . '.xlsx';
-    } else {
-      $fileName = 'Laporan Analitik_' . $startDate . ' - ' . $endDate . '.xlsx';
-    }
-    return Excel::download(new AnalyticsReportExport($range, $tenantId, $startDate, $endDate), $fileName);
   }
 }

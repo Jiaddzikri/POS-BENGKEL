@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Buyer;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Buyer\BuyerRequestValidator;
 use App\Http\Resources\BuyerResource;
@@ -36,14 +37,16 @@ class BuyerController extends Controller
                 $buyer,
                 200
             );
-        } catch (\Exception $err) {
+        } catch (\Throwable $err) {
 
+            AppLog::execption($err);
+            
             return response()->json([
                 'error' => $err->getMessage()
             ], $err->getCode());
         }
     }
-
+    
     public function createBuyer(Request $request)
     {
         $data = new CreateBuyerRequest();
@@ -51,14 +54,15 @@ class BuyerController extends Controller
         $data->discountId = $request->post('discount_id');
         $data->phoneNumber = $request->post('phone_number');
         $data->name = $request->post('name');
-
+        
         try {
             $buyer = $this->buyerService->createBuyer($data);
-
+            
             return response()->json([
                 'buyer' => $buyer
             ], 201);
-        } catch (\Exception $err) {
+        } catch (\Throwable $err) {
+            AppLog::execption($err);
             return response()->json([
                 'error' => $err->getMessage()
             ], $err->getCode());
@@ -138,8 +142,9 @@ class BuyerController extends Controller
             $this->buyerService->update($buyerRequest, $id);
 
             return redirect()->route('buyer.index')->with('success', 'Buyer berhasil di ubah');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -148,7 +153,7 @@ class BuyerController extends Controller
     {
         try {
             $this->buyerService->delete($id);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             dd($e);
             return redirect()->back()->with('error', 'an internal server error');
         }

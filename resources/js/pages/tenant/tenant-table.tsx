@@ -15,13 +15,13 @@ export default function TenantTable({ tenants, user }: TenantTableProps) {
 
 
 
-  const { errors: errorTenant, delete: destroy } = useForm<FormTenant>();
+  const { errors: errorTenant, delete: destroy, processing } = useForm<FormTenant>();
 
   const { errors: errorUser, put, setData, data } = useForm<FormUser>({
     name: user?.name || '',
     email: user?.email || '',
     role: user?.role || '',
-    tenant_id: user?.tenant_id ?? undefined
+    tenant_id: user?.tenant_id ?? ''
   });
 
 
@@ -33,25 +33,22 @@ export default function TenantTable({ tenants, user }: TenantTableProps) {
     });
   };
 
-  const handleLoginInToTenant = (id: string | number | undefined, tenant_id: string) => {
 
+  const assignTenantId = (tenant_id: string) => {
     setData('tenant_id', tenant_id);
+  }
 
-    console.log(data.tenant_id != tenant_id);
 
-    if (data.tenant_id != tenant_id) {
-      toast.error('Terlalu banyak permintaan');
-    } else {
-      put(route('user.login.tenant', id), {
-        preserveScroll: true,
-        onError: (errors) => {
-          console.error('[Login to Tenant Error]', errors, errorUser);
-        },
-      });
-    }
+
+  const handleLoginInToTenant = (id: string | number | undefined) => {  
+
+    put(route('user.login.tenant', id), {
+      onError: () => console.log(errorUser)
+    });
+
   };
 
-  console.log(data);
+
 
 
   return (
@@ -109,16 +106,24 @@ export default function TenantTable({ tenants, user }: TenantTableProps) {
                     <div className="flex items-center justify-center space-x-2">
 
 
-                      {user?.role !== 'super_admin' ? null : (
+                      {(user?.role !== 'super_admin' && $user.tenant_id) ? null : (
                         <Modal
                           title={`Login ke toko ${tnt.name}?`}
-                          // description={'Tindakan ini tidak dapat dibatalkan.'}
-                          onConfirm={() => handleLoginInToTenant(user?.id, tnt.id)}
+                          onConfirm={() => handleLoginInToTenant(user?.id)}
                         >
-                          <Button className="transition-colors hover:text-blue-600">
-                            <LogInIcon className="h-4 w-4" />
-                          </Button>
+                          <div>
+                            <input type="hidden" name='tenant_id' value={data.tenant_id ?? ''} />
+                            <Button
+                              type={'button'}
+                              disabled={processing}
+                              className="transition-colors hover:text-blue-600"
+                              onClick={() => assignTenantId(tnt.id)}
+                            >
+                              <LogInIcon className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </Modal>
+
                       )}
 
 

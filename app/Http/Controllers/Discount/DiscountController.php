@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Discount;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Discount\DiscountRequestValidator;
 use App\Http\Requests\Discount\DiscountActiveRequestValidator;
@@ -98,8 +99,9 @@ class DiscountController extends Controller
             $this->discountService->store($discountRequest);
 
             return redirect()->route('discount.index')->with('success', 'Diskon berhasil di buat');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -141,8 +143,9 @@ class DiscountController extends Controller
             $this->discountService->update($discountRequest, $id);
 
             return redirect()->route('discount.index')->with('success', 'Diskon berhasil di buat');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -156,8 +159,9 @@ class DiscountController extends Controller
             $this->discountService->delete($id);
 
             return redirect()->route('discount.index')->with('success', 'Discount berhasil di hapus');
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }
@@ -177,8 +181,9 @@ class DiscountController extends Controller
             $this->discountService->updateActive($discountActiveRequest, $id);
 
             return redirect()->route('discount.index')->with('success', "Status discount telah di ubah.");
-        } catch (\Exception $e) {
-            dd($e);
+        } catch (\Throwable $e) {
+            // dd($e);
+            AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }
     }

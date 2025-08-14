@@ -56,7 +56,7 @@ class UserAddRequestValidator extends FormRequest
             ],
             'role' => [
                 'required',
-                'in:super_admin,admin,manager,employee'
+                'in:super_admin,admin,manager,cashier'
             ],
             'tenant_id' => $user->role !== 'super_admin' ? '' : $validationTenant
         ];

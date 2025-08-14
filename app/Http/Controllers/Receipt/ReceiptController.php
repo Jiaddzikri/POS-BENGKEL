@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Receipt;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Service\Receipt\ReceiptService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -10,10 +11,7 @@ use Log;
 class ReceiptController extends Controller
 {
 
-    public function __construct(private ReceiptService $receiptService)
-    {
-
-    }
+    public function __construct(private ReceiptService $receiptService) {}
     public function downloadReceiptPdf(string $orderId)
     {
         try {
@@ -38,11 +36,16 @@ class ReceiptController extends Controller
                 'margin-bottom' => 0,
                 'margin-left' => 0,
             ]);
-            Log::info('pdf berhasil digenerate');
+            // Log::info('pdf berhasil digenerate');
+            AppLog::info('pdf berhasil digenerate');
 
             return $pdf->stream('struk-' . $transaction['invoiceNumber'] . '.pdf');
-        } catch (\Exception $error) {
-            Log::error('error dari  pdf', ["error" => $error->getMessage()]);
+        } catch (\Throwable $error) {
+
+            AppLog::error('error dari pdf', [$error->getMessage()]);
+            AppLog::execption($error);
+
+            // Log::error('error dari  pdf', ["error" => $error->getMessage()]);
             return redirect()->back()->with("error", $error->getMessage());
         }
     }

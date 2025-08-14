@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Variant;
 
+use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Variant\StoreVariantItemRequest;
 use App\Models\Item;
@@ -29,7 +30,9 @@ class VariantController extends Controller
             });
 
             return redirect()->back()->with('success', 'variant item successfully added');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+
+            AppLog::execption($e);
             return redirect()->back()->with("error", 'an internal server error');
         }
     }
@@ -43,8 +46,9 @@ class VariantController extends Controller
                 ]);
             });
             return redirect()->route('item.edit', ['item' => $item])->with('success', 'variant item successfully deleted');
-        } catch (\Exception $error) {
-            Log::error('error', ['message' => $error->getMessage(), 'trace' => $error->getTraceAsString()]);
+        } catch (\Throwable $error) {
+            AppLog::error('error', ['message' => $error->getMessage(), 'trance' => $error->getTraceAsString()]);
+            // Log::error('error', ['message' => $error->getMessage(), 'trace' => $error->getTraceAsString()]);
             return redirect()->back()->with("error", 'an internal server error');
         }
     }
