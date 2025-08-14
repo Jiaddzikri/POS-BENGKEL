@@ -5,29 +5,29 @@ namespace App\Http\Controllers\Item;
 use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Item\PostItemRequest;
-use App\Http\Resources\TenantResource;
 use App\Http\Resources\VariantItemResource;
-use App\Models\Category;
 use App\Models\Item;
-use App\Models\Tenant;
 use App\Models\VariantItem;
 use App\Request\PostItemAttributeRequest;
 use App\Request\UpdateItemRequest;
 use App\Request\VariantAttributeRequest;
+use App\Service\Category\CategoryService;
 use App\Service\Item\ItemService;
 use DB;
 use Throwable;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Log;
 
 
 class ItemController extends Controller
 {
 
-    public function __construct(private ItemService $itemService) {}
+    public function __construct(private ItemService $itemService, private CategoryService $categoryService)
+    {
+    }
 
-    public function showItem(Request $request)
+    public function index(Request $request)
     {
         $tenantId = auth()->user()->tenant_id ?? $request->get('tenant_id');
         $search = $request->input('search');
@@ -40,74 +40,27 @@ class ItemController extends Controller
 
         try {
 
-            $activeItemsCount = Item::where(['tenant_id' => $tenantId])->where('status', "active")->count();
-            $lowStockCount = VariantItem::whereHas('item', function ($q) use ($tenantId) {
-                $q->where('tenant_id', $tenantId);
-                $q->where('is_deleted', false);
-            })->whereColumn('stock', '<=', 'minimum_stock')->count();
-            $categories = Category::select(['categories.id', 'categories.name', 'tenants.name as tenant_name'])->leftJoin('tenants', 'categories.tenant_id', '=', 'tenants.id')->where('tenant_id', $tenantId)->get();
+            $activeItemsCount = $this->itemService->getActiveItemCount($tenantId);
+            $lowStockCount = $this->itemService->getLowStockCount($tenantId);
+            $countCategories = $this->categoryService->countAllCategories($tenantId);
 
-            $query = VariantItem::query()
-                ->select([
-                    'variant_items.*',
-                    'items.name',
-                    'categories.name'
-                ])
-                ->join('items', 'variant_items.item_id', '=', 'items.id')
-                ->leftJoin('categories', 'items.category_id', '=', 'categories.id')
-                ->where('items.tenant_id', $tenantId)
-                ->where('variant_items.is_deleted', false);
+            $variants = $this->itemService->getPaginatedVariants($tenantId, [
+                "search" => $search,
+                'minPrice' => $minPrice,
+                'maxPrice' => $maxPrice,
+                'sortOrder' => $sortOrder,
+                'sortBy' => $sortBy,
+                'category' => $category
 
-            if ($search) {
-                $searchTerm = '%' . $search . '%';
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->where('variant_items.sku', 'like', $searchTerm)
-                        ->orWhere('variant_items.name', 'like', $searchTerm)
-                        ->orWhere('items.name', 'like', $searchTerm)
-                        ->orWhere('categories.name', 'like', $searchTerm);
-                });
-            }
-
-            if ($category) {
-                $query->where('categories.id', $category);
-            }
-            if ($minPrice) {
-                $query->whereRaw('items.selling_price + variant_items.additional_price >= ?', [$minPrice]);
-            }
-
-            if ($maxPrice) {
-                $query->whereRaw('items.selling_price + variant_items.additional_price <= ?', [$maxPrice]);
-            }
-
-
-
-            switch ($sortBy) {
-                case 'name':
-                    $query->orderBy('variant_items.name', $sortOrder);
-                    break;
-                case 'price':
-                    $query->orderByRaw('items.selling_price + variant_items.additional_price' . $sortOrder);
-                    break;
-                case 'updated_at':
-                    $query->orderBy('variant_items.updated_at', $sortOrder);
-                    break;
-                default:
-                    $query->orderBy('variant_items.created_at', $sortOrder);
-            }
-
-            $variants = $query->paginate(10)->withQueryString();
-
-
-            $variants->load(['item.category']);
+            ]);
             return Inertia::render('item', [
                 "items" => VariantItemResource::collection($variants),
                 "stats" => [
                     'total' => $variants->count(),
                     'active_items' => $activeItemsCount,
                     'low_stock' => $lowStockCount,
-                    'categories' => $categories->count()
+                    'categories' => $countCategories
                 ],
-                'categories' => $categories,
                 "filters" => [
                     "search" => $search,
                     'page' => $page,
@@ -125,20 +78,18 @@ class ItemController extends Controller
         }
     }
 
-    public function addItem(Request $request)
+    public function create(Request $request)
     {
         $tenantId = $request->user()->tenant_id;
 
-        $categories = Category::query()->when($tenantId, function ($query, $tenant) {
-            $query->where('tenant_id', $tenant);
-        })->get();
+        $categories = $this->categoryService->selectAllCategories($tenantId);
 
         return Inertia::render('item/add-item', [
             "categories" => $categories
         ]);
     }
 
-    public function postItem(PostItemRequest $request)
+    public function store(PostItemRequest $request)
     {
         try {
             $request->validated();
@@ -173,17 +124,14 @@ class ItemController extends Controller
             // dd($e->getMessage());
             AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
-        }
+        } 
     }
 
-    public function updateItemPage(Request $request, string $itemId)
+    public function edit(Request $request, string $item)
     {
         $tenantId = $request->user()->tenant_id;
 
-        $categories = Category::query()->when($tenantId, function ($query, $tenant) {
-            $query->where('tenant_id', $tenant);
-        })->get();
-
+        $categories = $this->categoryService->selectAllCategories($tenantId);
         $item = Item::with([
             'variants' => function ($query) {
                 $query->where("is_deleted", false);
@@ -193,7 +141,7 @@ class ItemController extends Controller
             }
         ])
             ->where('tenant_id', $tenantId)
-            ->where('id', $itemId)
+            ->where('id', $item)
             ->first();
 
         $mapItem = [
@@ -218,7 +166,7 @@ class ItemController extends Controller
         ]);
     }
 
-    public function putUpdateItem(\App\Http\Requests\Item\UpdateItemRequest $request, string $itemId)
+    public function update(\App\Http\Requests\Item\UpdateItemRequest $request, string $itemId)
     {
         try {
             $request->validated();
@@ -234,10 +182,7 @@ class ItemController extends Controller
             $itemRequest->brand = $request->post("brand");
             $itemRequest->tenant_id = $tenantId;
             $itemRequest->status = $request->post('status');
-            $itemRequest->new_image = $request->file("new_image", null);
             $variants = $request->post("variants", []);
-
-
 
             if (sizeof($variants) > 0) {
                 foreach ($variants as $variant) {
@@ -258,8 +203,8 @@ class ItemController extends Controller
 
 
             $this->itemService->update($itemRequest, $itemId);
-            return redirect()->route('item.update.page', [
-                "itemId" => $itemId
+            return redirect()->route('item.edit', [
+                "item" => $itemId
             ])->with('success', 'Item berhasil diupdate!');
         } catch (Throwable $error) {
             // dd($error);
@@ -271,9 +216,7 @@ class ItemController extends Controller
     public function findItem(Request $request)
     {
         $tenantId = $request->user()->tenant_id;
-
         try {
-
             $variants = VariantItem::with('item.category')
                 ->where('is_deleted', false)
                 ->whereHas('item', function ($query) use ($tenantId) {
@@ -296,15 +239,16 @@ class ItemController extends Controller
         }
     }
 
-    public function deleteItem(Request $request, string $itemId)
+    public function destroy(Request $request, string $item)
     {
+        Log::info("Deleting item with ID: $item");
         try {
-            DB::transaction(function () use ($itemId) {
-                Item::where('id', '=', $itemId)->update([
+            DB::transaction(function () use ($item) {
+                Item::where('id', '=', $item)->update([
                     "is_deleted" => true
                 ]);
 
-                VariantItem::where('item_id', '=', $itemId)->update([
+                VariantItem::where('item_id', '=', $item)->update([
                     'is_deleted' => true
                 ]);
             });

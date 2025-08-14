@@ -4,19 +4,22 @@ namespace App\Http\Controllers\Variant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Variant\StoreVariantItemRequest;
+use App\Models\Item;
 use App\Models\VariantItem;
 use DB;
+use Log;
+use Request;
 
 class VariantController extends Controller
 {
-    public function post(StoreVariantItemRequest $request, string $itemId)
+    public function store(StoreVariantItemRequest $request, Item $item)
     {
         try {
             $request->validated();
 
-            DB::transaction(function () use ($request, $itemId) {
+            DB::transaction(function () use ($request, $item) {
                 VariantItem::create([
-                    'item_id' => $itemId,
+                    'item_id' => $item->id,
                     "sku" => $request->post('sku'),
                     'name' => $request->post('name'),
                     'additional_price' => $request->post('additional_price'),
@@ -25,30 +28,23 @@ class VariantController extends Controller
                 ]);
             });
 
-            return redirect()->route('item.update.page', ["itemId" => $itemId])->with('success', 'variant item successfully added');
-
+            return redirect()->back()->with('success', 'variant item successfully added');
         } catch (\Exception $e) {
             return redirect()->back()->with("error", 'an internal server error');
         }
     }
 
-    public function delete(string $itemId, string $variantId)
+    public function destroy(Request $request, Item $item, VariantItem $variant)
     {
         try {
-            DB::transaction(function () use ($variantId) {
-                $variantItem = VariantItem::findOrFail($variantId);
-
-                $variantItem->update([
+            DB::transaction(function () use ($variant) {
+                $variant->update([
                     "is_deleted" => true
                 ]);
-
             });
-
-            return redirect()->route('item.update.page', ["itemId" => $itemId])->with('success', 'variant item successfully added');
-
+            return redirect()->route('item.edit', ['item' => $item])->with('success', 'variant item successfully deleted');
         } catch (\Exception $error) {
-
-
+            Log::error('error', ['message' => $error->getMessage(), 'trace' => $error->getTraceAsString()]);
             return redirect()->back()->with("error", 'an internal server error');
         }
     }
