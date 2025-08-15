@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Request\UserAttributeRequest;
 use App\Service\Mail\MailService;
 use App\Service\User\UserService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -219,7 +220,7 @@ class UserController extends Controller
     {
         try {
 
-            
+
             // dd($request->post('tenant_id'));
 
             $tenant_id = $request->post('tenant_id');
@@ -229,9 +230,27 @@ class UserController extends Controller
             $user = $this->userService->updateTenantId($id, $tenant_id);
 
             return redirect('dashboard')->with('success', 'Sukses masuk ke ' . $user->tenant_id);
-
         } catch (\Throwable $e) {
             // dd($e);
+            AppLog::execption($e);
+            return redirect()->back()->with('error', 'an internal server error');
+        }
+    }
+
+    public function logoutFromTenant(Request $request): RedirectResponse
+    {
+
+        try {
+
+            $user = $request->user();
+
+            $user->tenant_id = null;
+
+            $user->save();
+
+
+            return redirect('/tenant');
+        } catch (\Throwable $e) {
             AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
         }

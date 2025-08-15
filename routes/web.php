@@ -123,6 +123,7 @@ Route::middleware('auth')->group(function () {
         ])->middleware('whoCanIn:super_admin,admin,manager');
 
     Route::put('/user/login/to/{userId}', [UserController::class, 'updateTenantForLogin'])->name('user.login.tenant')->middleware('whoCanIn:super_admin');
+    Route::put('/user/tenant/logout', [UserController::class, 'logoutFromTenant'])->name('user.logout.tenant')->middleware('whoCanIn:super_admin');
 
     Route::get('/transaction', [SalesTransactionController::class, 'salesTransaction'])->name('transaction.index');
     Route::get('/receipt/download/{orderId}', [ReceiptController::class, 'downloadReceiptPdf'])->name('transaction.receipt.download');

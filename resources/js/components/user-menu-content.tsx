@@ -17,6 +17,11 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
         router.flushAll();
     };
 
+    console.log(user);
+
+
+
+
     return (
         <>
             <DropdownMenuLabel className="p-0 font-normal">
@@ -40,6 +45,15 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                     Log out
                 </Link>
             </DropdownMenuItem>
+            {(user && user.role == 'super_admin') && (
+
+                <DropdownMenuItem asChild>
+                <Link className="block w-full" method="put" href={route('user.logout.tenant')} as="button" onClick={handleLogout}>
+                    <LogOut className="mr-2" />
+                    Log out From Store
+                </Link>
+            </DropdownMenuItem>
+            )}
         </>
     );
 }
