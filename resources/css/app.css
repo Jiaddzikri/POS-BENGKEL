@@ -110,6 +110,9 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.87 0 0);
+  --gradient-start: oklch(1 0 0); /* Putih */
+  --gradient-mid: oklch(0.95 0.05 230); /* Biru muda */
+  --gradient-end: oklch(0.9 0.08 150); /* Hijau muda */
 }
 
 .dark {
@@ -145,6 +148,47 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+  --gradient-start: oklch(0.145 0 0); /* Hitam */
+  --gradient-mid: oklch(0.25 0.05 230); /* Biru gelap */
+  --gradient-end: oklch(0.35 0.08 150); /* Hijau gelap */
+}
+
+@layer utilities {
+  .bg-animated-gradient {
+    background: linear-gradient(
+      45deg,
+      var(--gradient-start),
+      var(--gradient-mid),
+      var(--gradient-end)
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 30s ease infinite;
+  }
+
+  .hr-animated-gradient {
+    height: 3px;
+    border: none;
+    background: linear-gradient(
+      45deg,
+      var(--gradient-end),
+      var(--gradient-mid),
+      var(--gradient-start)
+    );
+    background-size: 200% 200%;
+    animation: gradientShift 30s ease infinite;
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @layer base {
