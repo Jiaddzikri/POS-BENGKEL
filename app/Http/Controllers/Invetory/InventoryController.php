@@ -6,19 +6,18 @@ use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ItemRecordResource;
 use App\Http\Resources\VariantItemResource;
-use App\Models\Item;
-use App\Models\ItemRecord;
-use App\Models\VariantItem;
 use App\Request\AdjustStockRequest;
 use App\Service\Inventory\InventoryService;
 use Carbon\Carbon;
 use Throwable;
+use App\Service\Item\ItemService;
+use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class InventoryController extends Controller
 {
-    public function __construct(private InventoryService $inventoryService)
+    public function __construct(private InventoryService $inventoryService, private ItemService $itemService)
     {
 
     }
@@ -32,90 +31,28 @@ class InventoryController extends Controller
         $endDate = $request->input('endDate', null);
         $stockCondition = $request->input('stock_condition', null);
 
-        $activeItemsCount = Item::where('tenant_id', $tenantId)->where('status', "active")->count();
-        $lowStockCount = VariantItem::whereHas('item', function ($q) use ($tenantId) {
-            $q->where('tenant_id', $tenantId);
-            $q->where('is_deleted', false);
-        })->whereColumn('stock', '<=', 'minimum_stock')->count();
+        $activeItemsCount = $this->itemService->getActiveItemCount($tenantId);
+        $lowStockCount = $this->itemService->getLowStockCount($tenantId);
 
-        $outOfStock = VariantItem::whereHas('item', function ($q) use ($tenantId) {
-            $q->where('tenant_id', $tenantId);
-            $q->where('is_deleted', false);
-        })->where('stock', '=', 0)->count();
+        $outOfStock = $this->itemService->getOutOfStockCount($tenantId);
 
-        $stockMovement = ItemRecord::whereHas('variant', function ($q) use ($tenantId) {
-            $q->whereHas('item', function ($qu) use ($tenantId) {
-                $qu->where('tenant_id', $tenantId);
-                $qu->where('is_deleted', false);
-            });
+        $stockMovement = $this->inventoryService->getStockMovementCount($tenantId, [
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'searchStockMovement' => $searchStockMovement
+        ]);
 
-        })->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count();
+        $variants = $this->itemService->getPaginatedVariants($tenantId, [
+            'search' => $search,
+            'page' => $page,
+            'stockCondition' => $stockCondition
+        ]);
 
-        $variants = VariantItem::with('item.category')
-            ->whereHas('item', function ($query) use ($tenantId) {
-                $query->where('tenant_id', $tenantId);
-            })
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $searchTerm = '%' . $search . '%';
-                    $q->where('sku', 'like', $searchTerm)
-                        ->orWhere('name', 'like', $searchTerm)
-                        ->orWhereHas('item', function ($itemQuery) use ($searchTerm) {
-                            $itemQuery->where('name', 'like', $searchTerm);
-                        })
-                        ->orWhereHas('item.category', function ($categoryQuery) use ($searchTerm) {
-                            $categoryQuery->where('name', 'like', $searchTerm);
-                        });
-                });
-            })->where(function ($query) use ($stockCondition) {
-                $query->where('is_deleted', false);
-
-                if ($stockCondition != null) {
-                    switch ($stockCondition) {
-                        case 'low':
-                            $query->whereColumn('stock', '<=', 'minimum_stock');
-                            break;
-                        case 'normal':
-                            $query->whereColumn('stock', '>', 'minimum_stock');
-                            break;
-                        case 'out_of_stock':
-                            $query->where('stock', '=', 0);
-                            break;
-                    }
-
-                }
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
-
-        $stockMovements = ItemRecord::with('variant.item.category')
-            ->whereHas('variant.item', function ($query) use ($tenantId) {
-                $query->where('tenant_id', $tenantId)
-                    ->where('is_deleted', false);
-            })
-            ->when($searchStockMovement, function ($query, $search) {
-                $searchTerm = '%' . $search . '%';
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->whereHas('variant', function ($variantQuery) use ($searchTerm) {
-                        $variantQuery->where('sku', 'like', $searchTerm)
-                            ->orWhere('name', 'like', $searchTerm);
-                    })
-                        ->orWhereHas('variant.item', function ($itemQuery) use ($searchTerm) {
-                            $itemQuery->where('name', 'like', $searchTerm);
-                        })
-                        ->orWhereHas('variant.item.category', function ($categoryQuery) use ($searchTerm) {
-                            $categoryQuery->where('name', 'like', $searchTerm);
-                        });
-                });
-            })
-            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
-                $start = Carbon::parse($startDate)->startOfDay();
-                $end = Carbon::parse($endDate)->endOfDay();
-                return $query->whereBetween('created_at', [$start, $end]);
-            })
-            ->latest()
-            ->paginate(10)->withQueryString();
+        $stockMovements = $this->inventoryService->getStockMovementPaginated($tenantId, [
+            'searchStockMovement' => $searchStockMovement,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ]);
 
         return Inertia::render('inventory', [
             "stats" => [
@@ -164,24 +101,15 @@ class InventoryController extends Controller
         $stockCondition = $request->input('stock_condition', null);
         $exportType = $request->input('export_type', 'inventory');
 
-        $activeItemsCount = Item::where('tenant_id', $tenantId)->where('status', "active")->count();
-        $lowStockCount = VariantItem::whereHas('item', function ($q) use ($tenantId) {
-            $q->where('tenant_id', $tenantId);
-            $q->where('is_deleted', false);
-        })->whereColumn('stock', '<=', 'minimum_stock')->count();
+        $activeItemsCount = $this->itemService->getActiveItemCount($tenantId);
+        $lowStockCount = $this->itemService->getLowStockCount($tenantId);
+        $outOfStock = $this->itemService->getOutOfStockCount($tenantId);
 
-        $outOfStock = VariantItem::whereHas('item', function ($q) use ($tenantId) {
-            $q->where('tenant_id', $tenantId);
-            $q->where('is_deleted', false);
-        })->where('stock', '=', 0)->count();
-
-        $stockMovement = ItemRecord::whereHas('variant', function ($q) use ($tenantId) {
-            $q->whereHas('item', function ($qu) use ($tenantId) {
-                $qu->where('tenant_id', $tenantId);
-                $qu->where('is_deleted', false);
-            });
-        })->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count();
-
+        $stockMovement = $this->inventoryService->getStockMovementPaginated($tenantId, [
+            'searchStockMovement' => $searchStockMovement,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ]);
         $stats = [
             'active_item' => $activeItemsCount,
             'low_stock' => $lowStockCount,
@@ -190,41 +118,10 @@ class InventoryController extends Controller
         ];
 
         if ($exportType === 'inventory') {
-            $variants = VariantItem::with('item.category')
-                ->whereHas('item', function ($query) use ($tenantId) {
-                    $query->where('tenant_id', $tenantId);
-                })
-                ->when($search, function ($query, $search) {
-                    $query->where(function ($q) use ($search) {
-                        $searchTerm = '%' . $search . '%';
-                        $q->where('sku', 'like', $searchTerm)
-                            ->orWhere('name', 'like', $searchTerm)
-                            ->orWhereHas('item', function ($itemQuery) use ($searchTerm) {
-                                $itemQuery->where('name', 'like', $searchTerm);
-                            })
-                            ->orWhereHas('item.category', function ($categoryQuery) use ($searchTerm) {
-                                $categoryQuery->where('name', 'like', $searchTerm);
-                            });
-                    });
-                })->where(function ($query) use ($stockCondition) {
-                    $query->where('is_deleted', false);
-
-                    if ($stockCondition != null) {
-                        switch ($stockCondition) {
-                            case 'low':
-                                $query->whereColumn('stock', '<=', 'minimum_stock');
-                                break;
-                            case 'normal':
-                                $query->whereColumn('stock', '>', 'minimum_stock');
-                                break;
-                            case 'out_of_stock':
-                                $query->where('stock', '=', 0);
-                                break;
-                        }
-                    }
-                })
-                ->latest()
-                ->get();
+            $variants = $this->itemService->getPaginatedVariants($tenantId, [
+                'search' => $search,
+                'stockCondition' => $stockCondition
+            ]);
 
             return Inertia::render('reports/print-inventory', [
                 'title' => 'Laporan Inventory',
@@ -238,33 +135,11 @@ class InventoryController extends Controller
             ]);
 
         } else {
-            $stockMovements = ItemRecord::with('variant.item.category')
-                ->whereHas('variant.item', function ($query) use ($tenantId) {
-                    $query->where('tenant_id', $tenantId)
-                        ->where('is_deleted', false);
-                })
-                ->when($searchStockMovement, function ($query, $search) {
-                    $searchTerm = '%' . $search . '%';
-                    $query->where(function ($q) use ($searchTerm) {
-                        $q->whereHas('variant', function ($variantQuery) use ($searchTerm) {
-                            $variantQuery->where('sku', 'like', $searchTerm)
-                                ->orWhere('name', 'like', $searchTerm);
-                        })
-                            ->orWhereHas('variant.item', function ($itemQuery) use ($searchTerm) {
-                                $itemQuery->where('name', 'like', $searchTerm);
-                            })
-                            ->orWhereHas('variant.item.category', function ($categoryQuery) use ($searchTerm) {
-                                $categoryQuery->where('name', 'like', $searchTerm);
-                            });
-                    });
-                })
-                ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
-                    $start = Carbon::parse($startDate)->startOfDay();
-                    $end = Carbon::parse($endDate)->endOfDay();
-                    return $query->whereBetween('created_at', [$start, $end]);
-                })
-                ->latest()
-                ->get();
+            $stockMovements = $this->inventoryService->getStockMovementPaginated($tenantId, [
+                'searchStockMovement' => $searchStockMovement,
+                'startDate' => $startDate,
+                'endDate' => $endDate
+            ]);
 
             return Inertia::render('reports/print-stock-movement', [
                 'title' => 'Laporan Pergerakan Stok',

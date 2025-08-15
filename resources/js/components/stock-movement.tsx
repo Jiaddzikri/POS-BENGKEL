@@ -121,8 +121,8 @@ export default function StockMovement({ stockMovementData, filters }: StockMovem
             href={route('inventory.print', {
               search_stock_movement: querySearch,
               stock_condition: selectedStockCondition,
-              startDate: dateRange.from,
-              endDate: dateRange.to,
+              startDate: dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : '',
+              endDate: dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : '',
               page: filters.page,
               export_type: 'stock_movement',
             })}

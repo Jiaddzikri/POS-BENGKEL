@@ -90,6 +90,19 @@ class ItemService
 
   }
 
+  private function baseOutOfStockStory(string $tenantId)
+  {
+    return VariantItem::whereHas('item', function ($q) use ($tenantId) {
+      $q->where('tenant_id', $tenantId);
+      $q->where('is_deleted', false);
+    })->where('stock', '=', 0)->where('is_deleted', false);
+  }
+
+  public function getOutOfStockCount(string $tenantId)
+  {
+    return $this->baseOutOfStockStory($tenantId)->count();
+  }
+
   public function getLowStockItem(string $tenantId)
   {
     return $this->baseLowStockQuery($tenantId)->get();
@@ -103,7 +116,8 @@ class ItemService
 
   public function getActiveItemCount(string $tenantId)
   {
-    return Item::where(['tenant_id' => $tenantId])->where('status', "active")->where('is_deleted', false)->count();
+    return Item::where(['tenant_id' => $tenantId, 'status' => 'active', 'is_deleted' => false])
+      ->count();
   }
 
   public function getPaginatedVariants(string $tenantId, array $filters = [])
@@ -147,6 +161,20 @@ class ItemService
     }
     if (isset($filters['maxPrice'])) {
       $query->whereRaw('items.selling_price + variant_items.additional_price <= ?', [$filters['maxPrice']]);
+    }
+
+    if (isset($filters['stockCondition'])) {
+      switch ($filters['stockCondition']) {
+        case 'low':
+          $query->whereColumn('variant_items.stock', '<=', 'variant_items.minimum_stock');
+          break;
+        case 'out_of_stock':
+          $query->where('variant_items.stock', '=', 0);
+          break;
+        case 'in_stock':
+          $query->where('variant_items.stock', '>', 0);
+          break;
+      }
     }
 
     $sortBy = $filters['sortBy'] ?? 'created_at';
