@@ -116,8 +116,15 @@ class ItemService
 
   public function getActiveItemCount(string $tenantId)
   {
-    return Item::where(['tenant_id' => $tenantId, 'status' => 'active', 'is_deleted' => false])
-      ->count();
+    return $this->baseItemQuery($tenantId, [])
+      ->where('items.status', 'active')
+      ->count('items.id');
+  }
+
+  public function getItemCount(string $tenantId)
+  {
+    return $this->baseItemQuery($tenantId, [])
+      ->count('items.id');
   }
 
   public function getPaginatedVariants(string $tenantId, array $filters = [])
@@ -129,6 +136,77 @@ class ItemService
     $variants->load(['item.category']);
 
     return $variants;
+  }
+
+  public function getPaginatedItems(string $tenantId, array $filters = [])
+  {
+    $query = $this->baseItemQuery($tenantId, $filters);
+
+    $items = $query->paginate(10)->withQueryString();
+
+    return $items;
+  }
+
+  private function baseItemQuery(string $tenantId, array $filters = [])
+  {
+    $query = Item::query()
+      ->with([
+        'category',
+        'variants' => fn($q) => $q->where('is_deleted', false),
+      ])
+      ->leftJoin('categories', 'items.category_id', '=', 'categories.id')
+      ->leftJoin('variant_items', 'items.id', '=', 'variant_items.item_id')
+
+      ->select('items.*', 'categories.name as category_name')
+      ->distinct()
+      ->where('items.tenant_id', $tenantId)
+      ->where('items.is_deleted', false)
+      ->where('variant_items.is_deleted', false);
+
+    $query->when($filters['search'] ?? null, function ($q, $search) {
+      $searchTerm = '%' . $search . '%';
+      $q->where(function ($subQuery) use ($searchTerm) {
+        $subQuery->where('items.name', 'like', $searchTerm)
+          ->orWhere('variant_items.name', 'like', $searchTerm)
+          ->orWhere('variant_items.sku', 'like', $searchTerm)
+          ->orWhere('categories.name', 'like', $searchTerm);
+      });
+    });
+
+    $query->when($filters['category'] ?? null, function ($q, $categoryId) {
+      $q->where('items.category_id', $categoryId);
+    });
+
+    $query->when($filters['minPrice'] ?? null, function ($q, $minPrice) {
+      $q->whereRaw('items.selling_price + variant_items.additional_price >= ?', [$minPrice]);
+    });
+
+    $query->when($filters['maxPrice'] ?? null, function ($q, $maxPrice) {
+      $q->whereRaw('items.selling_price + variant_items.additional_price <= ?', [$maxPrice]);
+    });
+
+    $query->when($filters['status'] ?? null, function ($q, $status) {
+      $q->where('items.status', $status);
+    });
+
+    $sortBy = $filters['sortBy'] ?? 'created_at';
+    $sortOrder = $filters['sortOrder'] ?? 'desc';
+
+    switch ($sortBy) {
+      case 'name':
+        $query->orderBy('items.name', $sortOrder);
+        break;
+      case 'price':
+        $query->orderByRaw('items.selling_price + variant_items.additional_price ' . $sortOrder);
+        break;
+      case 'updated_at':
+        $query->orderBy('items.updated_at', $sortOrder);
+        break;
+      default:
+        $query->orderBy('items.created_at', $sortOrder);
+    }
+
+    return $query;
   }
 
   private function baseVariantQuery(string $tenantId, array $filters = [])

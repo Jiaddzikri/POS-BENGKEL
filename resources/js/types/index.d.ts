@@ -78,6 +78,27 @@ export interface Variant {
   [key: string]: any;
 }
 
+export interface ItemList {
+  id: string;
+  name: string;
+  selling_price: number;
+  purchase_price: number;
+  brand: string;
+  category_name: string;
+  description: string;
+  variants: Variant[];
+  created_at: string;
+  updated_at: string;
+  status: string;
+  is_active: boolean;
+}
+
+export interface ItemListData {
+  data: ItemList[];
+  meta: Pagination;
+  links: Link;
+}
+
 export interface FormItem {
   tenant_id?: string;
   name: string;

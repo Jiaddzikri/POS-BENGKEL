@@ -1,5 +1,5 @@
 import { ItemFilter } from '@/types';
-
+import { getRawNumber, numberFormat } from '@/utils/number-format';
 import { router } from '@inertiajs/react';
 import { ChevronDown, Filter, Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -18,8 +18,6 @@ interface ItemProps {
 export default function ItemSearchHeader({ filters, categories = [] }: ItemProps) {
   const [querySearch, setQuerySearch] = useState<string>(filters.searchQuery || '');
   const [showFilters, setShowFilters] = useState<boolean>(false);
-
-  // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>(filters.category || '');
   const [selectedStatus, setSelectedStatus] = useState<string>(filters.status || '');
   const [minPrice, setMinPrice] = useState<string>(filters.minPrice?.toString() || '');
@@ -31,19 +29,29 @@ export default function ItemSearchHeader({ filters, categories = [] }: ItemProps
   const [debouncedMinPrice] = useDebounce(minPrice, 500);
   const [debouncedMaxPrice] = useDebounce(maxPrice, 500);
 
+  useEffect(() => {
+    applyFilters();
+  }, [debouncedQuery]);
+
+  useEffect(() => {
+    if (debouncedMinPrice !== (filters.minPrice?.toString() || '') || debouncedMaxPrice !== (filters.maxPrice?.toString() || '')) {
+      applyFilters();
+    }
+  }, [debouncedMinPrice, debouncedMaxPrice]);
+
   const applyFilters = () => {
     const filterParams: any = {
-      search: querySearch,
+      search: querySearch || undefined,
       category: selectedCategory || undefined,
-
-      minPrice: debouncedMinPrice || undefined,
-      maxPrice: debouncedMaxPrice || undefined,
+      status: selectedStatus || undefined,
+      minPrice: minPrice ? getRawNumber(minPrice) : undefined,
+      maxPrice: maxPrice ? getRawNumber(maxPrice) : undefined,
       sortBy: sortBy || undefined,
       sortOrder: sortOrder || undefined,
     };
 
     Object.keys(filterParams).forEach((key) => {
-      if (filterParams[key] === '' || filterParams[key] === undefined) {
+      if (filterParams[key] === '' || filterParams[key] === undefined || filterParams[key] === null) {
         delete filterParams[key];
       }
     });
@@ -75,15 +83,33 @@ export default function ItemSearchHeader({ filters, categories = [] }: ItemProps
     );
   };
 
-  const hasActiveFilters = selectedCategory || selectedStatus || minPrice || maxPrice || querySearch;
+  console.log(sortBy);
 
-  useEffect(() => {
-    applyFilters();
-  }, [debouncedQuery, selectedCategory, selectedStatus, debouncedMinPrice, debouncedMaxPrice, sortBy, sortOrder]);
+  const hasActiveFilters = selectedCategory || selectedStatus || minPrice || maxPrice || querySearch || sortBy || sortOrder;
+
+  const activeFilterCount = [
+    querySearch,
+    selectedCategory,
+    selectedStatus,
+    minPrice,
+    maxPrice,
+    sortBy !== 'created_at' ? sortBy : null,
+    sortOrder !== 'desc' ? sortOrder : null,
+  ].filter(Boolean).length;
+
+  const handleMinPriceChange = (value: string) => {
+    const rawValue = getRawNumber(value);
+    setMinPrice(rawValue);
+  };
+
+  const handleMaxPriceChange = (value: string) => {
+    const rawValue = getRawNumber(value);
+    setMaxPrice(rawValue);
+  };
 
   return (
     <div className="px-6 py-2">
-      <div className="bordershadow-sm mb-6 rounded-lg">
+      <div className="mb-6 rounded-lg border">
         <div className="border-b p-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             {/* Search Input */}
@@ -91,34 +117,34 @@ export default function ItemSearchHeader({ filters, categories = [] }: ItemProps
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 type="text"
-                placeholder="Search items..."
+                placeholder="Cari item..."
                 value={querySearch}
                 onChange={(e) => setQuerySearch(e.target.value)}
                 className="w-full rounded-md border py-2 pr-4 pl-9 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
+              {querySearch && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setQuerySearch('')}
+                  className="absolute top-1/2 right-2 h-6 w-6 -translate-y-1/2 transform p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
               {hasActiveFilters && (
-                <span className="rounded px-2 py-1 text-xs">
-                  {
-                    Object.values({
-                      search: querySearch,
-                      category: selectedCategory,
-                      status: selectedStatus,
-                      price: minPrice || maxPrice,
-                      sortOrder: sortOrder,
-                      sortBy: sortBy,
-                    }).filter(Boolean).length
-                  }
-                  filter(s) active
+                <span className="rounded-full px-2 py-1 text-xs text-blue-700">
+                  {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active
                 </span>
               )}
 
               <Button
-                variant={'outline'}
+                variant="outline"
                 onClick={() => setShowFilters(!showFilters)}
-                className={`inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium transition-colors`}
+                className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium transition-colors"
               >
                 <Filter className="mr-2 h-4 w-4" />
                 Filters
@@ -126,13 +152,14 @@ export default function ItemSearchHeader({ filters, categories = [] }: ItemProps
               </Button>
 
               {hasActiveFilters && (
-                <button
+                <Button
+                  variant="outline"
                   onClick={clearFilters}
-                  className="0 inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium text-red-700 transition-colors"
+                  className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 hover:text-red-800"
                 >
                   <X className="mr-2 h-4 w-4" />
                   Clear
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -145,13 +172,13 @@ export default function ItemSearchHeader({ filters, categories = [] }: ItemProps
               {/* Category Filter */}
               {categories.length > 0 && (
                 <div>
-                  <Label className="mb-1 block text-sm font-medium">Category</Label>
+                  <Label className="mb-2 block text-sm font-medium">Kategori</Label>
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger>
-                      <SelectValue placeholder="All Categories" />
+                      <SelectValue placeholder="Semua Kategori" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Categories</SelectItem>
+                      <SelectItem value="">Semua Kategori</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name}
@@ -164,50 +191,57 @@ export default function ItemSearchHeader({ filters, categories = [] }: ItemProps
 
               {/* Price Range */}
               <div>
-                <label className="mb-1 block text-sm font-medium">Price Range</label>
+                <Label className="mb-2 block text-sm font-medium">Range Harga</Label>
                 <div className="flex gap-2">
                   <Input
                     type="text"
-                    placeholder={`Min`}
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                    placeholder="Min"
+                    value={minPrice ? numberFormat(parseInt(minPrice)) : ''}
+                    onChange={(e) => handleMinPriceChange(e.target.value)}
+                    className="w-full rounded-md border px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   />
                   <Input
                     type="text"
-                    placeholder={`Max`}
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    className="borderpx-3 w-full rounded-md py-2 text-sm focus:outline-none"
+                    placeholder="Max"
+                    value={maxPrice ? numberFormat(parseInt(maxPrice)) : ''}
+                    onChange={(e) => handleMaxPriceChange(e.target.value)}
+                    className="w-full rounded-md border px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Sort Options */}
               <div>
-                <label className="mb-1 block text-sm font-medium">Sort By</label>
-                <div className="flex gap-2">
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sort By" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="created_at">Date Created</SelectItem>
-                      <SelectItem value="price">Price</SelectItem>
-                      <SelectItem value="name">Name</SelectItem>
-                      <SelectItem value="updated_at">Date Updated</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={sortOrder} onValueChange={setSortOrder}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Order By" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="asc">ASC</SelectItem>
-                      <SelectItem value="desc">DESC</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Label className="mb-2 block text-sm font-medium">Urutkan Berdasarkan</Label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Urutkan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="created_at">Tanggal Dibuat</SelectItem>
+                    <SelectItem value="updated_at">Tanggal Diperbarui</SelectItem>
+                    <SelectItem value="name">Nama</SelectItem>
+                    <SelectItem value="price">Harga</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="mb-2 block text-sm font-medium">Urutan</Label>
+                <Select value={sortOrder} onValueChange={setSortOrder}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Urutan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="desc">Terbaru/Tertinggi</SelectItem>
+                    <SelectItem value="asc">Terlama/Terendah</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end justify-end">
+                <Button onClick={applyFilters} className="bg-blue-600 text-white hover:bg-blue-700">
+                  Terapkan Filter
+                </Button>
               </div>
             </div>
           </div>
