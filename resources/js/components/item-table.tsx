@@ -1,7 +1,9 @@
-import { ItemFilter, ItemList, Pagination } from '@/types';
+import { ItemFilter, ItemList, Pagination, Variant } from '@/types';
+import { numberFormat } from '@/utils/number-format';
 import { router } from '@inertiajs/react';
-import { AlertTriangle, ArrowLeft, ArrowRight, Edit3, MoreVertical, Package, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, ArrowRight, Edit3, MoreVertical, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Accordion, AccordionContent, AccordionItem } from './ui/accordion';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from './ui/alert-dialog';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
@@ -22,9 +25,12 @@ interface ItemTableProps {
   filters: ItemFilter;
   pagination: Pagination;
 }
+
 export default function ItemTable({ items, pagination, filters }: ItemTableProps) {
   const [openQr, setOpenQrModal] = useState<boolean>(false);
   const [sku, setSku] = useState<string | null>(null);
+  const [openDetails, setOpenDetails] = useState<string | null>(null);
+
   const paginationButton = (pagination: Pagination) => {
     const { per_page, current_page, total, last_page } = pagination;
     const listNumber = [];
@@ -66,10 +72,81 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
 
   const handleShowQr = (sku: string) => {
     setSku(sku);
-
     setTimeout(() => {
       setOpenQrModal(true);
     }, 300);
+  };
+
+  function renderDetailsItem(item: ItemList) {
+    if (openDetails !== item.id) return null;
+
+    return (
+      <tr className="gap-5 bg-muted/20">
+        <td className="px-4 py-4" colSpan={6}>
+          <Accordion type="single" collapsible className="w-full" value={item.id}>
+            <AccordionItem value={item.id}>
+              <AccordionContent className="accordion-content flex flex-col p-0 text-balance">
+                <div className="mt-2">
+                  <h4 className="mb-2 text-xs font-bold text-gray-500 uppercase">Varian Produk:</h4>
+                  <table className="w-full rounded-md border bg-white text-xs">
+                    <thead className="bg-gray-100">
+                      <tr className="text-left">
+                        <th className="p-2 font-medium">Nama Varian</th>
+                        <th className="p-2 font-medium">SKU</th>
+                        <th className="p-2 text-center font-medium">Stok</th>
+                        <th className="p-2 text-center font-medium">Harga Tambahan</th>
+                        <th className="p-2 text-center font-medium">Harga Final</th>
+                        <th className="p-2 text-center font-medium">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {item.variants.map((variant: Variant) => (
+                        <tr key={variant.id} className="border-t">
+                          <td className="p-2">{variant.name}</td>
+                          <td className="p-2 font-mono">{variant.sku}</td>
+                          <td className="p-2 text-center">{variant.stock}</td>
+                          <td className="p-2 text-center font-semibold">{numberFormat(Number(variant.additional_price))}</td>
+                          <td className="p-2 text-center font-semibold">
+                            {numberFormat(Number(item.selling_price) + Number(variant.additional_price))}
+                          </td>
+                          <td className="p-2">
+                            <div className="flex items-center justify-center gap-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="icon" className="h-7 w-7">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem onClick={() => handleShowQr(variant.sku)} className="cursor-pointer">
+                                    Tampilkan QrCode
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </td>
+      </tr>
+    );
+  }
+
+  const handleDeleteItem = (itemId: string) => {
+    router.delete(route('item.destroy', { item: itemId }), {
+      onSuccess: () => {
+        // Optional: Add success notification
+      },
+      onError: () => {
+        // Optional: Add error notification
+      },
+    });
   };
 
   return (
@@ -79,114 +156,94 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
           <table className="w-full">
             <thead className="border-b">
               <tr className="text-center">
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Item</th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">SKU</th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Category</th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Price</th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Stock</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Nama Item</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Kategori</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Brand</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Harga Dasar</th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Last Updated</th>
-                <th className="px-4 py-3 text-center text-xs font-medium tracking-wider uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y">
-              {items.map((item, index) => (
-                <tr key={index} className="">
-                  <td className="px-4 py-4">
-                    <div className="flex items-center">
-                      <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg">
-                        <Package className="h-5 w-5" />
+              {items.map((item) => (
+                <React.Fragment key={item.id}>
+                  <tr
+                    onClick={() => setOpenDetails(openDetails === item.id ? null : item.id)}
+                    className="cursor-pointer transition duration-700 ease-out hover:bg-accent-foreground hover:text-background"
+                  >
+                    <td className="px-4 py-4">
+                      <span className="text-sm font-medium">{item.name}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-sm">{item.category_name}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-sm">{item.brand}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-sm">{numberFormat(item.selling_price)}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <Badge variant={item.is_active ? 'default' : 'destructive'}>{item.is_active ? 'Aktif' : 'Nonaktif'}</Badge>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.get(route('item.edit', { item: item.id }));
+                          }}
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7 hover:bg-blue-50 hover:text-blue-600"
+                        >
+                          <Edit3 className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              onClick={(e) => e.stopPropagation()}
+                              variant="outline"
+                              size="icon"
+                              className="h-7 w-7 hover:bg-red-50 hover:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Hapus Item</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Apakah Anda yakin ingin menghapus item "{item.name}"? Tindakan ini tidak dapat dibatalkan dan akan menghapus semua
+                                data item termasuk variannya.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Batal</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteItem(item.id)} className="bg-red-600 hover:bg-red-700">
+                                Hapus
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
-                      <div>
-                        <div className="text-sm font-medium">{item.item_name}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="font-mono text-sm">{item.sku}</span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="text-sm">{item.category_name}</span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="text-sm font-medium">Rp {item.price.toLocaleString('id-ID')}</span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center">
-                      <span className={`text-sm font-medium ${item.low_stock ? 'text-orange-600' : ''}`}>{item.stock}</span>
-                      {item.low_stock && <AlertTriangle className="ml-2 h-4 w-4 text-orange-500" />}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${item.is_active ? 'text-green-800' : ''}`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="text-sm">{item.last_updated}</span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center justify-center space-x-2">
-                      <Button
-                        onClick={() =>
-                          router.get(
-                            route('item.edit', {
-                              item: item.item_id,
-                            }),
-                          )
-                        }
-                        className="transition-colors hover:text-green-600"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </Button>
+                    </td>
+                  </tr>
 
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button className="transition-colors hover:text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete your item and remove your data from our servers.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => router.delete(route('item.destroy', { item: item.item_id }))}>
-                              Continue
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button className="transition-colors">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => handleShowQr(item.sku)} className="cursor-pointer">
-                            Tampilkan QrCode
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </td>
-                </tr>
+                  {renderDetailsItem(item)}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
       <div className="mt-6 rounded-lg border p-4 shadow-sm">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <span className="text-sm">
-            Menampilkan {items.length}-{pagination.per_page} dari {pagination.total} item
+          <span className="text-sm text-gray-600">
+            Menampilkan {(pagination.current_page - 1) * pagination.per_page + 1}-
+            {Math.min(pagination.current_page * pagination.per_page, pagination.total)} dari {pagination.total} item
           </span>
           <div className="flex gap-2">
             <Button
@@ -194,13 +251,15 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
               onClick={() =>
                 router.get(
                   route('item.index'),
-                  { search: filters.searchQuery, page: pagination.current_page - 1 },
+                  { ...filters, page: pagination.current_page - 1 },
                   { preserveState: true, preserveScroll: true, replace: true },
                 )
               }
-              className={`rounded-lg border py-2`}
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
             >
-              <ArrowLeft />
+              <ArrowLeft className="h-4 w-4" />
             </Button>
             {paginationButton(pagination)}
             <Button
@@ -208,23 +267,38 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
               onClick={() =>
                 router.get(
                   route('item.index'),
-                  { search: filters.searchQuery, page: pagination.current_page + 1 },
+                  { ...filters, page: pagination.current_page + 1 },
                   { preserveState: true, preserveScroll: true, replace: true },
                 )
               }
-              className={`rounded-lg border px-3 py-2`}
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
             >
-              <ArrowRight />
+              <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
+
       <Dialog open={openQr} onOpenChange={setOpenQrModal}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Qr Code</DialogTitle>
+            <DialogTitle className="text-center">QR Code</DialogTitle>
           </DialogHeader>
-          <img className="mx-auto" src={`/qr-code/${sku}`} alt="qr-code" />
+          <div className="flex justify-center p-4">
+            {sku && (
+              <img
+                className="mx-auto rounded-lg border"
+                src={`/qr-code/${sku}`}
+                alt={`QR Code untuk SKU: ${sku}`}
+                onError={(e) => {
+                  e.currentTarget.src = '/placeholder-qr.png';
+                }}
+              />
+            )}
+          </div>
+          <div className="text-center text-sm text-gray-500">SKU: {sku}</div>
         </DialogContent>
       </Dialog>
     </div>

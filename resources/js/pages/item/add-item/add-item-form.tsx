@@ -25,7 +25,7 @@ export default function AddItemForm({ categories, item }: AddItemFormProps) {
 
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
-    post(route('item.post'), {
+    post(route('item.store'), {
       onSuccess: () => {
         reset('name', 'category_id', 'description', 'purchase_price', 'selling_price', 'brand', 'variants');
       },

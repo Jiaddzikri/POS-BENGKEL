@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Item;
 use App\Helpers\AppLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Item\PostItemRequest;
+use App\Http\Resources\ItemResource;
 use App\Http\Resources\VariantItemResource;
 use App\Models\Item;
 use App\Models\VariantItem;
@@ -40,23 +41,24 @@ class ItemController extends Controller
 
         try {
 
+            $itemCount = $this->itemService->getItemCount($tenantId);
             $activeItemsCount = $this->itemService->getActiveItemCount($tenantId);
             $lowStockCount = $this->itemService->getLowStockCount($tenantId);
             $countCategories = $this->categoryService->countAllCategories($tenantId);
 
-            $variants = $this->itemService->getPaginatedVariants($tenantId, [
+            $items = $this->itemService->getPaginatedItems($tenantId, [
                 "search" => $search,
                 'minPrice' => $minPrice,
                 'maxPrice' => $maxPrice,
                 'sortOrder' => $sortOrder,
                 'sortBy' => $sortBy,
                 'category' => $category
-
             ]);
+
             return Inertia::render('item', [
-                "items" => VariantItemResource::collection($variants),
+                'items' => ItemResource::collection($items),
                 "stats" => [
-                    'total' => $variants->count(),
+                    'total' => $itemCount,
                     'active_items' => $activeItemsCount,
                     'low_stock' => $lowStockCount,
                     'categories' => $countCategories
@@ -124,7 +126,7 @@ class ItemController extends Controller
             // dd($e->getMessage());
             AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');
-        } 
+        }
     }
 
     public function edit(Request $request, string $item)

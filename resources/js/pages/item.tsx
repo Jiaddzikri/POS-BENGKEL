@@ -3,11 +3,11 @@ import ItemStatsCard from '@/components/item-stats-card';
 import ItemTable from '@/components/item-table';
 import ItemSearchHeader from '@/components/items-search-header';
 import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem, ItemData, ItemFilter, ItemStats } from '@/types';
+import { BreadcrumbItem, ItemFilter, ItemListData, ItemStats } from '@/types';
 import { Head } from '@inertiajs/react';
 
 interface ItemProps {
-  items: ItemData;
+  items: ItemListData;
   stats: ItemStats;
   filters: ItemFilter;
 }
