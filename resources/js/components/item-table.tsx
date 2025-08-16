@@ -81,15 +81,15 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
     if (openDetails !== item.id) return null;
 
     return (
-      <tr className="gap-5 bg-muted/20">
+      <tr className="gap-5">
         <td className="px-4 py-4" colSpan={6}>
           <Accordion type="single" collapsible className="w-full" value={item.id}>
             <AccordionItem value={item.id}>
               <AccordionContent className="accordion-content flex flex-col p-0 text-balance">
                 <div className="mt-2">
-                  <h4 className="mb-2 text-xs font-bold text-gray-500 uppercase">Varian Produk:</h4>
-                  <table className="w-full rounded-md border bg-white text-xs">
-                    <thead className="bg-gray-100">
+                  <h4 className="mb-2 text-xs font-bold uppercase">Varian Produk:</h4>
+                  <table className="w-full rounded-md border text-xs">
+                    <thead className="">
                       <tr className="text-left">
                         <th className="p-2 font-medium">Nama Varian</th>
                         <th className="p-2 font-medium">SKU</th>
@@ -184,7 +184,12 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
                       <span className="text-sm">{numberFormat(item.selling_price)}</span>
                     </td>
                     <td className="px-4 py-4">
-                      <Badge variant={item.is_active ? 'default' : 'destructive'}>{item.is_active ? 'Aktif' : 'Nonaktif'}</Badge>
+                      <Badge
+                        variant={item.is_active ? 'default' : 'destructive'}
+                        className={`${item.is_active ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'} `}
+                      >
+                        {item.is_active ? 'Aktif' : 'Nonaktif'}
+                      </Badge>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
@@ -195,7 +200,7 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
                           }}
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7 hover:bg-blue-50 hover:text-blue-600"
+                          className="h-7 w-7 text-slate-600 hover:text-blue-600 dark:bg-black dark:text-white dark:hover:bg-black dark:hover:text-blue-600"
                         >
                           <Edit3 className="h-4 w-4" />
                         </Button>
@@ -205,7 +210,7 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
                               onClick={(e) => e.stopPropagation()}
                               variant="outline"
                               size="icon"
-                              className="h-7 w-7 hover:bg-red-50 hover:text-red-600"
+                              className="h-7 w-7 text-slate-600 hover:text-red-600 dark:bg-black dark:text-white dark:hover:bg-black dark:hover:text-red-600"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
