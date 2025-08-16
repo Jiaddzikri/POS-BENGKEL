@@ -21,18 +21,18 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
+// Route::get('/', function () {
 
-    // Log::channel('app')->info('Info min dari app log');
+//     // Log::channel('app')->info('Info min dari app log');
 
-    // Log::channel('app')->info('Hello from custom app log!', ['foo' => 'bar']);
+//     // Log::channel('app')->info('Hello from custom app log!', ['foo' => 'bar']);
 
-    \Log::channel('app')->info('Pesan dari channel app');
+//     \Log::channel('app')->info('Pesan dari channel app');
 
 
 
-    return Inertia::render('welcome');
-})->name('home');
+//     return Inertia::render('welcome');
+// })->name('home');
 
 Route::middleware('auth')->group(function () {
 
@@ -47,7 +47,7 @@ Route::middleware('auth')->group(function () {
             'destory' => 'tenant.destory'
         ])->middleware(['whoCanIn:super_admin']);
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('/category', CategoryController::class)
         ->except(['show'])
