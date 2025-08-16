@@ -14,7 +14,7 @@ export default function AuthSimpleLayout({ children, title, description }: Props
             <div className="w-full max-w-sm">
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
-                        <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
+                        <Link href={route('dashboard')} className="flex flex-col items-center gap-2 font-medium">
                             <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
                                 <h1 className='text-xl sm:text-2xl md:text-3xl font-bold'>POS</h1>
                             </div>

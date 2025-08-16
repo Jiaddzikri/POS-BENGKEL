@@ -24,7 +24,7 @@ import AppLogo from './app-logo';
 const mainNavItems: NavItem[] = [
   {
     title: 'Dashboard',
-    href: '/dashboard',
+    href: '/',
     icon: LayoutGrid,
     roles: ['super_admin', 'admin', 'manager', 'cashier'],
   },
@@ -152,7 +152,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard" prefetch>
+              <Link href="/" prefetch>
                 {/* <AppLogo /> */}
                 <h1 className='text-lg sm:text-xl md:text-2xl font-bold'>Point Of Sale</h1>
               </Link>

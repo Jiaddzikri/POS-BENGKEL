@@ -229,7 +229,8 @@ class UserController extends Controller
 
             $user = $this->userService->updateTenantId($id, $tenant_id);
 
-            return redirect('dashboard')->with('success', 'Sukses masuk ke ' . $user->tenant_id);
+
+            return redirect()->route('dashboard')->with('success', 'Sukses masuk ke ' . $user->tenant_id);
         } catch (\Throwable $e) {
             // dd($e);
             AppLog::execption($e);
@@ -249,7 +250,7 @@ class UserController extends Controller
             $user->save();
 
 
-            return redirect('/tenant');
+            return redirect()->route('tenant.index');
         } catch (\Throwable $e) {
             AppLog::execption($e);
             return redirect()->back()->with('error', 'an internal server error');

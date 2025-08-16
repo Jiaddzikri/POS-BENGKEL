@@ -34,7 +34,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Dashboard',
-    href: '/dashboard',
+    href: '/',
   },
 ];
 
