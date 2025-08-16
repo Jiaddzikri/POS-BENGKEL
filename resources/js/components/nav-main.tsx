@@ -12,6 +12,10 @@ interface NavMainProps {
 export function NavMain({ mainItems = [], inventoryItems = [], salesAndCustomerItems, administrationItems }: NavMainProps) {
   const page = usePage();
 
+  const isActive = (href: string) => {
+    return new RegExp(`^${href}(/|$|\\?)`).test(page.url);
+  };
+
   return (
     <>
       {mainItems.length < 1 ? (
@@ -22,7 +26,7 @@ export function NavMain({ mainItems = [], inventoryItems = [], salesAndCustomerI
           <SidebarMenu>
             {mainItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={page.url.startsWith(item.href)} tooltip={{ children: item.title }}>
+                <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={{ children: item.title }}>
                   <Link href={item.href} prefetch>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
@@ -42,7 +46,7 @@ export function NavMain({ mainItems = [], inventoryItems = [], salesAndCustomerI
           <SidebarMenu>
             {inventoryItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={page.url.startsWith(item.href)} tooltip={{ children: item.title }}>
+                <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={{ children: item.title }}>
                   <Link href={item.href} prefetch>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
@@ -62,7 +66,7 @@ export function NavMain({ mainItems = [], inventoryItems = [], salesAndCustomerI
           <SidebarMenu>
             {salesAndCustomerItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={page.url.startsWith(item.href)} tooltip={{ children: item.title }}>
+                <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={{ children: item.title }}>
                   <Link href={item.href} prefetch>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
@@ -82,7 +86,7 @@ export function NavMain({ mainItems = [], inventoryItems = [], salesAndCustomerI
           <SidebarMenu>
             {administrationItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={page.url.startsWith(item.href)} tooltip={{ children: item.title }}>
+                <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={{ children: item.title }}>
                   <Link href={item.href} prefetch>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
