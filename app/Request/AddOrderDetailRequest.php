@@ -2,7 +2,7 @@
 
 namespace App\Request;
 
-class addOrderDetailRequest
+class AddOrderDetailRequest
 {
   public ?string $orderId = null;
   public ?string $itemId = null;
