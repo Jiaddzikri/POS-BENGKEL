@@ -15,12 +15,13 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'nyanta',
-            'email' => 'nyanta123@gmail.com',
-            'password' => Hash::make('nyanta123@gmail.com'),
+            'name' => 'superadmin',
+            'email' => 'superadmin321@gmail.com',
+            'password' => Hash::make('agreindra321@gmail.com'),
             'role' => 'super_admin'
         ]);
 
-        $this->command->info('Raja iblis di buat!');
+        // $this->command->info('Raja iblis di buat!');
+        $this->command->info('Super admin telah dibuat!');
     }
 }
