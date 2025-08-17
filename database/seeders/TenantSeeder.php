@@ -15,19 +15,19 @@ class TenantSeeder extends Seeder
     {
         // Tenant::truncate();
 
-        Tenant::create([
-            'name' => 'Toko Jaya Abadi',
-        ]);
+        // Tenant::create([
+        //     'name' => 'Toko Jaya Abadi',
+        // ]);
 
-        Tenant::create([
-            'name' => 'Bengkel Maju Jaya Motor',
-        ]);
+        // Tenant::create([
+        //     'name' => 'Bengkel Maju Jaya Motor',
+        // ]);
 
-        Tenant::create([
-            'name' => 'Bengkel Maju Jaya Motor Cabang Tanah Abang',
-        ]);
+        // Tenant::create([
+        //     'name' => 'Bengkel Maju Jaya Motor Cabang Tanah Abang',
+        // ]);
     
 
-        $this->command->info('Tabel tenants berhasil diisi dengan data awal!');
+        // $this->command->info('Tabel tenants berhasil diisi dengan data awal!');
     }
 }
