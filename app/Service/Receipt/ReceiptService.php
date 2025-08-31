@@ -2,20 +2,16 @@
 
 namespace App\Service\Receipt;
 
-use App\Models\Order;
 use App\Models\SalesTransaction;
-use App\Request\CreateReceiptRequest;
 use Exception;
-use Log;
 
 class ReceiptService
 {
   public function getReceiptData(string $orderId): array
   {
     try {
-      $transaction = SalesTransaction::with(['details', 'tenant', 'details.item', 'details.variant'])->where('order_id', "=", $orderId)->firstOrFail();
-      
-      // dd($transaction);
+      $transaction = SalesTransaction::with(['details', 'user', 'tenant', 'details.item', 'details.variant'])->where('order_id', "=", $orderId)->firstOrFail();
+
 
       if ($transaction == null)
         throw new Exception('transaction not found', 404);
@@ -47,7 +43,7 @@ class ReceiptService
           'amountPaid' => $transaction->amount_paid,
           'change' => $transaction->change,
         ],
-        'cashier' => $order->created_by ?? 'Admin',
+        'cashier' => $transaction->user->name ?? 'Cashier',
         'printedAt' => now()->format('d/m/Y H:i:s'),
       ];
     } catch (Exception $error) {

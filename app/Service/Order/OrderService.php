@@ -88,6 +88,7 @@ class OrderService
       $createSalesTransactionRequest->orderId = $request->orderId;
       $createSalesTransactionRequest->tenantId = $order->tenant_id;
       $createSalesTransactionRequest->buyerId = $request->buyerId;
+      $createSalesTransactionRequest->userId = $request->userId;
       $createSalesTransactionRequest->invoiceNumber = "INV-" . time();
       $createSalesTransactionRequest->totalAmount = $totalAmount;
       $createSalesTransactionRequest->finalAmount = $finalAmount;

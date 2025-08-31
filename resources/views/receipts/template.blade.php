@@ -79,6 +79,7 @@
       </div>
       <div class="info-row">
         <span>Kasir: {{ $receiptData['cashier'] }}</span>
+        <br>
         @if($receiptData['buyer'])
       <span>Plg: {{ $receiptData['buyer']['name'] }}</span>
     @endif
