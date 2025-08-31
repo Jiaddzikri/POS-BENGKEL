@@ -19,6 +19,7 @@ class TransactionService
         "tenant_id" => $request->tenantId,
         'order_id' => $request->orderId,
         "name" => $buyer->name,
+        "user_id" => $request->userId,
         "buyer_id" => $request->buyerId,
         "invoice_number" => $request->invoiceNumber,
         "payment_method" => $request->paymentMethod,

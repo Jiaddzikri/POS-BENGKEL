@@ -18,6 +18,7 @@ class SalesTransaction extends Model
         'tenant_id',
         'buyer_id',
         'order_id',
+        'user_id',
         'invoice_number',
         'discount',
         'name',
@@ -42,5 +43,10 @@ class SalesTransaction extends Model
     public function buyer()
     {
         return $this->belongsTo(Buyer::class, 'buyer_id', 'id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

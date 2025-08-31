@@ -30,7 +30,9 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
-  public function __construct(private OrderService $orderService, private TransactionService $transactionService, private BuyerService $buyerService, private ReceiptService $receiptService) {}
+  public function __construct(private OrderService $orderService, private TransactionService $transactionService, private BuyerService $buyerService, private ReceiptService $receiptService)
+  {
+  }
   public function createOrder(Request $request)
   {
     $user = $request->user();
@@ -120,6 +122,7 @@ class OrderController extends Controller
       $processOrderRequest = new ProcessOrderRequest();
       $processOrderRequest->orderId = $orderId;
       $processOrderRequest->buyerId = $findBuyer->id;
+      $processOrderRequest->userId = $request->user()->id;
       $processOrderRequest->payment = [
         "amount_paid" => (int) $request->post("amount_paid", 0),
         "payment_method" => $request->post('payment_method', 'cash')
