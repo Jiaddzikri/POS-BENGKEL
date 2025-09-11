@@ -73,6 +73,7 @@ class OrderController extends Controller
       ->where('is_deleted', false)
       ->whereHas('item', function ($query) use ($tenantId) {
         $query->where('tenant_id', $tenantId);
+        $query->where('status', 'active');
       })
       ->when($search, function ($query, $search) {
         $query->where(function ($q) use ($search) {
