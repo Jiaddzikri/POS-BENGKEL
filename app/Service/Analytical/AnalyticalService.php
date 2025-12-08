@@ -228,11 +228,20 @@ class AnalyticalService
       ->join('items', 'sales_transaction_details.item_id', '=', 'items.id')
       ->join('variant_items', 'sales_transaction_details.variant_id', '=', 'variant_items.id')
       ->join('categories', 'items.category_id', "=", 'categories.id')
-      ->where('sales_transactions.tenant_id', '=', $request->tenantId)
+      
+      
+      ->when($request->tenantId, function ($q) use ($request) {
+          $q->where('sales_transactions.tenant_id', $request->tenantId);
+      })
+      
       ->whereBetween('sales_transactions.created_at', [$currentStart, $currentEnd])
-
-      ->groupBy('sales_transaction_details.item_id', 'items.name')
-      ->groupBy('sales_transaction_details.variant_id', 'variant_items.sku')
+      ->groupBy(
+          'sales_transaction_details.item_id', 
+          'items.name', 
+          'sales_transaction_details.variant_id', 
+          'variant_items.sku',
+          'categories.name' 
+      )
       ->orderByDesc('total_quantity')
       ->limit(5)
       ->get();
