@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Request;
+
 class DiscountUsageHistoryAttributeRequest
 {
   public string $tenant_id;
