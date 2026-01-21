@@ -6,7 +6,7 @@ use App\Models\ItemRecord;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\VariantItem;
-use App\Request\addOrderDetailRequest;
+use App\Request\AddOrderDetailRequest;
 use App\Request\CreateOrderRequest;
 use App\Request\CreateSalesTransactionRequest;
 use App\Request\ProcessOrderRequest;
@@ -105,7 +105,7 @@ class OrderService
     });
   }
 
-  public function addOrderDetail(addOrderDetailRequest $request)
+  public function addOrderDetail(AddOrderDetailRequest $request)
   {
     return DB::transaction(function () use ($request) {
       $orderItem = OrderItem::where('item_id', $request->itemId)->where('variant_item_id', '=', $request->variantItemId)
@@ -136,7 +136,7 @@ class OrderService
     });
   }
 
-  public function updateQuantity(addOrderDetailRequest $request)
+  public function updateQuantity(AddOrderDetailRequest $request)
   {
     return DB::transaction(function () use ($request) {
       $orderItem = OrderItem::where('item_id', $request->itemId)

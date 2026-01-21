@@ -13,7 +13,7 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\VariantItem;
-use App\Request\addOrderDetailRequest;
+use App\Request\AddOrderDetailRequest;
 use App\Request\CreateBuyerRequest;
 use App\Request\CreateOrderRequest;
 use App\Request\ProcessOrderRequest;
@@ -144,7 +144,7 @@ class OrderController extends Controller
   public function addOrderDetail(Request $request, $orderId)
   {
     try {
-      $detailRequest = new addOrderDetailRequest();
+      $detailRequest = new AddOrderDetailRequest();
       $detailRequest->orderId = $orderId;
       $detailRequest->itemId = $request->post('item_id');
       $detailRequest->variantItemId = $request->post('variant_id');
@@ -166,7 +166,7 @@ class OrderController extends Controller
   public function updateQuantity(Request $request, $orderId)
   {
     try {
-      $detailRequest = new addOrderDetailRequest();
+      $detailRequest = new AddOrderDetailRequest();
       $detailRequest->orderId = $orderId;
       $detailRequest->itemId = $request->post('item_id');
       $detailRequest->variantItemId = $request->post('variant_id');
