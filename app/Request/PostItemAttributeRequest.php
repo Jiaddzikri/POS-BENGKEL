@@ -10,5 +10,5 @@ class PostItemAttributeRequest
   public int $selling_price;
   public int $purchase_price;
   public string $brand;
-  public array $variants;
+  public array $variants = [];
 }
