@@ -3,7 +3,7 @@
 namespace App\Request;
 class UpdateItemRequest
 {
-  public string $tenant_id;
+  public ?string $tenant_id;
   public string $name;
   public string $description;
   public string $category_id;

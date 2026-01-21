@@ -3,6 +3,7 @@ import { numberFormat } from '@/utils/number-format';
 import { router } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Edit3, MoreVertical, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { Accordion, AccordionContent, AccordionItem } from './ui/accordion';
 import {
   AlertDialog,
@@ -119,7 +120,7 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                   <DropdownMenuItem onClick={() => handleShowQr(variant.sku)} className="cursor-pointer">
-                                    Tampilkan QrCode
+                                    Tampilkan QrCode Men
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -289,7 +290,7 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
       <Dialog open={openQr} onOpenChange={setOpenQrModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center">QR Code</DialogTitle>
+            <DialogTitle className="text-center">QR Code Men</DialogTitle>
           </DialogHeader>
           <div className="flex justify-center p-4">
             {sku && (
@@ -298,7 +299,9 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
                 src={`/qr-code/${sku}`}
                 alt={`QR Code untuk SKU: ${sku}`}
                 onError={(e) => {
-                  e.currentTarget.src = '/placeholder-qr.png';
+                  const target = e.currentTarget as HTMLImageElement;
+                  console.error('Failed to load QR code:', target.src);
+                  toast.error('Gagal memuat QR Code. Silakan coba lagi.');
                 }}
               />
             )}

@@ -83,8 +83,6 @@ export default function ItemSearchHeader({ filters, categories = [] }: ItemProps
     );
   };
 
-  console.log(sortBy);
-
   const hasActiveFilters = selectedCategory || selectedStatus || minPrice || maxPrice || querySearch || sortBy || sortOrder;
 
   const activeFilterCount = [

@@ -13,22 +13,22 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-    //     $tenants = Tenant::all();
+        $tenants = Tenant::all();
 
-    //     if ($tenants->isEmpty()) {
-    //         $this->command->info('Tidak ada tenant di database. Silakan jalankan TenantSeeder terlebih dahulu.');
-    //         return;
-    //     }
+        if ($tenants->isEmpty()) {
+            $this->command->info('Tidak ada tenant di database. Silakan jalankan TenantSeeder terlebih dahulu.');
+            return;
+        }
 
-    // $categories = ["filter", "pengapian", 'kopling', 'body'];
+    $categories = ["filter", "pengapian", 'kopling', 'body'];
 
 
-    //     foreach ($tenants as $tenant) {
-    //         foreach ($categories as $category) {
-    //             $tenant->categories()->create([
-    //                 'name' => $category,
-    //             ]);
-    //         }
-    //     }
+        foreach ($tenants as $tenant) {
+            foreach ($categories as $category) {
+                $tenant->categories()->create([
+                    'name' => $category,
+                ]);
+            }
+        }
     }
 }
