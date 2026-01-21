@@ -1,0 +1,1 @@
+import{j as e}from"./app-BSuvoTbS.js";/* empty css            */function t(){return e.jsx("div",{className:"px-6 py-2",children:e.jsx("div",{className:"flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between",children:e.jsx("div",{children:e.jsx("h1",{className:"text-2xl font-semibold",children:"Tenant"})})})})}export{t as default};

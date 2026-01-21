@@ -1,10 +1,10 @@
 import { FormItem, Variant } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
-import { Button, Input } from '@headlessui/react';
-import { SetDataAction } from '@inertiajs/react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { Label } from './ui/label';
 
 type FormDataKey = keyof FormItem;
@@ -21,15 +21,7 @@ interface ValidationErrors {
 
 interface AddItemVarianProps {
   formData: FormItem;
-  setData: SetDataAction<{
-    name: string;
-    category_id: string;
-    description: string;
-    purchase_price: any;
-    selling_price: any;
-    brand: string;
-    variants: Variant[];
-  }>;
+  setData: any; // Inertia's setData has overloaded signatures
 }
 
 export default function AddItemVariant({ formData, setData }: AddItemVarianProps) {
@@ -129,7 +121,7 @@ export default function AddItemVariant({ formData, setData }: AddItemVarianProps
         sku: variantForm.sku.trim().toUpperCase(),
       };
 
-      setData((prev) => ({
+      setData((prev: any) => ({
         ...prev,
         variants: [...prev.variants, cleanVariant],
       }));
@@ -155,7 +147,7 @@ export default function AddItemVariant({ formData, setData }: AddItemVarianProps
   const removeVariant = (indexToRemove: number) => {
     if (formData.variants && Array.isArray(formData.variants)) {
       const updatedVariants = formData.variants.filter((_, index) => index !== indexToRemove);
-      setData((prev) => ({
+      setData((prev: any) => ({
         ...prev,
         variants: updatedVariants,
       }));
@@ -270,14 +262,7 @@ export default function AddItemVariant({ formData, setData }: AddItemVarianProps
           </div>
 
           <div>
-            <Button
-              type="button"
-              onClick={addVariantValueHandler}
-              disabled={isSubmitting}
-              className={`flex items-center gap-1 rounded-md border px-6 py-2 text-sm font-medium transition-colors ${
-                isSubmitting ? 'cursor-not-allowed bg-gray-100 text-gray-400' : 'hover:bg-gray-50 active:bg-gray-100'
-              }`}
-            >
+            <Button type="button" onClick={addVariantValueHandler} disabled={isSubmitting} variant="outline" className="flex items-center gap-1">
               <Plus className="h-4 w-4" />
               {isSubmitting ? 'Adding...' : 'Add Variant'}
             </Button>
@@ -325,7 +310,9 @@ export default function AddItemVariant({ formData, setData }: AddItemVarianProps
                     <Button
                       type="button"
                       onClick={() => removeVariant(index)}
-                      className="flex items-center justify-center rounded-md border border-red-200 p-2 text-red-600 transition-colors hover:border-red-300 hover:bg-red-50"
+                      variant="outline"
+                      size="icon"
+                      className="border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50"
                       title="Remove variant"
                     >
                       <Trash2 className="h-4 w-4" />

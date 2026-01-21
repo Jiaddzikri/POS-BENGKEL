@@ -3,7 +3,7 @@
 namespace App\Request;
 class PostItemAttributeRequest
 {
-  public string $tenant_id;
+  public ?string $tenant_id;
   public string $name;
   public string $desciption;
   public string $category_id;

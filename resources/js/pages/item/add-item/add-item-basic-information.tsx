@@ -1,6 +1,5 @@
-import { Category, FormItem, Variant } from '@/types';
+import { Category, FormItem } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
-import { SetDataAction } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -13,15 +12,7 @@ type Errors = Partial<Record<keyof FormItem, string>>;
 interface AddItemBasicInformationProps {
   formData: FormItem;
   categories: Category[];
-  setData: SetDataAction<{
-    name: string;
-    category_id: string;
-    description: string;
-    purchase_price: any;
-    selling_price: any;
-    brand: string;
-    variants: Variant[];
-  }>;
+  setData: any; // Inertia's setData has overloaded signatures
   errors: Errors;
 }
 
@@ -49,7 +40,7 @@ export default function AddItemBasicInformation({ categories, setData, formData,
               </SelectTrigger>
               <SelectContent>
                 {categories.length === 0 ? (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="no-category" disabled>
                     No categories available
                   </SelectItem>
                 ) : (

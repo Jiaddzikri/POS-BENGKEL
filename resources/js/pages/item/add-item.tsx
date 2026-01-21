@@ -3,7 +3,6 @@ import AppLayout from '@/layouts/app-layout';
 import AddItemForm from '@/pages/item/add-item/add-item-form';
 import { BreadcrumbItem, Category, FormItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { Toaster } from 'sonner';
 
 type FormItemKey = keyof FormItem;
 
@@ -11,7 +10,7 @@ interface AddItemProps {
   categories: Category[];
   item?: FormItem;
 }
-export default function AddItem({ categories, item }: AddItemProps) {
+export default function AddItem({ categories = [] }: AddItemProps) {
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Item Management',
@@ -28,7 +27,6 @@ export default function AddItem({ categories, item }: AddItemProps) {
       <Head title="Add Item" />
       <AddItemHeader />
       <AddItemForm categories={categories} />
-      <Toaster />
     </AppLayout>
   );
 }
