@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Tenant; // <-- Import model Tenant
+use App\Models\Tenant;
 
 class TenantSeeder extends Seeder
 {
@@ -13,21 +12,10 @@ class TenantSeeder extends Seeder
      */
     public function run(): void
     {
-        // Tenant::truncate();
+        Tenant::firstOrCreate(
+            ['name' => 'Alpinolo Scooter'],
+        );
 
-        Tenant::create([
-            'name' => 'Toko Jaya Abadi',
-        ]);
-
-        Tenant::create([
-            'name' => 'Bengkel Maju Jaya Motor',
-        ]);
-
-        Tenant::create([
-            'name' => 'Bengkel Maju Jaya Motor Cabang Tanah Abang',
-        ]);
-    
-
-        $this->command->info('Tabel tenants berhasil diisi dengan data awal!');
+        $this->command->info('Tenant "Alpinolo Scooter" siap!');
     }
 }

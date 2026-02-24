@@ -61,14 +61,15 @@ const AnalyticReport = ({
   bestSellingItem,
   bestSellingCategory,
 }: AnalyticReportProps) => {
-  const [selectedPeriod, setSelectedPeriod] = useState(filters.range);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(filters.range ?? 'today');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [startDate, setStartDate] = useState<Date | null>(filters.startDate !== null ? new Date(filters.startDate) : null);
-  const [endDate, setEndDate] = useState<Date | null>(filters.endDate !== null ? new Date(filters.endDate) : null);
+  const [startDate, setStartDate] = useState<Date | null>(filters.startDate ? new Date(filters.startDate) : null);
+  const [endDate, setEndDate] = useState<Date | null>(filters.endDate ? new Date(filters.endDate) : null);
+  const [orderType, setOrderType] = useState<'online' | 'offline' | ''>(filters.order_type ?? '');
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    router.get(route('analytical.index'), filters as {}, {
+    router.get(route('analytical.index'), { ...filters, order_type: orderType } as {}, {
       preserveState: true,
 
       onFinish: () => setIsRefreshing(false),
@@ -83,6 +84,7 @@ const AnalyticReport = ({
       route('analytical.index'),
       {
         range: selectedPeriod,
+        order_type: orderType,
       },
       {
         preserveState: true,
@@ -108,6 +110,7 @@ const AnalyticReport = ({
       {
         startDate: formattedStartDate,
         endDate: formattedEndDate,
+        order_type: orderType,
       },
       {
         preserveState: true,
@@ -127,6 +130,21 @@ const AnalyticReport = ({
     handleCustomDate();
   }, [startDate, endDate]);
 
+  // Re-fetch whenever the order-type toggle changes
+  useEffect(() => {
+    const currentParams: Record<string, string> = { order_type: orderType };
+    if (startDate && endDate) {
+      currentParams.startDate = formatDate(startDate, 'yyyy-MM-dd');
+      currentParams.endDate = formatDate(endDate, 'yyyy-MM-dd');
+    } else if (selectedPeriod) {
+      currentParams.range = selectedPeriod;
+    }
+    router.get(route('analytical.index'), currentParams, {
+      preserveState: true,
+      replace: true,
+    });
+  }, [orderType]);
+
   return (
     <AppLayout>
       <Head title="Analytical Reports " />
@@ -141,6 +159,8 @@ const AnalyticReport = ({
           setStartDate={setStartDate}
           endDate={endDate}
           setEndDate={setEndDate}
+          orderType={orderType}
+          setOrderType={setOrderType}
           params={filters}
         />
 

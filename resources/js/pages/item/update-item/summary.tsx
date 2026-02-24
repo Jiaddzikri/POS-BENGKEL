@@ -1,3 +1,4 @@
+import { numberFormat } from '@/utils/number-format';
 import { Variant } from '@/types';
 
 interface SummaryProps {
@@ -21,11 +22,11 @@ export default function Summary({ variants }: SummaryProps) {
         </div>
         <div className="flex justify-between">
           <span className="text-sm">Harga Terendah:</span>
-          <span className="text-sm font-medium">Rp {Math.min(...variants.map((v) => v.additional_price)).toLocaleString()}</span>
+          <span className="text-sm font-medium">Rp {numberFormat(Math.min(...variants.map((v) => v.price)))}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-sm">Harga Tertinggi:</span>
-          <span className="text-sm font-medium">Rp {Math.max(...variants.map((v) => v.additional_price)).toLocaleString()}</span>
+          <span className="text-sm font-medium">Rp {numberFormat(Math.max(...variants.map((v) => v.price)))}</span>
         </div>
       </div>
     </div>

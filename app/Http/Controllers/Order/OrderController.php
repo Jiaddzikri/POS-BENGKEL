@@ -13,6 +13,7 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\VariantItem;
+use App\Models\Item;
 use App\Request\AddOrderDetailRequest;
 use App\Request\CreateBuyerRequest;
 use App\Request\CreateOrderRequest;
@@ -37,12 +38,24 @@ class OrderController extends Controller
   {
     $user = $request->user();
 
-    $createOrderRequest = new CreateOrderRequest();
-    $createOrderRequest->userId = $user->id;
-    $createOrderRequest->tenantId = $user->tenant_id;
-    $createOrderRequest->status = 'processing';
-
     try {
+      // Reuse any existing 'processing' order for this user to prevent phantom orders
+      // (e.g. from sidebar prefetch or multiple clicks)
+      $existingOrder = Order::where('tenant_id', $user->tenant_id)
+        ->where('user_id', $user->id)
+        ->where('order_status', 'processing')
+        ->latest()
+        ->first();
+
+      if ($existingOrder) {
+        return redirect()->route("menu", ["orderId" => $existingOrder->id]);
+      }
+
+      $createOrderRequest = new CreateOrderRequest();
+      $createOrderRequest->userId = $user->id;
+      $createOrderRequest->tenantId = $user->tenant_id;
+      $createOrderRequest->status = 'processing';
+
       $order = $this->orderService->create($createOrderRequest);
 
       return redirect()
@@ -57,6 +70,46 @@ class OrderController extends Controller
         ->withInput();
     }
   }
+
+  public function reorder(Request $request, string $sourceOrderId)
+  {
+    $user = $request->user();
+
+    try {
+      DB::beginTransaction();
+
+      // Create new blank order
+      $createOrderRequest = new CreateOrderRequest();
+      $createOrderRequest->userId = $user->id;
+      $createOrderRequest->tenantId = $user->tenant_id;
+      $createOrderRequest->status = 'processing';
+      $newOrder = $this->orderService->create($createOrderRequest);
+
+      // Copy items from old order using the latest variant price
+      $oldItems = OrderItem::with('variant:id,price')->where('order_id', $sourceOrderId)->get();
+
+      foreach ($oldItems as $oldItem) {
+        $detailRequest = new AddOrderDetailRequest();
+        $detailRequest->orderId = $newOrder->id;
+        $detailRequest->itemId = $oldItem->item_id;
+        $detailRequest->variantItemId = $oldItem->variant_item_id;
+        $detailRequest->quantity = $oldItem->quantity;
+        $detailRequest->priceAtSale = (int) ($oldItem->variant?->price ?? $oldItem->price_at_sale);
+
+        $this->orderService->addOrderDetail($detailRequest);
+      }
+
+      DB::commit();
+
+      return redirect()
+        ->route('menu', ['orderId' => $newOrder->id])
+        ->with('success', 'Order baru berhasil dibuat dari riwayat transaksi.');
+    } catch (Throwable $e) {
+      DB::rollBack();
+      AppLog::execption($e);
+      return redirect()->back()->with('error', $e->getMessage());
+    }
+  }
   public function index(Request $request, string $orderId)
   {
     $tenantId = $request->user()->tenant_id;
@@ -69,34 +122,35 @@ class OrderController extends Controller
     $isOrderCancelled = $order->order_status === 'cancelled';
     $discount = $order->discount;
 
-    $variants = VariantItem::with('item.category')
+    $variants = Item::with('category')
       ->where('is_deleted', false)
-      ->whereHas('item', function ($query) use ($tenantId) {
-        $query->where('tenant_id', $tenantId);
-        $query->where('status', 'active');
-      })
+      ->where('status', 'active')
+      ->where('tenant_id', $tenantId)
       ->when($search, function ($query, $search) {
-        $query->where(function ($q) use ($search) {
-          $searchTerm = '%' . $search . '%';
-          $q->where('sku', 'like', $searchTerm)
-            ->orWhere('name', 'like', $searchTerm)
-            ->orWhereHas('item', function ($itemQuery) use ($searchTerm) {
-              $itemQuery->where('name', 'like', $searchTerm);
-            })
-            ->orWhereHas('item.category', function ($categoryQuery) use ($searchTerm) {
-              $categoryQuery->where('name', 'like', $searchTerm);
+        $searchTerm = '%' . $search . '%';
+        $query->where(function ($q) use ($searchTerm) {
+          $q->where('name', 'like', $searchTerm)
+            ->orWhere('part_number', 'like', $searchTerm)
+            ->orWhere('sku', 'like', $searchTerm)
+            ->orWhereHas('category', function ($c) use ($searchTerm) {
+              $c->where('name', 'like', $searchTerm);
             });
         });
       })
       ->latest()
-
-      ->paginate(10)
+      ->paginate(100)
       ->withQueryString();
 
-    $orderDetail = OrderItem::with(['item', 'variant'])->where('order_id', '=', $orderId)->get();
+    $categories = Category::where('tenant_id', $tenantId)
+      ->where('is_deleted', false)
+      ->orderBy('name')
+      ->get(['id', 'name']);
+
+    $orderDetail = OrderItem::with(['item.category', 'variant'])->where('order_id', '=', $orderId)->get();
 
     return Inertia::render("order", [
       "items" => VariantItemResource::collection($variants),
+      'categories' => $categories,
       'discount' => $discount,
       'isOrderCompleted' => $isOrderCompleted,
       'isOrderHold' => $isOrderHold,
@@ -129,6 +183,7 @@ class OrderController extends Controller
         "payment_method" => $request->post('payment_method', 'cash')
       ];
       $processOrderRequest->discount = (int) $request->post('discount', 0);
+      $processOrderRequest->orderType = $request->post('order_type', 'offline') ?? 'offline';
 
       $this->orderService->processOrder($processOrderRequest);
 
@@ -197,8 +252,8 @@ class OrderController extends Controller
         'user:id,name',
         'buyer:id,name,phone_number',
         'orderItem',
-        'orderItem.item:id,name',
-        'orderItem.variant:id,name,sku',
+        'orderItem.item:id,name,part_number',
+        'orderItem.variant:id,name,sku,price',
       ])
         ->where('tenant_id', $tenantId)
         ->when($status, function ($query, $status) {

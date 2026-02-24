@@ -15,6 +15,21 @@ interface StockMovementProps {
   filters: InventoryFilters;
 }
 
+const MOVEMENT_TYPE_CONFIG = {
+  sold: { label: 'Terjual', className: 'bg-red-100 text-red-800' },
+  added: { label: 'Ditambah', className: 'bg-green-100 text-green-800' },
+  adjusted: { label: 'Disesuaikan', className: 'bg-blue-100 text-blue-800' },
+  removed: { label: 'Dikurangi', className: 'bg-orange-100 text-orange-800' },
+} as const;
+
+function MovementTypeBadge({ type }: { type: keyof typeof MOVEMENT_TYPE_CONFIG | string }) {
+  const config = MOVEMENT_TYPE_CONFIG[type as keyof typeof MOVEMENT_TYPE_CONFIG] ?? {
+    label: type,
+    className: 'bg-gray-100 text-gray-700',
+  };
+  return <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${config.className}`}>{config.label}</span>;
+}
+
 export default function StockMovement({ stockMovementData, filters }: StockMovementProps) {
   const { data, links, meta } = stockMovementData;
   const [querySearch, setQuerySearch] = useState<string>(filters?.search || '');
@@ -219,19 +234,25 @@ export default function StockMovement({ stockMovementData, filters }: StockMovem
                     <span className="font-mono text-sm">{record.sku}</span>
                   </td>
                   <td className="px-4 py-4">
-                    <div className="flex items-center">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          record.stock_in > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {record.stock_in > 0 ? 'Stock In' : 'Stock Out'}
-                      </span>
-                    </div>
+                    <MovementTypeBadge type={record.movement_type} />
                   </td>
                   <td className="px-4 py-4">
-                    <span className={`text-sm font-medium ${record.stock_in > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {record.stock_in > 0 ? `+${record.stock_in}` : `-${record.stock_out}`}
+                    <span
+                      className={`text-sm font-medium ${
+                        record.movement_type === 'sold' || record.movement_type === 'removed'
+                          ? 'text-red-600'
+                          : record.movement_type === 'added'
+                            ? 'text-green-600'
+                            : 'text-blue-600'
+                      }`}
+                    >
+                      {record.movement_type === 'sold' || record.movement_type === 'removed'
+                        ? `-${record.stock_out}`
+                        : record.movement_type === 'added'
+                          ? `+${record.stock_in}`
+                          : record.stock_in > 0
+                            ? `+${record.stock_in}`
+                            : `-${record.stock_out}`}
                     </span>
                   </td>
                 </tr>

@@ -1,10 +1,12 @@
 import DashboardCategory from '@/components/dashboard-category';
 import DashboardChart from '@/components/dashboard-chart';
+import DashboardDeadStock from '@/components/dashboard-dead-stock';
 import DashboardHeader from '@/components/dashboard-header';
 import DashboardLayout from '@/components/dashboard-layout';
 import DashboardLowStock from '@/components/dashboard-low-stock';
 import DashboardMetric from '@/components/dashboard-metric';
 import DashboardRevenue from '@/components/dashboard-revenue';
+import DashboardSummaryMetrics from '@/components/dashboard-summary-metrics';
 import DashboardTable from '@/components/dashboard-table';
 import DashboardTopProducts from '@/components/dashboard-top-product';
 import DashboardTransactions from '@/components/dashboard-transaction';
@@ -15,9 +17,12 @@ import {
   AnalyticBestSelling,
   AnalyticBestSellingCategory,
   AnalyticsCompletedTransaction,
+  AnalyticsDailyServiceVolume,
+  AnalyticsDeadStock,
   AnalyticsFilter,
   AnalyticsRevenue,
   AnalyticsSalesTrend,
+  AnalyticsTotalProfit,
   AnalyticsTransaction,
   DashboardTransaction,
   ItemData,
@@ -46,6 +51,9 @@ interface DashboardProps {
   salesTrend: AnalyticsSalesTrend;
   bestSellingCategory: AnalyticBestSellingCategory[];
   bestSellingItem: AnalyticBestSelling[];
+  totalProfit: AnalyticsTotalProfit;
+  dailyServiceVolume: AnalyticsDailyServiceVolume;
+  deadStock: AnalyticsDeadStock;
   lowStockItems: ItemData;
   newestTransactions: DashboardTransaction[];
   filters: AnalyticsFilter;
@@ -60,6 +68,9 @@ export default function Dashboard({
   salesTrend,
   bestSellingCategory,
   bestSellingItem,
+  totalProfit,
+  dailyServiceVolume,
+  deadStock,
   lowStockItems,
   newestTransactions,
 }: DashboardProps): React.JSX.Element {
@@ -117,6 +128,7 @@ export default function Dashboard({
           totalTransaction={totalTransaction}
           revenue={revenue}
         />
+        <DashboardSummaryMetrics totalProfit={totalProfit} dailyServiceVolume={dailyServiceVolume} filters={filters} />
         <DashboardChart>
           <DashboardRevenue filters={filters} salesTrend={salesTrend} />
           <DashboardCategory bestSellingCategory={bestSellingCategory} />
@@ -125,6 +137,7 @@ export default function Dashboard({
           <DashboardTopProducts bestSellingItem={bestSellingItem} />
           <DashboardLowStock lowStockItems={lowStockItems.data} />
         </DashboardTable>
+        <DashboardDeadStock deadStock={deadStock} />
         <DashboardTransactions>
           <DashboardTransactionTable newestTransactions={newestTransactions} />
         </DashboardTransactions>

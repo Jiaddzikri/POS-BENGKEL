@@ -4,6 +4,7 @@ import { convertDate } from '@/utils/date-convert';
 import { router } from '@inertiajs/react';
 import React, { useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem } from './ui/accordion';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 
 interface OrderHistoryTable {
@@ -12,6 +13,16 @@ interface OrderHistoryTable {
 
 export default function OrderHistoryTable({ orderHistories }: OrderHistoryTable) {
   const [openDetails, setOpenDetails] = useState<string | null>(null);
+
+  function handleReorder(orderId: string) {
+    router.post(
+      route('order.reorder', { orderId }),
+      {},
+      {
+        preserveScroll: true,
+      },
+    );
+  }
 
   function renderDetailsTransaction(orderHistory: Order, orderItems: OrderItem[], orderId: string) {
     if (openDetails !== orderId) return null;
@@ -27,17 +38,27 @@ export default function OrderHistoryTable({ orderHistories }: OrderHistoryTable)
                     <tr className="text-sm font-semibold">
                       <th className="px-2 py-2 text-center">No</th>
                       <th className="px-2 py-2">Item Name</th>
+                      <th className="px-2 py-2">Part Number</th>
                       <th className="px-2 py-2">SKU</th>
                       <th className="px-2 py-2">Variant Name</th>
                       <th className="px-2 py-2 text-center">Quantity</th>
-                      <th className="px-2 py-2">Price</th>
+                      <th className="px-2 py-2">Harga Saat Transaksi</th>
                     </tr>
                   </thead>
                   <tbody>
                     {orderItems.map((detail, idx) => (
-                      <tr key={detail.sku}>
+                      <tr key={detail.sku ?? idx}>
                         <td className="px-2 py-2 text-center">{idx + 1}</td>
                         <td className="px-2 py-2">{detail.item_name}</td>
+                        <td className="px-2 py-2">
+                          {detail.part_number ? (
+                            <Badge variant="outline" className="font-mono text-xs">
+                              {detail.part_number}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
                         <td className="px-2 py-2">{detail.sku}</td>
                         <td className="px-2 py-2">{detail.variant_name}</td>
                         <td className="px-2 py-2 text-center">x {detail.quantity}</td>
@@ -47,7 +68,7 @@ export default function OrderHistoryTable({ orderHistories }: OrderHistoryTable)
                   </tbody>
                   <tfoot className="text-xs">
                     <tr className="border-t">
-                      <td colSpan={6} className="pt-3 pr-4 text-right font-semibold">
+                      <td colSpan={7} className="pt-3 pr-4 text-right font-semibold">
                         Total
                       </td>
                       <td className="py-1 pt-3 pr-2 text-right">{convertCurrency(orderHistory.total_amount)}</td>
@@ -55,7 +76,7 @@ export default function OrderHistoryTable({ orderHistories }: OrderHistoryTable)
 
                     {orderHistory.discount > 0 && (
                       <tr className="align-top">
-                        <td colSpan={6} className="py-1 pr-4 text-right font-semibold">
+                        <td colSpan={7} className="py-1 pr-4 text-right font-semibold">
                           Discount
                         </td>
                         <td className="space-y-1 py-1 pr-2 text-right text-destructive-foreground">
@@ -68,13 +89,26 @@ export default function OrderHistoryTable({ orderHistories }: OrderHistoryTable)
                     )}
 
                     <tr>
-                      <td colSpan={6} className="py-1 pr-4 text-right font-semibold">
+                      <td colSpan={7} className="py-1 pr-4 text-right font-semibold">
                         Final Amount
                       </td>
                       <td className="py-1 pr-2 text-right">{convertCurrency(orderHistory.final_amount)}</td>
                     </tr>
                   </tfoot>
                 </table>
+
+                {orderHistory.status === 'completed' && (
+                  <div className="mt-3 flex justify-end">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                      onClick={() => handleReorder(orderHistory.id)}
+                    >
+                      Re-order (Harga Terbaru)
+                    </Button>
+                  </div>
+                )}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -124,7 +158,10 @@ export default function OrderHistoryTable({ orderHistories }: OrderHistoryTable)
                     <td className="px-3">
                       <Button
                         className={'w-full bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-600'}
-                        onClick={() => router.get(route('menu', { orderId: history.id }))}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.get(route('menu', { orderId: history.id }));
+                        }}
                         disabled={history.status === 'completed'}
                       >
                         {history.status === 'completed' ? 'Done' : 'Continue'}

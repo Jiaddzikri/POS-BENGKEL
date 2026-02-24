@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Tenant;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,14 +14,20 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'name' => 'superadmin',
-            'email' => 'superadmin321@gmail.com',
-            'password' => Hash::make('agreindra321@gmail.com'),
-            'role' => 'super_admin'
-        ]);
+        $tenant = Tenant::where('name', 'Alpinolo Scooter')->firstOrFail();
 
-        // $this->command->info('Raja iblis di buat!');
-        $this->command->info('Super admin telah dibuat!');
+        User::firstOrCreate(
+            ['email' => 'superadmin@alpinoloscooter.com'],
+            [
+                'name'      => 'Super Admin',
+                'password'  => Hash::make('Alpinolo@Scooter2025!'),
+                'role'      => 'super_admin',
+                'tenant_id' => $tenant->id,
+            ]
+        );
+
+        $this->command->info('Super admin Alpinolo Scooter telah dibuat!');
+        $this->command->info('  Email    : superadmin@alpinoloscooter.com');
+        $this->command->info('  Password : Alpinolo@Scooter2025!');
     }
 }

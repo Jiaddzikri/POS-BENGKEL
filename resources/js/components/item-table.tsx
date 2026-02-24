@@ -1,4 +1,4 @@
-import { ItemFilter, ItemList, Pagination, Variant } from '@/types';
+import { ItemFilter, ItemRecord, Pagination } from '@/types';
 import { numberFormat } from '@/utils/number-format';
 import { router } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Edit3, MoreVertical, Trash2 } from 'lucide-react';
@@ -22,7 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 interface ItemTableProps {
-  items: ItemList[];
+  items: ItemRecord[];
   filters: ItemFilter;
   pagination: Pagination;
 }
@@ -78,7 +78,7 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
     }, 300);
   };
 
-  function renderDetailsItem(item: ItemList) {
+  function renderDetailsItem(item: ItemRecord) {
     if (openDetails !== item.id) return null;
 
     return (
@@ -88,46 +88,42 @@ export default function ItemTable({ items, pagination, filters }: ItemTableProps
             <AccordionItem value={item.id}>
               <AccordionContent className="accordion-content flex flex-col p-0 text-balance">
                 <div className="mt-2">
-                  <h4 className="mb-2 text-xs font-bold uppercase">Varian Produk:</h4>
+                  <h4 className="mb-2 text-xs font-bold uppercase">Detail Produk:</h4>
                   <table className="w-full rounded-md border text-xs">
                     <thead className="">
                       <tr className="text-left">
-                        <th className="p-2 font-medium">Nama Varian</th>
                         <th className="p-2 font-medium">SKU</th>
+                        <th className="p-2 font-medium">Part Number</th>
                         <th className="p-2 text-center font-medium">Stok</th>
-                        <th className="p-2 text-center font-medium">Harga Tambahan</th>
-                        <th className="p-2 text-center font-medium">Harga Final</th>
+                        <th className="p-2 text-center font-medium">Min. Stok</th>
+                        <th className="p-2 text-center font-medium">Harga Jual</th>
                         <th className="p-2 text-center font-medium">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {item.variants.map((variant: Variant) => (
-                        <tr key={variant.id} className="border-t">
-                          <td className="p-2">{variant.name}</td>
-                          <td className="p-2 font-mono">{variant.sku}</td>
-                          <td className="p-2 text-center">{variant.stock}</td>
-                          <td className="p-2 text-center font-semibold">{numberFormat(Number(variant.additional_price))}</td>
-                          <td className="p-2 text-center font-semibold">
-                            {numberFormat(Number(item.selling_price) + Number(variant.additional_price))}
-                          </td>
-                          <td className="p-2">
-                            <div className="flex items-center justify-center gap-2">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="icon" className="h-7 w-7">
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuItem onClick={() => handleShowQr(variant.sku)} className="cursor-pointer">
-                                    Tampilkan QrCode Men
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      <tr className="border-t">
+                        <td className="p-2 font-mono">{item.sku || '-'}</td>
+                        <td className="p-2 font-mono">{item.part_number || '-'}</td>
+                        <td className={`p-2 text-center font-semibold ${item.low_stock ? 'text-red-500' : ''}`}>{item.stock}</td>
+                        <td className="p-2 text-center">{item.minimum_stock}</td>
+                        <td className="p-2 text-center font-semibold">{numberFormat(Number(item.selling_price))}</td>
+                        <td className="p-2">
+                          <div className="flex items-center justify-center gap-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon" className="h-7 w-7">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => handleShowQr(item.sku || '')} className="cursor-pointer">
+                                  Tampilkan QrCode
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>

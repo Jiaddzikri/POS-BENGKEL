@@ -12,4 +12,6 @@ class ProcessOrderRequest
   public array $payment;
 
   public int $discount;
+
+  public string $orderType = 'offline';
 }

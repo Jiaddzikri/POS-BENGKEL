@@ -36,7 +36,7 @@ class BestSellingItemSheet implements FromCollection, WithTitle, WithHeadings, W
 
   public function headings(): array
   {
-    return ['Peringkat', 'SKU', 'Nama Item', 'Kategori', 'Kuantitas Terjual', 'Total Pendapatan'];
+    return ['Peringkat', 'SKU', 'Part Number', 'Nama Item', 'Kategori', 'Kuantitas Terjual', 'Total Pendapatan', 'Margin (%)'];
   }
 
   public function map($item): array
@@ -45,10 +45,12 @@ class BestSellingItemSheet implements FromCollection, WithTitle, WithHeadings, W
     return [
       ++$rank,
       $item->sku,
+      $item->part_number ?? '-',
       $item->item_name,
       $item->category,
       $item->total_quantity,
-      $item->total_revenue, // Pastikan query di service Anda sudah benar
+      $item->total_revenue,
+      $item->profit_margin_pct !== null ? round($item->profit_margin_pct, 2) : 0,
     ];
   }
 

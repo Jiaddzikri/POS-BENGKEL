@@ -4,7 +4,23 @@ import { CartItem, Customer, ItemList } from '@/types';
 import { getRawNumber, numberFormat } from '@/utils/number-format';
 import { router } from '@inertiajs/react';
 import { Label } from '@radix-ui/react-label';
-import { CreditCard, Minus, Phone, Plus, Receipt, ShoppingCart, Smartphone, Trash2, User, Wallet } from 'lucide-react';
+import {
+  CheckCircle2,
+  CreditCard,
+  Loader2,
+  Minus,
+  MonitorSmartphone,
+  Phone,
+  Plus,
+  Receipt,
+  ShoppingCart,
+  Smartphone,
+  Store,
+  Trash2,
+  User,
+  UserPlus,
+  Wallet,
+} from 'lucide-react';
 import React, { MouseEvent, useEffect, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { Button } from './ui/button';
@@ -21,6 +37,8 @@ interface OrderCartProps {
   items: ItemList[];
   addCustomerData: (customerData?: Customer) => void;
   handlePaymentMethod: (method?: string) => void;
+  handleOrderType: (type: 'online' | 'offline') => void;
+  orderType: 'online' | 'offline';
   discount: number;
   handleDiscountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -36,6 +54,8 @@ export function OrderCart({
   setCart,
   addCustomerData,
   handlePaymentMethod,
+  handleOrderType,
+  orderType,
   handleDiscountChange,
 }: OrderCartProps) {
   const path = window.location.pathname.split('/');
@@ -46,6 +66,12 @@ export function OrderCart({
   const [customerName, setCustomerName] = useState<string>('');
   const [isSearchingCustomer, setIsSearchingCustomer] = useState<boolean>(false);
   const [customerFound, setCustomerFound] = useState<boolean>(false);
+  // new: tracks whether a lookup has completed (for "not found" feedback)
+  const [phoneLookedUp, setPhoneLookedUp] = useState<boolean>(false);
+  // new: phone validation error
+  const [phoneError, setPhoneError] = useState<string>('');
+  // new: name validation error
+  const [nameError, setNameError] = useState<string>('');
 
   const subtotal: number = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount: number = subtotal * (discount / 100);
@@ -57,7 +83,14 @@ export function OrderCart({
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (customerPhone.length >= 10) {
+        setIsSearchingCustomer(true);
+        setPhoneLookedUp(false);
         findBuyer(`/api/buyer?phone_number=${customerPhone}`);
+      } else {
+        // reset feedback when phone is cleared / too short
+        setPhoneLookedUp(false);
+        setCustomerFound(false);
+        setCustomerName('');
       }
     }, 500);
 
@@ -65,6 +98,11 @@ export function OrderCart({
   }, [customerPhone]);
 
   useEffect(() => {
+    // Only process when not currently loading (i.e., the call finished)
+    if (buyerLoading) return;
+    setIsSearchingCustomer(false);
+    if (customerPhone.length < 10) return;
+    setPhoneLookedUp(true);
     if (buyerData) {
       setCustomerFound(true);
       setCustomerName(buyerData.name || '');
@@ -72,7 +110,7 @@ export function OrderCart({
       setCustomerFound(false);
       setCustomerName('');
     }
-  }, [buyerData]);
+  }, [buyerData, buyerError, buyerLoading]);
 
   useEffect(() => {
     handlePaymentMethod(paymentMethod);
@@ -85,6 +123,7 @@ export function OrderCart({
   const handleCustomerPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const phone = e.target.value;
     setCustomerPhone(phone);
+    if (phone) setPhoneError('');
   };
 
   const handleCustomerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,6 +131,7 @@ export function OrderCart({
 
     const name = e.target.value;
     setCustomerName(name);
+    if (name) setNameError('');
   };
 
   const resetCustomerData = () => {
@@ -99,6 +139,9 @@ export function OrderCart({
     setCustomerName('');
     setCustomerFound(false);
     setIsSearchingCustomer(false);
+    setPhoneLookedUp(false);
+    setPhoneError('');
+    setNameError('');
   };
 
   const canAddMoreQuantity = (sku: string): boolean => {
@@ -180,6 +223,14 @@ export function OrderCart({
   };
 
   const handleSubmitOrder = (e: MouseEvent<HTMLButtonElement>) => {
+    if (!customerPhone.trim()) {
+      setPhoneError('Nomor telepon wajib diisi sebelum memproses pembayaran.');
+      return;
+    }
+    if (!customerName.trim()) {
+      setNameError('Nama customer wajib diisi. Jika pelanggan baru, silakan masukkan namanya terlebih dahulu.');
+      return;
+    }
     submitOrder(e, closePaymentModal);
   };
 
@@ -246,7 +297,7 @@ export function OrderCart({
                       </button>
                     </div>
 
-                    <p className="mt-1 font-bold text-green-600">Rp {item.price.toLocaleString('id-ID')}</p>
+                    <p className="mt-1 font-bold text-green-600">Rp {numberFormat(item.price)}</p>
                   </div>
                 </div>
 
@@ -273,9 +324,9 @@ export function OrderCart({
                   </div>
 
                   <div className="text-right">
-                    <p className="text-sm font-bold">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</p>
+                    <p className="text-sm font-bold">Rp {numberFormat(item.price * item.quantity)}</p>
                     <p className="text-xs">
-                      {item.quantity} × Rp {item.price.toLocaleString('id-ID')}
+                      {item.quantity} × Rp {numberFormat(item.price)}
                     </p>
                   </div>
                 </div>
@@ -300,17 +351,17 @@ export function OrderCart({
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal ({cart.reduce((sum, item) => sum + item.quantity, 0)} item):</span>
-                <span className="font-medium">Rp {subtotal.toLocaleString('id-ID')}</span>
+                <span className="font-medium">Rp {numberFormat(subtotal)}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
                   <span>Diskon ({discount}%):</span>
-                  <span className="font-medium">-Rp {discountAmount.toLocaleString('id-ID')}</span>
+                  <span className="font-medium">-Rp {numberFormat(discountAmount)}</span>
                 </div>
               )}
               <div className="flex justify-between border-t pt-2 text-lg font-bold">
                 <span>Total:</span>
-                <span>Rp {total.toLocaleString('id-ID')}</span>
+                <span>Rp {numberFormat(total)}</span>
               </div>
             </div>
           </div>
@@ -327,162 +378,216 @@ export function OrderCart({
                   <div className="relative flex items-center justify-center gap-2">
                     <CreditCard className="h-5 w-5" />
                     <span className="font-semibold">Bayar Sekarang</span>
-                    <span className="ml-2 text-sm opacity-90">Rp {total.toLocaleString('id-ID')}</span>
+                    <span className="ml-2 text-sm opacity-90">Rp {numberFormat(total)}</span>
                   </div>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md overflow-auto">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
+              <DialogContent className="flex max-h-[90vh] max-w-md flex-col overflow-hidden p-0">
+                <DialogHeader className="shrink-0 border-b px-5 py-4">
+                  <DialogTitle className="flex items-center gap-2 text-base">
+                    <CreditCard className="h-4 w-4" />
                     Proses Pembayaran
                   </DialogTitle>
-                  <DialogClose></DialogClose>
+                  <DialogClose />
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-3 rounded-xl border p-4">
-                    <h3 className="flex items-center gap-2 text-sm font-semibold">
+
+                {/* Scrollable body */}
+                <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
+                  {/* ── Customer Info ── */}
+                  <div className="rounded-xl border p-3">
+                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                       <User className="h-4 w-4" />
                       Informasi Customer
                     </h3>
 
-                    <div>
-                      <Label className="mb-2 block text-sm font-medium">Nomor Telepon</Label>
+                    {/* Phone */}
+                    <div className="mb-2">
+                      <Label className="mb-1 block text-xs font-medium">
+                        Nomor Telepon <span className="text-red-500">*</span>
+                      </Label>
                       <div className="relative">
-                        <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                        <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <Input
                           type="tel"
                           value={customerPhone}
                           onChange={handleCustomerPhoneChange}
-                          className="w-full rounded-lg py-2.5 pr-10 pl-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                          className={`w-full rounded-lg py-2 pr-10 pl-10 text-sm focus:ring-2 focus:ring-blue-500/20 ${
+                            phoneError ? 'border-red-400 focus:ring-red-300' : ''
+                          }`}
                           placeholder="08xxxxxxxxxx"
                         />
-                        {isSearchingCustomer && (
-                          <div className="absolute top-1/2 right-3 -translate-y-1/2">
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-                          </div>
-                        )}
+                        {/* right-side icon: loading / found / new */}
+                        <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                          {isSearchingCustomer && <Loader2 className="h-4 w-4 animate-spin text-blue-500" />}
+                          {!isSearchingCustomer && phoneLookedUp && customerFound && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                          {!isSearchingCustomer && phoneLookedUp && !customerFound && <UserPlus className="h-4 w-4 text-yellow-500" />}
+                        </div>
                       </div>
+                      {/* Phone error */}
+                      {phoneError && (
+                        <p className="mt-1 flex items-center gap-1 text-xs font-medium text-red-600">
+                          <span>⚠</span> {phoneError}
+                        </p>
+                      )}
                     </div>
 
+                    {/* Lookup result feedback banner */}
+                    {!isSearchingCustomer && phoneLookedUp && (
+                      <div
+                        className={`mb-2 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                          customerFound
+                            ? 'border border-green-200 bg-green-50 text-green-700'
+                            : 'border border-yellow-200 bg-yellow-50 text-yellow-700'
+                        }`}
+                      >
+                        {customerFound ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                            <span>Customer ditemukan — nama terisi otomatis</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-3.5 w-3.5 shrink-0" />
+                            <span>Belum terdaftar — isi nama untuk mendaftarkan customer baru</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Name */}
                     <div>
-                      <Label className="mb-2 block text-sm font-medium">Nama Customer</Label>
+                      <Label className="mb-1 block text-xs font-medium">Nama Customer</Label>
                       <div className="relative">
-                        <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                        <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <Input
                           type="text"
                           value={customerName}
                           onChange={handleCustomerNameChange}
-                          className={`w-full rounded-lg border py-2 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
-                            customerFound ? 'border-green-300' : ''
+                          className={`w-full rounded-lg border py-2 pr-3 pl-10 text-sm focus:ring-2 focus:ring-blue-500 ${
+                            customerFound ? 'border-green-300 bg-green-50' : nameError ? 'border-red-400 focus:ring-red-300' : ''
                           }`}
                           placeholder="Masukkan nama customer"
                           disabled={customerFound}
                         />
-                        {customerFound && (
-                          <div className="absolute top-1/2 right-3 -translate-y-1/2">
-                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
-                              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 8 8">
-                                <path d="M6.5 0l-.5.5-2 2-1-1-.5-.5-1 1 .5.5 1.5 1.5.5.5.5-.5 2.5-2.5.5-.5-1-1z" />
-                              </svg>
-                            </div>
-                          </div>
-                        )}
                       </div>
-                      {customerFound && (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-green-600">
-                          <div className="h-1 w-1 rounded-full bg-green-500" />
-                          Customer ditemukan di database
+                      {nameError && (
+                        <p className="mt-1 flex items-center gap-1 text-xs font-medium text-red-600">
+                          <span>⚠</span> {nameError}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih Metode Pembayaran" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {paymentMethods.map((method) => {
-                          const IconComponent = method.icon;
-                          return (
-                            <SelectItem key={method.id} value={method.id}>
-                              <div className="flex items-center gap-3">
-                                <div className={`flex h-6 w-6 items-center justify-center rounded-full text-white ${method.color}`}>
-                                  <IconComponent className="h-4 w-4 text-white" />
-                                </div>
-                                <div>
-                                  <div className="font-medium">{method.name}</div>
-                                </div>
-                              </div>
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  <div className="rounded-xl border p-4">
-                    <h3 className="mb-3 font-semibold">Ringkasan Pembayaran</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Subtotal:</span>
-                        <span className="font-medium">Rp {subtotal.toLocaleString('id-ID')}</span>
-                      </div>
-                      {discount > 0 && (
-                        <div className="flex items-center justify-between text-sm text-green-600">
-                          <span>Diskon ({discount}%):</span>
-                          <span className="font-medium">-Rp {discountAmount.toLocaleString('id-ID')}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between border-t pt-2 text-lg font-bold">
-                        <span>Total Bayar:</span>
-                        <span>Rp {total.toLocaleString('id-ID')}</span>
-                      </div>
+                  {/* ── Order Type ── */}
+                  <div>
+                    <Label className="mb-1 block text-xs font-medium">Tipe Order</Label>
+                    <div className="grid grid-cols-2 gap-2 rounded-xl border p-1">
+                      <button
+                        type="button"
+                        onClick={() => handleOrderType('offline')}
+                        className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                          orderType === 'offline' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <Store className="h-4 w-4" />
+                        <span>Offline</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOrderType('online')}
+                        className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                          orderType === 'online' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <MonitorSmartphone className="h-4 w-4" />
+                        <span>Online</span>
+                      </button>
                     </div>
-                    {discount > 0 && (
-                      <div className="mb-2 flex items-center justify-between text-green-600">
-                        <span>Diskon ({discount}%):</span>
-                        <span>-Rp {discountAmount.toLocaleString('id-ID')}</span>
-                      </div>
-                    )}
                   </div>
 
-                  <div className="borderp-4 rounded-xl">
-                    <Label className="mb-2 block text-sm font-medium">Uang Diterima</Label>
+                  {/* ── Payment method ── */}
+                  <div>
+                    <Label className="mb-1 block text-xs font-medium">Metode Pembayaran</Label>
+                    <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                      <SelectTrigger className="text-sm">
+                        <SelectValue placeholder="Pilih Metode Pembayaran" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {paymentMethods.map((method) => {
+                            const IconComponent = method.icon;
+                            return (
+                              <SelectItem key={method.id} value={method.id}>
+                                <div className="flex items-center gap-3">
+                                  <div className={`flex h-5 w-5 items-center justify-center rounded-full text-white ${method.color}`}>
+                                    <IconComponent className="h-3 w-3 text-white" />
+                                  </div>
+                                  <span className="font-medium">{method.name}</span>
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* ── Payment summary ── */}
+                  <div className="rounded-xl border p-3 text-sm">
+                    <h3 className="mb-2 font-semibold">Ringkasan Pembayaran</h3>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Subtotal:</span>
+                        <span className="font-medium">Rp {numberFormat(subtotal)}</span>
+                      </div>
+                      {discount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Diskon ({discount}%):</span>
+                          <span className="font-medium">-Rp {numberFormat(discountAmount)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between border-t pt-2 text-base font-bold">
+                        <span>Total Bayar:</span>
+                        <span>Rp {numberFormat(total)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Cash received ── */}
+                  <div>
+                    <Label className="mb-1 block text-xs font-medium">Uang Diterima</Label>
                     <Input
                       type="text"
                       value={numberFormat(Number(cashReceived))}
                       onChange={handleCashReceivedChange}
-                      className="w-full rounded-lg px-3 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20"
                       placeholder="Masukkan jumlah uang"
                     />
                     {change > 0 && (
-                      <div className="mt-2 rounded-lg border border-green-200 bg-green-50 p-3">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-green-500" />
-                          <span className="text-sm font-medium text-green-700">Kembalian: Rp {change.toLocaleString('id-ID')}</span>
-                        </div>
+                      <div className="mt-2 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                        Kembalian: Rp {numberFormat(change)}
                       </div>
                     )}
                     {change < 0 && cashReceived && (
-                      <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-red-500" />
-                          <span className="text-sm font-medium text-red-700">Uang kurang: Rp {Math.abs(change).toLocaleString('id-ID')}</span>
-                        </div>
+                      <div className="mt-2 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                        <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                        Uang kurang: Rp {numberFormat(Math.abs(change))}
                       </div>
                     )}
                   </div>
+                </div>
 
-                  <div className="flex gap-3 pt-4">
-                    <Button onClick={closePaymentModal} variant="outline" className="flex-1 rounded-lg border-gray-300 py-2.5" type="button">
+                {/* ── Footer actions (sticky) ── */}
+                <div className="shrink-0 border-t px-5 py-3">
+                  <div className="flex gap-3">
+                    <Button onClick={closePaymentModal} variant="outline" className="flex-1 rounded-lg py-2 text-sm" type="button">
                       Batal
                     </Button>
                     <Button
                       onClick={handleSubmitOrder}
                       disabled={parseInt(cashReceived) < total || parseInt(cashReceived) == 0 || cashReceived == ''}
-                      className="flex-1 rounded-lg bg-green-600 py-2.5 text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                      className="flex-1 rounded-lg bg-green-600 py-2 text-sm text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                       type="submit"
                     >
                       Proses Bayar

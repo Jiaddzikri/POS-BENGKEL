@@ -153,8 +153,16 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/" prefetch>
-                {/* <AppLogo /> */}
-                <h1 className='text-lg sm:text-xl md:text-2xl font-bold'>Point Of Sale</h1>
+                <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-md shrink-0">
+                  <img
+                    src="/alpinolo.jpeg"
+                    alt="Alpinolo Scooter"
+                    className="size-8 object-cover"
+                  />
+                </div>
+                <div className="ml-1 grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">Alpinolo Scooter</span>
+                </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

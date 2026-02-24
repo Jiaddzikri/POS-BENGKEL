@@ -7,13 +7,18 @@ import { MouseEvent } from 'react';
 
 interface AddVariantProps {
   newVariant: Variant;
+  purchasePrice?: number;
   setNewVariant: (prev: any) => any;
   setShowAddVariant: (prev: boolean) => void;
   handleAddVariant: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-export default function AddVariant({ newVariant, setNewVariant, setShowAddVariant, handleAddVariant }: AddVariantProps) {
+export default function AddVariant({ newVariant, purchasePrice = 0, setNewVariant, setShowAddVariant, handleAddVariant }: AddVariantProps) {
   const { errors } = usePage().props;
+
+  const varPrice = Number(newVariant.price) || 0;
+  const margin = varPrice > 0 ? (((varPrice - purchasePrice) / varPrice) * 100).toFixed(2) : '0.00';
+
   return (
     <div className="mb-6 rounded-lg p-4">
       <h3 className="mb-3 text-sm font-medium">Tambah Variant Baru</h3>
@@ -53,16 +58,17 @@ export default function AddVariant({ newVariant, setNewVariant, setShowAddVarian
           {errors.stock && <div className="mt-1 text-sm text-red-500">{errors.stock}</div>}
         </div>
         <div>
-          <Label className="mb-1 block text-xs">Additional Price</Label>
+          <Label className="mb-1 block text-xs">Harga Jual</Label>
           <Input
             type="text"
             inputMode="numeric"
-            placeholder="Additional Price"
-            value={numberFormat(newVariant.additional_price)}
-            onChange={(e) => setNewVariant((prev: Variant) => ({ ...prev, additional_price: parseInt(getRawNumber(e.target.value)) }))}
+            placeholder="Harga Jual"
+            value={numberFormat(newVariant.price)}
+            onChange={(e) => setNewVariant((prev: Variant) => ({ ...prev, price: parseInt(getRawNumber(e.target.value)) }))}
             className="rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           />
-          {errors.addtional_price && <div className="mt-1 text-sm text-red-500">{errors.additonal_price}</div>}
+          {errors.price && <div className="mt-1 text-sm text-red-500">{errors.price}</div>}
+          {varPrice > 0 && <p className={`mt-0.5 text-xs ${Number(margin) < 0 ? 'text-red-500' : 'text-green-600'}`}>Margin: {margin}%</p>}
         </div>
         <div>
           <Label className="mb-1 block text-xs">SKU</Label>

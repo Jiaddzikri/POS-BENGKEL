@@ -72,13 +72,14 @@ export interface Variant {
   id?: string;
   name: string;
   sku: string;
-  additional_price: number;
+  price: number; // Harga Jual absolut (bukan tambahan)
+  profit_margin?: number; // Kalkulasi dari backend: (price - purchase_price) / price * 100
   stock: number;
   minimum_stock: number;
   [key: string]: any;
 }
 
-export interface ItemList {
+export interface ItemRecord {
   id: string;
   name: string;
   selling_price: number;
@@ -86,7 +87,13 @@ export interface ItemList {
   brand: string;
   category_name: string;
   description: string;
-  variants: Variant[];
+  // Flat product fields
+  sku?: string;
+  part_number?: string;
+  stock: number;
+  minimum_stock: number;
+  low_stock: boolean;
+  profit_margin?: number;
   created_at: string;
   updated_at: string;
   status: string;
@@ -94,7 +101,7 @@ export interface ItemList {
 }
 
 export interface ItemListData {
-  data: ItemList[];
+  data: ItemRecord[];
   meta: Pagination;
   links: Link;
 }
@@ -107,7 +114,15 @@ export interface FormItem {
   purchase_price: number | any;
   selling_price: number | any;
   brand: string;
-  variants: Variant[];
+  // Bengkel-specific fields
+  part_number?: string;
+  uom?: string;
+  rack_location?: string;
+  compatibility?: string[];
+  // Flat product fields
+  sku?: string;
+  stock: number;
+  minimum_stock: number;
   [key: string]: any;
 }
 
@@ -117,6 +132,11 @@ export interface Category {
   tenant_name?: string;
 }
 
+export interface CategoryList {
+  id: string;
+  name: string;
+}
+
 export interface ItemList {
   sku: string;
   item_name: string;
@@ -124,6 +144,7 @@ export interface ItemList {
   variant_id: string;
   variant_name: string;
   stock: number;
+  category_id: string;
   category_name: string;
   last_updated: string;
   price: number;
@@ -134,6 +155,10 @@ export interface ItemList {
   quantity?: number;
   minimum_stock: number;
   description: string;
+  part_number?: string;
+  uom?: string;
+  rack_location?: string;
+  compatibility?: string[];
 }
 
 export interface Item {
@@ -147,7 +172,15 @@ export interface Item {
   status: string;
   image_path?: string;
   description: string;
-  variants: Variant[];
+  // Bengkel-specific fields
+  part_number?: string;
+  uom?: string;
+  rack_location?: string;
+  compatibility?: string[];
+  // Flat product fields
+  sku?: string;
+  stock: number;
+  minimum_stock: number;
   new_image?: File | null;
   [key: string]: any;
 }
@@ -216,6 +249,7 @@ export interface OrderItemForm {
   variant_item_id: string;
   quantity: number;
   price_at_sale: number;
+  order_type?: 'online' | 'offline';
   [key: string]: any;
 }
 
@@ -457,9 +491,10 @@ interface AnalyticActiveCustomer {
 }
 
 interface AnalyticsFilter {
-  startDate?: string;
-  endDate?: string;
+  startDate?: string | null;
+  endDate?: string | null;
   range?: string;
+  order_type?: 'online' | 'offline' | '';
 }
 
 interface AnalyticsSalesTrend {
@@ -471,14 +506,51 @@ interface AnalyticBestSelling {
   item_name: string;
   category: string;
   sku: string;
+  part_number?: string;
   total_revenue: number;
   total_quantity: number;
+  profit_margin_pct?: number;
 }
 
 interface AnalyticBestSellingCategory {
   category: string;
   total_revenue: number;
   total_quantity: number;
+}
+
+interface AnalyticsTotalProfit {
+  totalProfit: number;
+  trend: 'increase' | 'decrease' | 'stable';
+  percentage: number;
+}
+
+interface AnalyticsDailyVolumeEntry {
+  date: string;
+  count: number;
+}
+
+interface AnalyticsDailyServiceVolume {
+  data: AnalyticsDailyVolumeEntry[];
+  total: number;
+  trend: 'increase' | 'decrease' | 'stable';
+  percentage: number;
+}
+
+interface DeadStockItem {
+  variant_id: string;
+  item_name: string;
+  part_number: string | null;
+  rack_location: string | null;
+  variant_name: string;
+  sku: string | null;
+  stock: number;
+  price: number;
+  purchase_price: number;
+}
+
+interface AnalyticsDeadStock {
+  items: DeadStockItem[];
+  total: number;
 }
 // sales
 
@@ -535,6 +607,7 @@ interface StockMovementRecord {
   stock_record: number;
   stock_in: number;
   stock_out: number;
+  movement_type: 'sold' | 'added' | 'adjusted' | 'removed';
   created_at: string;
 }
 
@@ -560,11 +633,16 @@ export interface OrderHistories {
 }
 
 export interface OrderItem {
+  id: string;
+  item_id: string;
   item_name: string;
+  variant_id: string;
   variant_name: string;
   sku: string | null;
   quantity: number;
   price_at_sale: number;
+  part_number?: string | null;
+  current_price: number;
 }
 
 export interface Order {

@@ -8,13 +8,10 @@ use App\Http\Requests\Item\PostItemRequest;
 use App\Http\Resources\ItemResource;
 use App\Http\Resources\VariantItemResource;
 use App\Models\Item;
-use App\Models\VariantItem;
 use App\Request\PostItemAttributeRequest;
 use App\Request\UpdateItemRequest;
-use App\Request\VariantAttributeRequest;
 use App\Service\Category\CategoryService;
 use App\Service\Item\ItemService;
-use DB;
 use Throwable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -112,19 +109,15 @@ class ItemController extends Controller
       $itemRequest->purchase_price = (int) $request->post("purchase_price");
       $itemRequest->brand = $request->post("brand");
       $itemRequest->tenant_id = $tenantId;
-      $variants = $request->post("variants");
-
-
-      foreach ($variants as $variant) {
-        $variantRequest = new VariantAttributeRequest();
-        $variantRequest->name = $variant["name"];
-        $variantRequest->additional_price = (int) $variant["additional_price"];
-        $variantRequest->minimum_stock = (int) $variant["minimum_stock"];
-        $variantRequest->stock = (int) $variant["stock"];
-        $variantRequest->sku = $variant["sku"];
-
-        $itemRequest->variants[] = $variantRequest;
-      }
+      // Bengkel-specific fields
+      $itemRequest->part_number = $request->post("part_number");
+      $itemRequest->uom = $request->post("uom", "Pcs");
+      $itemRequest->rack_location = $request->post("rack_location");
+      $itemRequest->compatibility = $request->post("compatibility", []);
+      // Flat product fields
+      $itemRequest->sku = $request->post("sku");
+      $itemRequest->stock = (int) $request->post("stock", 0);
+      $itemRequest->minimum_stock = (int) $request->post("minimum_stock", 0);
 
       $this->itemService->store($itemRequest);
 
@@ -143,9 +136,6 @@ class ItemController extends Controller
 
     $categories = $this->categoryService->selectAllCategories($tenantId);
     $item = Item::with([
-      'variants' => function ($query) {
-        $query->where("is_deleted", false);
-      },
       'category' => function ($query) {
         $query->select('id', 'name as category_name');
       }
@@ -166,8 +156,14 @@ class ItemController extends Controller
       "description" => $item->description,
       "is_active" => $item->status === "active",
       "status" => $item->status,
-      "variants" => $item->variants,
-
+      "part_number" => $item->part_number,
+      "uom" => $item->uom ?? 'Pcs',
+      "rack_location" => $item->rack_location,
+      "compatibility" => $item->compatibility ?? [],
+      // Flat product fields
+      "sku" => $item->sku,
+      "stock" => (int) ($item->stock ?? 0),
+      "minimum_stock" => (int) ($item->minimum_stock ?? 0),
     ];
 
     return Inertia::render('item/update-item', [
@@ -192,25 +188,15 @@ class ItemController extends Controller
       $itemRequest->brand = $request->post("brand");
       $itemRequest->tenant_id = $tenantId;
       $itemRequest->status = $request->post('status');
-      $variants = $request->post("variants", []);
-
-      if (sizeof($variants) > 0) {
-        foreach ($variants as $variant) {
-          $variantRequest = new VariantAttributeRequest();
-          $variantRequest->id = $variant["id"];
-          $variantRequest->name = $variant["name"];
-          $variantRequest->additional_price = (int) $variant["additional_price"];
-          $variantRequest->minimum_stock = (int) $variant["minimum_stock"];
-          $variantRequest->stock = (int) $variant["stock"];
-          $variantRequest->sku = $variant["sku"];
-
-          $itemRequest->variants[] = $variantRequest;
-        }
-      } else {
-        $itemRequest->variants = [];
-      }
-
-
+      // Bengkel-specific fields
+      $itemRequest->part_number = $request->post("part_number");
+      $itemRequest->uom = $request->post("uom", "Pcs");
+      $itemRequest->rack_location = $request->post("rack_location");
+      $itemRequest->compatibility = $request->post("compatibility", []);
+      // Flat product fields
+      $itemRequest->sku = $request->post("sku");
+      $itemRequest->stock = (int) $request->post("stock", 0);
+      $itemRequest->minimum_stock = (int) $request->post("minimum_stock", 0);
 
       $this->itemService->update($itemRequest, $itemId);
       return redirect()->route('item.edit', [
@@ -227,13 +213,13 @@ class ItemController extends Controller
   {
     $tenantId = $request->user()->tenant_id;
     try {
-      $variants = VariantItem::with('item.category')
+      $item = Item::with('category')
+        ->where('tenant_id', $tenantId)
         ->where('is_deleted', false)
-        ->whereHas('item', function ($query) use ($tenantId) {
-          $query->where('tenant_id', $tenantId);
-        })->where('sku', $request->get('sku', null))->first();
+        ->where('sku', $request->get('sku', null))
+        ->first();
 
-      $resource = new VariantItemResource($variants);
+      $resource = new VariantItemResource($item);
 
       return response()->json([
         $resource
@@ -253,15 +239,9 @@ class ItemController extends Controller
   {
     Log::info("Deleting item with ID: $item");
     try {
-      DB::transaction(function () use ($item) {
-        Item::where('id', '=', $item)->update([
-          "is_deleted" => true
-        ]);
-
-        VariantItem::where('item_id', '=', $item)->update([
-          'is_deleted' => true
-        ]);
-      });
+      Item::where('id', '=', $item)->update([
+        "is_deleted" => true
+      ]);
 
       return redirect()->back()->with('success', 'item berhasil dihapus');
     } catch (Throwable $error) {
@@ -313,4 +293,56 @@ class ItemController extends Controller
   //         ]
   //     ]);
   // }
+
+  // ── Import ──────────────────────────────────────────────────────────────
+
+  /**
+   * POST /item/import
+   *
+   * Accepts a multipart file (key: "file") and imports items from Excel / CSV.
+   * Returns JSON: { total_rows, imported, created, updated, failed, errors[] }
+   */
+  public function importItem(Request $request)
+  {
+    $tenantId = auth()->user()->tenant_id ?? $request->get('tenant_id');
+
+    $request->validate([
+      'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
+    ], [
+      'file.required' => 'File tidak boleh kosong.',
+      'file.mimes' => 'Format file harus .xlsx, .xls, atau .csv.',
+      'file.max' => 'Ukuran file maksimal 10 MB.',
+    ]);
+
+    try {
+      $result = $this->itemService->importFromExcel($request->file('file'), $tenantId);
+
+      return response()->json([
+        'message' => $result->failed === 0
+          ? "Import selesai. {$result->imported} item berhasil diimport."
+          : "Import selesai dengan {$result->failed} error.",
+        'data' => $result->toArray(),
+      ], $result->imported > 0 || $result->failed === 0 ? 200 : 422);
+
+    } catch (Throwable $error) {
+      AppLog::execption($error);
+      return response()->json([
+        'message' => 'Terjadi kesalahan saat memproses file.',
+        'error' => $error->getMessage(),
+      ], 500);
+    }
+  }
+
+  /**
+   * GET /item/import/template
+   *
+   * Download a blank Excel template that matches the required import columns.
+   */
+  public function downloadImportTemplate()
+  {
+    return \Maatwebsite\Excel\Facades\Excel::download(
+      new \App\Exports\ItemImportTemplateExport(),
+      'template-import-barang.xlsx'
+    );
+  }
 }

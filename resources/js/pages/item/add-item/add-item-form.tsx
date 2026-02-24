@@ -2,7 +2,6 @@ import { Category, FormItem } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import AddItemActionButton from '../../../components/add-item-action-button';
-import AddItemVariant from '../../../components/add-item-variant';
 import AddItemBasicInformation from './add-item-basic-information';
 
 type FormItemKey = keyof FormItem;
@@ -20,14 +19,34 @@ export default function AddItemForm({ categories, item }: AddItemFormProps) {
     purchase_price: item?.purchase_price || 0,
     selling_price: item?.selling_price || 0,
     brand: item?.brand || '',
-    variants: item?.variants || [],
+    part_number: item?.part_number || '',
+    uom: item?.uom || 'Pcs',
+    rack_location: item?.rack_location || '',
+    compatibility: item?.compatibility || ([] as string[]),
+    sku: item?.sku || '',
+    stock: item?.stock || 0,
+    minimum_stock: item?.minimum_stock || 0,
   });
 
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
     post(route('item.store'), {
       onSuccess: () => {
-        reset('name', 'category_id', 'description', 'purchase_price', 'selling_price', 'brand', 'variants');
+        reset(
+          'name',
+          'category_id',
+          'description',
+          'purchase_price',
+          'selling_price',
+          'brand',
+          'part_number',
+          'uom',
+          'rack_location',
+          'compatibility',
+          'sku',
+          'stock',
+          'minimum_stock',
+        );
       },
       onError: () => {
         console.log(errors);
@@ -41,10 +60,9 @@ export default function AddItemForm({ categories, item }: AddItemFormProps) {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
               <AddItemBasicInformation errors={errors} formData={data} categories={categories} setData={setData} />
-              <AddItemVariant formData={data} setData={setData} />
+              <AddItemActionButton />
             </div>
           </div>
-          <AddItemActionButton />
         </form>
       </div>
     </div>
