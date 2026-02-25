@@ -10,43 +10,48 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SalesTransaction extends Model
 {
-    use HasFactory, HasUuids;
+  use HasFactory, HasUuids;
 
-    protected $table = 'sales_transactions';
+  protected $table = 'sales_transactions';
 
-    protected $fillable = [
-        'tenant_id',
-        'buyer_id',
-        'order_id',
-        'user_id',
-        'invoice_number',
-        'discount',
-        'name',
-        'total_amount',
-        'final_amount',
-        'payment_method',
-        'amount_paid',
-        'change',
-    ];
+  protected $fillable = [
+    'tenant_id',
+    'buyer_id',
+    'order_id',
+    'user_id',
+    'invoice_number',
+    'discount',
+    'name',
+    'total_amount',
+    'final_amount',
+    'payment_method',
+    'amount_paid',
+    'change',
+  ];
 
-    public function details(): HasMany
-    {
-        return $this->hasMany(SalesTransactionDetail::class, 'sales_transaction_id');
-    }
+  public function details(): HasMany
+  {
+    return $this->hasMany(SalesTransactionDetail::class, 'sales_transaction_id');
+  }
 
 
-    public function tenant()
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id', 'id');
-    }
+  public function tenant()
+  {
+    return $this->belongsTo(Tenant::class, 'tenant_id', 'id');
+  }
 
-    public function buyer()
-    {
-        return $this->belongsTo(Buyer::class, 'buyer_id', 'id');
-    }
+  public function buyer()
+  {
+    return $this->belongsTo(Buyer::class, 'buyer_id', 'id');
+  }
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id', 'id');
-    }
+  public function user(): BelongsTo
+  {
+    return $this->belongsTo(User::class, 'user_id', 'id');
+  }
+
+  public function order(): BelongsTo
+  {
+    return $this->belongsTo(Order::class, 'order_id', 'id');
+  }
 }

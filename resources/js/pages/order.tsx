@@ -12,14 +12,15 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { CartItem, Customer, ItemData, ItemList, OrderCart as OrderCartType, OrderItemForm } from '@/types';
+import { CartItem, CategoryList, Customer, ItemData, ItemList, OrderCart as OrderCartType, OrderItemForm } from '@/types';
 import {} from '@headlessui/react';
 import { Head, router, useForm } from '@inertiajs/react';
 
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useMemo, useState } from 'react';
 
 interface CashierProps {
   items: ItemData;
+  categories: CategoryList[];
   discount: number;
   isOrderCompleted: boolean;
   isOrderHold: boolean;
@@ -27,7 +28,7 @@ interface CashierProps {
   orderDetail: OrderCartType;
 }
 
-export default function Order({ items, discount, isOrderCompleted, orderDetail, isOrderHold, isOrderCancelled }: CashierProps) {
+export default function Order({ items, categories, discount, isOrderCompleted, orderDetail, isOrderHold, isOrderCancelled }: CashierProps) {
   const path = window.location.pathname.split('/');
   const orderId = path[path.length - 1];
 
@@ -36,12 +37,30 @@ export default function Order({ items, discount, isOrderCompleted, orderDetail, 
   const [isOrderHoldModalOpen, setOrderHoldModal] = useState<boolean>(false);
   const [isOrderCancelledModalOpen, setOrderCancelledModal] = useState<boolean>(false);
 
+  // Category + search filter state
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  // Filtered items: search overrides category (server search already applied);
+  // category filtering is purely client-side from the full paginated page
+  const filteredItems = useMemo<ItemList[]>(() => {
+    if (searchTerm.trim()) {
+      // Server already filtered by search, show all returned items
+      return items.data;
+    }
+    if (!selectedCategory) {
+      return items.data;
+    }
+    return items.data.filter((item) => item.category_id === selectedCategory);
+  }, [items.data, selectedCategory, searchTerm]);
+
   const { data, setData, post } = useForm({
     phone_number: '' as string | undefined,
     name: '' as string | undefined,
     amount_paid: 0 as number,
     discount: discount as number,
     payment_method: '' as string,
+    order_type: 'offline' as 'online' | 'offline',
   });
 
   const [cashReceived, setCashReceived] = useState<string>('');
@@ -79,6 +98,10 @@ export default function Order({ items, discount, isOrderCompleted, orderDetail, 
 
   const handlePaymentMethod = (method?: string): void => {
     setData('payment_method', method || 'cash');
+  };
+
+  const handleOrderType = (type: 'online' | 'offline'): void => {
+    setData('order_type', type);
   };
 
   const clearCart = () => {
@@ -165,13 +188,22 @@ export default function Order({ items, discount, isOrderCompleted, orderDetail, 
       <div className="min-h-screen">
         <div className="flex h-screen">
           <div className="flex-1 overflow-y-auto p-6">
-            <CashierHeader handleAddItem={handleAddItem} />
-            <CashierListItem handleAddItem={handleAddItem} items={items.data} />
+            <CashierHeader
+              handleAddItem={handleAddItem}
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
+            <CashierListItem handleAddItem={handleAddItem} items={filteredItems} />
           </div>
           <div className="flex w-96 flex-col border-l">
             <OrderCart
               discount={data.discount}
               handlePaymentMethod={handlePaymentMethod}
+              handleOrderType={handleOrderType}
+              orderType={data.order_type}
               setCashReceived={setCashReceived}
               clearCart={clearCart}
               cart={cart}

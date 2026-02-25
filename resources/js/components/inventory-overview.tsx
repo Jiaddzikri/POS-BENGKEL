@@ -190,7 +190,7 @@ export default function InventoryOverview({
                     <span className="text-sm font-medium">{item.category_name}</span>
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-sm font-medium">Rp {item.price.toLocaleString('id-ID')}</span>
+                    <span className="text-sm font-medium">Rp {numberFormat(item.price)}</span>
                   </td>
                   <td className="px-4 py-4">
                     <span

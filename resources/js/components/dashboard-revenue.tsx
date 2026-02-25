@@ -73,7 +73,7 @@ export default function DashboardRevenue({ salesTrend, filters }: DashboardReven
                   borderWidth: 1,
                   callbacks: {
                     label: function (context) {
-                      return `Pendapatan: Rp ${context.parsed.y.toLocaleString()}`;
+                      return `Pendapatan: Rp ${context.parsed.y.toLocaleString('id-ID')}`;
                     },
                   },
                 },
@@ -94,7 +94,7 @@ export default function DashboardRevenue({ salesTrend, filters }: DashboardReven
                   ticks: {
                     color: '#6B7280',
                     callback: function (value) {
-                      return 'Rp ' + (value as number).toLocaleString();
+                      return 'Rp ' + (value as number).toLocaleString('id-ID');
                     },
                   },
                 },

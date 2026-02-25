@@ -2,10 +2,10 @@
 
 namespace App\Service\Order;
 
+use App\Models\Item;
 use App\Models\ItemRecord;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\VariantItem;
 use App\Request\AddOrderDetailRequest;
 use App\Request\CreateOrderRequest;
 use App\Request\CreateSalesTransactionRequest;
@@ -38,8 +38,9 @@ class OrderService
 
       $orderItems = $order->orderItem;
 
-      $variantIds = $orderItems->pluck('variant_item_id');
-      $variants = VariantItem::whereIn('id', $variantIds)
+      // Preload items for stock records
+      $itemIds = $orderItems->pluck('item_id');
+      $items = Item::whereIn('id', $itemIds)
         ->lockForUpdate()
         ->get()
         ->keyBy('id');
@@ -48,24 +49,26 @@ class OrderService
       $transactionDetails = [];
 
       foreach ($orderItems as $orderItem) {
-        $variant = $variants->get($orderItem->variant_item_id);
+        $item = $items->get($orderItem->item_id);
 
         $subtotal = $orderItem->price_at_sale * $orderItem->quantity;
         $totalAmount += $subtotal;
 
-
         $transactionDetails[] = [
           'item_id' => $orderItem->item_id,
-          'variant_id' => $orderItem->variant_item_id,
+          'variant_id' => null,   // flat model
           'quantity' => $orderItem->quantity,
           'price_at_sale' => $orderItem->price_at_sale,
           'sub_total' => $subtotal,
         ];
 
         ItemRecord::create([
-          'variant_item_id' => $orderItem->variant_item_id,
+          'item_id' => $orderItem->item_id,
+          'variant_item_id' => null,
+          'stock_record' => $item ? $item->stock : 0,
+          'stock_in' => 0,
           'stock_out' => $orderItem->quantity,
-          'stock_record' => $variant->stock,
+          'movement_type' => 'sold',
         ]);
       }
 
@@ -80,7 +83,8 @@ class OrderService
         'total_amount' => $totalAmount,
         'final_amount' => $finalAmount,
         'order_status' => 'completed',
-        'buyer_id' => $request->buyerId
+        'buyer_id' => $request->buyerId,
+        'order_type' => $request->orderType,
       ]);
 
       $createSalesTransactionRequest = new CreateSalesTransactionRequest();
@@ -108,12 +112,14 @@ class OrderService
   public function addOrderDetail(AddOrderDetailRequest $request)
   {
     return DB::transaction(function () use ($request) {
-      $orderItem = OrderItem::where('item_id', $request->itemId)->where('variant_item_id', '=', $request->variantItemId)
+      // Find existing cart line by item_id only (flat model — no variant row)
+      $orderItem = OrderItem::where('item_id', $request->itemId)
         ->where('order_id', $request->orderId)
         ->first();
-      $variant = VariantItem::where('id', $request->variantItemId)
+
+      $item = Item::where('id', $request->itemId)
         ->lockForUpdate()
-        ->first();
+        ->firstOrFail();
 
       if ($orderItem) {
         $newQuantity = $orderItem->quantity + $request->quantity;
@@ -121,15 +127,19 @@ class OrderService
         return $this->updateQuantity($request);
       }
 
+      if ($item->stock < $request->quantity) {
+        throw new Exception('Stock is not enough', 400);
+      }
+
       $createOrderItem = OrderItem::create([
         'order_id' => $request->orderId,
         'item_id' => $request->itemId,
-        'variant_item_id' => $request->variantItemId,
+        'variant_item_id' => null,   // flat model — no variant row
         'quantity' => $request->quantity,
-        'price_at_sale' => $request->priceAtSale
+        'price_at_sale' => $request->priceAtSale,
       ]);
 
-      $variant->decrement('stock', $request->quantity);
+      $item->decrement('stock', $request->quantity);
       $this->updateOrderTotals($request->orderId);
 
       return $createOrderItem;
@@ -142,9 +152,10 @@ class OrderService
       $orderItem = OrderItem::where('item_id', $request->itemId)
         ->where('order_id', $request->orderId)
         ->first();
-      $variant = VariantItem::where('id', $request->variantItemId)
+
+      $item = Item::where('id', $request->itemId)
         ->lockForUpdate()
-        ->first();
+        ->firstOrFail();
 
       $difference = $request->quantity - $orderItem->quantity;
 
@@ -152,19 +163,19 @@ class OrderService
         return;
       }
 
-      if ($difference > 0 && $variant->stock < $difference) {
+      if ($difference > 0 && $item->stock < $difference) {
         throw new Exception('Stock is not enough', 400);
       }
 
       if ($difference > 0) {
-        $variant->decrement('stock', $difference);
+        $item->decrement('stock', $difference);
       } else {
-        $variant->increment('stock', abs($difference));
+        $item->increment('stock', abs($difference));
       }
 
       $orderItem->update([
         'quantity' => $request->quantity,
-        'price_at_sale' => $request->priceAtSale
+        'price_at_sale' => $request->priceAtSale,
       ]);
       $this->updateOrderTotals($request->orderId);
 
@@ -224,13 +235,14 @@ class OrderService
   public function deleteOrderDetail(string $orderId, $variantId)
   {
     return DB::transaction(function () use ($orderId, $variantId) {
-      $orderItem = OrderItem::where('variant_item_id', $variantId)
+      // variantId == itemId in the flat model
+      $orderItem = OrderItem::where('item_id', $variantId)
         ->where('order_id', $orderId)
         ->firstOrFail();
 
-      $variant = VariantItem::lockForUpdate()->findOrFail($variantId);
+      $item = Item::lockForUpdate()->findOrFail($variantId);
 
-      $variant->increment('stock', $orderItem->quantity);
+      $item->increment('stock', $orderItem->quantity);
       $order = Order::findOrFail($orderId);
       $subtotalItem = $orderItem->price_at_sale * $orderItem->quantity;
       $newTotalAmount = $order->total_amount - $subtotalItem;
@@ -254,10 +266,10 @@ class OrderService
   {
     return DB::transaction(function () use ($orderId) {
       $order = Order::findOrFail($orderId);
-      foreach ($order->orderItem as $item) {
-        $variant = VariantItem::lockForUpdate()->find($item->variant_item_id);
-        if ($variant) {
-          $variant->increment('stock', $item->quantity);
+      foreach ($order->orderItem as $orderItem) {
+        $item = Item::lockForUpdate()->find($orderItem->item_id);
+        if ($item) {
+          $item->increment('stock', $orderItem->quantity);
         }
       }
       $order->orderItem()->delete();

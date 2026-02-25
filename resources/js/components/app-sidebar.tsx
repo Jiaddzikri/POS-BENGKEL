@@ -1,4 +1,3 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
@@ -18,8 +17,6 @@ import {
   Users,
   Warehouse,
 } from 'lucide-react';
-
-import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
   {
@@ -153,8 +150,12 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/" prefetch>
-                {/* <AppLogo /> */}
-                <h1 className='text-lg sm:text-xl md:text-2xl font-bold'>Point Of Sale</h1>
+                <div className="flex aspect-square size-8 shrink-0 items-center justify-center overflow-hidden rounded-md">
+                  <img src="/alpinolo.jpeg" alt="Alpinolo Scooter" className="size-8 object-cover" />
+                </div>
+                <div className="ml-1 grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">Alpinolo Scooter</span>
+                </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -1,4 +1,5 @@
 import { ItemList } from '@/types';
+import { numberFormat } from '@/utils/number-format';
 import { PackageX } from 'lucide-react';
 
 interface CashierListItemProps {
@@ -42,7 +43,7 @@ export default function CashierListItem({ items, handleAddItem }: CashierListIte
               </div>
 
               <div className="mb-3">
-                <p className="text-xl font-bold text-white">Rp {item.price.toLocaleString('id-ID')}</p>
+                <p className="text-xl font-bold text-white">Rp {numberFormat(item.price)}</p>
               </div>
 
               {/* Stock info */}

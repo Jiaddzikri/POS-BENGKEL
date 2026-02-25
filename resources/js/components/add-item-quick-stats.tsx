@@ -1,7 +1,7 @@
-import { Category, FormData } from '@/types';
+import { Category, FormItem } from '@/types';
 
 interface AddItemQuickStatsProps {
-  formData: FormData;
+  formData: FormItem;
   categories: Category[];
 }
 export default function AddItemQuickStats({ formData, categories }: AddItemQuickStatsProps) {

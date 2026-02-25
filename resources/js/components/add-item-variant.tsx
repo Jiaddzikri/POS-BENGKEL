@@ -5,30 +5,32 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Label } from './ui/label';
 
-type FormDataKey = keyof FormItem;
 type VariantKey = keyof Variant;
 
 interface ValidationErrors {
-  id?: string;
   name?: string;
   sku?: string;
-  additional_price?: string;
+  price?: string;
   minimum_stock?: string;
   stock?: string;
 }
 
 interface AddItemVarianProps {
   formData: FormItem;
-  setData: any; // Inertia's setData has overloaded signatures
+  setData: any;
 }
+
+const calcMargin = (price: number, purchase: number): string => {
+  if (price <= 0) return '—';
+  return (((price - purchase) / price) * 100).toFixed(1) + '%';
+};
 
 export default function AddItemVariant({ formData, setData }: AddItemVarianProps) {
   const [variantForm, setVariantForm] = useState<Variant>({
     name: '',
     sku: '',
-    additional_price: 0,
+    price: 0,
     minimum_stock: 0,
     stock: 0,
   });
@@ -36,294 +38,235 @@ export default function AddItemVariant({ formData, setData }: AddItemVarianProps
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleVariantInputChange = (field: VariantKey, value: string | number) => {
-    setVariantForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const purchase = Number(formData.purchase_price) || 0;
 
+  const handleChange = (field: VariantKey, value: string | number) => {
+    setVariantForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field as keyof ValidationErrors]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field as keyof ValidationErrors]: undefined,
-      }));
+      setErrors((prev) => ({ ...prev, [field as keyof ValidationErrors]: undefined }));
     }
   };
 
-  const validateVariantForm = (): ValidationErrors => {
-    const validationErrors: ValidationErrors = {};
-    const { name, sku, additional_price, minimum_stock, stock } = variantForm;
+  const validate = (): ValidationErrors => {
+    const e: ValidationErrors = {};
+    const { name, sku, price, minimum_stock, stock } = variantForm;
 
-    if (!name || name.trim() === '') {
-      validationErrors.name = 'Variant name is required';
-    } else if (name.length < 2) {
-      validationErrors.name = 'Variant name must be at least 2 characters';
-    } else if (name.length > 100) {
-      validationErrors.name = 'Variant name must not exceed 100 characters';
-    }
+    if (!name?.trim()) e.name = 'Nama varian wajib diisi';
+    else if (name.length < 2) e.name = 'Minimal 2 karakter';
+    else if (name.length > 100) e.name = 'Maksimal 100 karakter';
 
-    if (!sku || sku.trim() === '') {
-      validationErrors.sku = 'SKU is required';
-    } else if (sku.length < 3) {
-      validationErrors.sku = 'SKU must be at least 3 characters';
-    } else if (sku.length > 50) {
-      validationErrors.sku = 'SKU must not exceed 50 characters';
-    } else if (!/^[A-Za-z0-9-_]+$/.test(sku)) {
-      validationErrors.sku = 'SKU can only contain letters, numbers, hyphens, and underscores';
-    }
+    if (!sku?.trim()) e.sku = 'SKU wajib diisi';
+    else if (sku.length < 3) e.sku = 'SKU minimal 3 karakter';
+    else if (sku.length > 50) e.sku = 'SKU maksimal 50 karakter';
+    else if (!/^[A-Za-z0-9-_]+$/.test(sku)) e.sku = 'Hanya huruf, angka, - dan _';
+    else if (formData.variants?.some((v: Variant) => v.sku.toLowerCase() === sku.toLowerCase())) e.sku = 'SKU sudah digunakan';
 
-    if (formData.variants && Array.isArray(formData.variants)) {
-      const existingSKUs = formData.variants.map((variant: Variant) => variant.sku.toLowerCase());
-      if (existingSKUs.includes(sku.toLowerCase())) {
-        validationErrors.sku = 'SKU already exists. Please use a unique SKU';
-      }
-    }
+    if (Number(price) < 0) e.price = 'Harga tidak boleh negatif';
+    if (Number(stock) < 0) e.stock = 'Stok tidak boleh negatif';
+    if (Number(minimum_stock) < 0) e.minimum_stock = 'Stok minimum tidak boleh negatif';
+    if (Number(minimum_stock) > Number(stock)) e.minimum_stock = 'Stok minimum tidak boleh melebihi stok';
 
-    if (Number(additional_price) < 0) {
-      validationErrors.additional_price = 'Additional price cannot be negative';
-    } else if (Number(additional_price) > 999999999) {
-      validationErrors.additional_price = 'Additional price is too large';
-    }
-
-    if (Number(stock) < 0) {
-      validationErrors.stock = 'Stock cannot be negative';
-    } else if (Number(stock) > 999999) {
-      validationErrors.stock = 'Stock value is too large';
-    }
-
-    if (Number(minimum_stock) < 0) {
-      validationErrors.minimum_stock = 'Minimum stock cannot be negative';
-    } else if (Number(minimum_stock) > 999999) {
-      validationErrors.minimum_stock = 'Minimum stock value is too large';
-    }
-
-    if (Number(minimum_stock) > Number(stock)) {
-      validationErrors.minimum_stock = 'Minimum stock cannot be greater than current stock';
-    }
-
-    return validationErrors;
+    return e;
   };
 
-  const addVariantValueHandler = async () => {
+  const addVariant = async () => {
     setIsSubmitting(true);
-
     try {
-      const validationErrors = validateVariantForm();
-
+      const validationErrors = validate();
       if (Object.keys(validationErrors).length > 0) {
         setErrors(validationErrors);
-        toast.error('Please fix the validation errors before adding the variant');
+        toast.error('Perbaiki error sebelum menambah varian');
         return;
       }
-      const cleanVariant: Variant = {
-        ...variantForm,
-        name: variantForm.name.trim(),
-        sku: variantForm.sku.trim().toUpperCase(),
-      };
-
       setData((prev: any) => ({
         ...prev,
-        variants: [...prev.variants, cleanVariant],
+        variants: [...prev.variants, { ...variantForm, name: variantForm.name.trim(), sku: variantForm.sku.trim().toUpperCase() }],
       }));
-
-      toast.success('Variant successfully added');
-
-      setVariantForm({
-        name: '',
-        sku: '',
-        additional_price: 0,
-        minimum_stock: 0,
-        stock: 0,
-      });
-
+      toast.success('Varian berhasil ditambahkan');
+      setVariantForm({ name: '', sku: '', price: 0, minimum_stock: 0, stock: 0 });
       setErrors({});
-    } catch (error) {
-      toast.error('Failed to add variant. Please try again.');
+    } catch {
+      toast.error('Gagal menambah varian. Coba lagi.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const removeVariant = (indexToRemove: number) => {
-    if (formData.variants && Array.isArray(formData.variants)) {
-      const updatedVariants = formData.variants.filter((_, index) => index !== indexToRemove);
-      setData((prev: any) => ({
-        ...prev,
-        variants: updatedVariants,
-      }));
-      toast.success('Variant removed successfully');
-    }
+  const removeVariant = (idx: number) => {
+    setData((prev: any) => ({ ...prev, variants: prev.variants.filter((_: any, i: number) => i !== idx) }));
+    toast.success('Varian dihapus');
   };
 
-  const getInputClassName = (field: keyof ValidationErrors) => {
-    const baseClass = 'w-full rounded-md border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:outline-none';
-    const errorClass = 'border-red-500 focus:ring-red-500';
-    const normalClass = 'focus:ring-blue-500';
+  const inputCls = (field: keyof ValidationErrors) =>
+    `w-full rounded-md border px-2 py-1.5 text-sm focus:outline-none focus:ring-1 ${errors[field] ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`;
 
-    return `${baseClass} ${errors[field] ? errorClass : normalClass}`;
-  };
-
-  const getPriceInputClassName = () => {
-    const baseClass = 'w-full rounded-md border py-2 pr-3 pl-8 text-sm focus:border-transparent focus:ring-2 focus:outline-none';
-    const errorClass = 'border-red-500 focus:ring-red-500';
-    const normalClass = 'focus:ring-blue-500';
-
-    return `${baseClass} ${errors.additional_price ? errorClass : normalClass}`;
-  };
+  const liveMargin = Number(variantForm.price) > 0 ? calcMargin(Number(variantForm.price), purchase) : null;
+  const liveMarginPositive = liveMargin !== null && !liveMargin.startsWith('-');
 
   return (
-    <div className="space-y-6">
-      {/* Add Variant Form */}
-      <div className="rounded-lg border">
-        <div className="border-b px-6 py-4">
-          <h3 className="text-lg font-medium">Product Variant</h3>
-          <p className="mt-1 text-sm">Add Product Variant</p>
-        </div>
+    <div className="rounded-lg border">
+      <div className="border-b px-6 py-4">
+        <h3 className="text-lg font-medium">Product Variant</h3>
+        <p className="mt-0.5 text-sm text-muted-foreground">Tambah varian produk (ukuran, warna, dll.)</p>
+      </div>
 
-        <div className="space-y-4 p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <Label className="mb-2 block text-sm font-medium">
-                Variant Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                type="text"
-                value={variantForm.name}
-                onChange={(e) => handleVariantInputChange('name', e.target.value)}
-                className={getInputClassName('name')}
-                placeholder="Enter variant name"
-                maxLength={100}
-              />
-              {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
-            </div>
-
-            <div>
-              <Label className="mb-2 block text-sm font-medium">
-                Additional Price <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative">
-                <span className="absolute top-1/2 left-3 -translate-y-1/2 transform text-sm">Rp</span>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={numberFormat(Number(variantForm.additional_price))}
-                  onChange={(e) => handleVariantInputChange('additional_price', getRawNumber(e.target.value))}
-                  className={getPriceInputClassName()}
-                  placeholder="0"
-                />
-              </div>
-              {errors.additional_price && <p className="mt-1 text-sm text-red-500">{errors.additional_price}</p>}
-            </div>
-
-            <div>
-              <Label className="mb-2 block text-sm font-medium">Stock</Label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={numberFormat(Number(variantForm.stock))}
-                onChange={(e) => handleVariantInputChange('stock', getRawNumber(e.target.value))}
-                className={getInputClassName('stock')}
-                placeholder="0"
-              />
-              {errors.stock && <p className="mt-1 text-sm text-red-500">{errors.stock}</p>}
-            </div>
-
-            <div>
-              <Label className="mb-2 block text-sm font-medium">Minimum Stock</Label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={numberFormat(Number(variantForm.minimum_stock))}
-                onChange={(e) => handleVariantInputChange('minimum_stock', getRawNumber(e.target.value))}
-                className={getInputClassName('minimum_stock')}
-                placeholder="0"
-              />
-              {errors.minimum_stock && <p className="mt-1 text-sm text-red-500">{errors.minimum_stock}</p>}
-            </div>
-
-            <div>
-              <Label className="mb-2 block text-sm font-medium">
-                SKU <span className="text-red-500">*</span>
-              </Label>
-              <div className="flex">
-                <Input
-                  type="text"
-                  value={variantForm.sku}
-                  onChange={(e) => handleVariantInputChange('sku', e.target.value)}
-                  className={`flex-1 rounded-l-md border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:outline-none ${
-                    errors.sku ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
-                  }`}
-                  placeholder="Product SKU"
-                  maxLength={50}
-                />
-              </div>
-              {errors.sku && <p className="mt-1 text-sm text-red-500">{errors.sku}</p>}
-            </div>
+      <div className="p-6">
+        {/* ── Input row ── */}
+        <div className="mb-4 grid grid-cols-12 items-start gap-3">
+          {/* Variant Name – 3 cols */}
+          <div className="col-span-3">
+            <label className="mb-1 block text-xs font-medium">
+              Nama Varian <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="text"
+              value={variantForm.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              className={inputCls('name')}
+              placeholder="mis. 500ml"
+              maxLength={100}
+            />
+            {errors.name && <p className="mt-0.5 text-xs text-red-500">{errors.name}</p>}
           </div>
 
-          <div>
-            <Button type="button" onClick={addVariantValueHandler} disabled={isSubmitting} variant="outline" className="flex items-center gap-1">
+          {/* SKU – 2 cols */}
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-medium">
+              SKU <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="text"
+              value={variantForm.sku}
+              onChange={(e) => handleChange('sku', e.target.value)}
+              className={`font-mono ${inputCls('sku')}`}
+              placeholder="SKU-001"
+              maxLength={50}
+            />
+            {errors.sku && <p className="mt-0.5 text-xs text-red-500">{errors.sku}</p>}
+          </div>
+
+          {/* Stock – 1.5 cols */}
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-medium">Stok</label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={numberFormat(Number(variantForm.stock))}
+              onChange={(e) => handleChange('stock', getRawNumber(e.target.value))}
+              className={inputCls('stock')}
+              placeholder="0"
+            />
+            {errors.stock && <p className="mt-0.5 text-xs text-red-500">{errors.stock}</p>}
+          </div>
+
+          {/* Min Stock – 1.5 cols */}
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-medium">Stok Min.</label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={numberFormat(Number(variantForm.minimum_stock))}
+              onChange={(e) => handleChange('minimum_stock', getRawNumber(e.target.value))}
+              className={inputCls('minimum_stock')}
+              placeholder="0"
+            />
+            {errors.minimum_stock && <p className="mt-0.5 text-xs text-red-500">{errors.minimum_stock}</p>}
+          </div>
+
+          {/* Price – 2 cols */}
+          <div className="col-span-2">
+            <label className="mb-1 block text-xs font-medium">
+              Harga Jual <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <span className="absolute top-1/2 left-2 -translate-y-1/2 text-xs text-muted-foreground">Rp</span>
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={numberFormat(Number(variantForm.price))}
+                onChange={(e) => handleChange('price', getRawNumber(e.target.value))}
+                className={`${errors.price ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'} w-full rounded-md border py-1.5 pr-2 pl-7 text-sm focus:ring-1 focus:outline-none`}
+                placeholder="0"
+              />
+            </div>
+            {errors.price && <p className="mt-0.5 text-xs text-red-500">{errors.price}</p>}
+            {liveMargin && (
+              <p className={`mt-0.5 text-xs font-medium ${liveMarginPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                ▲ {liveMargin}
+              </p>
+            )}
+          </div>
+
+          {/* Add button – 1 col */}
+          <div className="col-span-1 pt-5">
+            <Button
+              type="button"
+              onClick={addVariant}
+              disabled={isSubmitting}
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              title="Tambah varian"
+            >
               <Plus className="h-4 w-4" />
-              {isSubmitting ? 'Adding...' : 'Add Variant'}
             </Button>
           </div>
         </div>
+
+        {/* ── Variant table ── */}
+        {formData.variants && formData.variants.length > 0 && (
+          <div className="rounded-md border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left">
+                  <th className="px-3 py-2.5 font-medium">Nama Varian</th>
+                  <th className="px-3 py-2.5 font-medium">SKU</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Stok</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Stok Min.</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Harga Jual</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Margin</th>
+                  <th className="w-10 px-3 py-2.5"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.variants.map((v: Variant, idx: number) => {
+                  const vPrice = Number(v.price) || 0;
+                  const margin = calcMargin(vPrice, purchase);
+                  const isPos = !margin.startsWith('-') && margin !== '—';
+                  return (
+                    <tr key={`${v.sku}-${idx}`} className="border-b last:border-0">
+                      <td className="px-3 py-2.5 font-medium">{v.name}</td>
+                      <td className="px-3 py-2.5 font-mono text-xs">{v.sku}</td>
+                      <td className="px-3 py-2.5 text-right">{numberFormat(Number(v.stock))}</td>
+                      <td className="px-3 py-2.5 text-right">{numberFormat(Number(v.minimum_stock))}</td>
+                      <td className="px-3 py-2.5 text-right">Rp {numberFormat(vPrice)}</td>
+                      <td
+                        className={`px-3 py-2.5 text-right text-xs font-semibold ${isPos ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}
+                      >
+                        {margin}
+                      </td>
+                      <td className="px-3 py-2.5 text-right">
+                        <button
+                          type="button"
+                          onClick={() => removeVariant(idx)}
+                          className="text-muted-foreground transition-colors hover:text-red-500"
+                          title="Hapus varian"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {(!formData.variants || formData.variants.length === 0) && (
+          <p className="py-4 text-center text-sm text-muted-foreground">Belum ada varian. Isi form di atas lalu klik +</p>
+        )}
       </div>
-
-      {/* Variant List */}
-      {formData.variants && Array.isArray(formData.variants) && formData.variants.length > 0 && (
-        <div className="rounded-lg border">
-          <div className="border-b px-6 py-4">
-            <h3 className="text-lg font-medium">Added Variants</h3>
-            <p className="mt-1 text-sm">
-              {formData.variants.length} variant{formData.variants.length > 1 ? 's' : ''} added
-            </p>
-          </div>
-
-          <div className="p-6">
-            <div className="space-y-4">
-              {formData.variants.map((variant: Variant, index: number) => (
-                <div key={`${variant.sku}-${index}`} className="flex items-center justify-between rounded-lg border p-4">
-                  <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-5">
-                    <div>
-                      <Label className="text-xs font-medium">Name</Label>
-                      <p className="text-sm font-medium">{variant.name}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs font-medium">SKU</Label>
-                      <p className="font-mono text-sm">{variant.sku}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs font-medium">Additional Price</Label>
-                      <p className="text-sm">Rp {numberFormat(Number(variant.additional_price))}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs font-medium">Stock</Label>
-                      <p className="text-sm">{numberFormat(Number(variant.stock))}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs font-medium">Min Stock</Label>
-                      <p className="text-sm">{numberFormat(Number(variant.minimum_stock))}</p>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <Button
-                      type="button"
-                      onClick={() => removeVariant(index)}
-                      variant="outline"
-                      size="icon"
-                      className="border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50"
-                      title="Remove variant"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -9,12 +9,13 @@ import { useState } from 'react';
 
 interface VariantListProps {
   variants: Variant[];
+  purchasePrice?: number;
   handleVariantChange: (field: keyof Variant, value: string | number, id?: string) => void;
   handleDeleteVariant: (handleCloseDeleteModal: any, variantId?: string) => void;
   errors: Partial<Record<string, string>>;
 }
 
-export default function VariantList({ variants, handleVariantChange, handleDeleteVariant, errors }: VariantListProps) {
+export default function VariantList({ variants, purchasePrice = 0, handleVariantChange, handleDeleteVariant, errors }: VariantListProps) {
   const [isDeleteModalOpen, setShowDeleteModal] = useState<boolean>(false);
   const [selectedVariant, setSelectedVariant] = useState<string | undefined>('');
 
@@ -32,9 +33,11 @@ export default function VariantList({ variants, handleVariantChange, handleDelet
   return (
     <div className="space-y-3">
       {variants.map((variant, index) => {
+        const varPrice = Number(variant.price) || 0;
+        const margin = varPrice > 0 ? (((varPrice - purchasePrice) / varPrice) * 100).toFixed(2) : '0.00';
         return (
           <div key={variant.id} className="flex items-center space-x-3 rounded-lg border p-3">
-            <div className="grid flex-1 grid-cols-2 gap-3 md:grid-cols-5">
+            <div className="grid flex-1 grid-cols-2 gap-3 md:grid-cols-6">
               <div>
                 <Label className="mb-1 block text-xs">Name</Label>
                 <input
@@ -73,18 +76,17 @@ export default function VariantList({ variants, handleVariantChange, handleDelet
                 {getVariantError(index, 'minimum_stock') && <p className="mt-1 text-xs text-red-600">{getVariantError(index, 'minimum_stock')}</p>}
               </div>
               <div>
-                <Label className="mb-1 block text-xs">Additional Price</Label>
+                <Label className="mb-1 block text-xs">Harga Jual</Label>
                 <input
                   type="text"
-                  value={numberFormat(variant.additional_price)}
-                  onChange={(e) => handleVariantChange('additional_price', parseInt(getRawNumber(e.target.value)) || 0, variant.id)}
+                  value={numberFormat(variant.price)}
+                  onChange={(e) => handleVariantChange('price', parseInt(getRawNumber(e.target.value)) || 0, variant.id)}
                   className={`w-full rounded border px-2 py-1 text-sm focus:ring-1 focus:outline-none ${
-                    hasFieldError(index, 'additional_price') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                    hasFieldError(index, 'price') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
                   }`}
                 />
-                {getVariantError(index, 'additional_price') && (
-                  <p className="mt-1 text-xs text-red-600">{getVariantError(index, 'additional_price')}</p>
-                )}
+                {getVariantError(index, 'price') && <p className="mt-1 text-xs text-red-600">{getVariantError(index, 'price')}</p>}
+                {varPrice > 0 && <p className={`mt-0.5 text-xs ${Number(margin) < 0 ? 'text-red-500' : 'text-green-600'}`}>Margin: {margin}%</p>}
               </div>
               <div>
                 <Label className="mb-1 block text-xs">SKU</Label>

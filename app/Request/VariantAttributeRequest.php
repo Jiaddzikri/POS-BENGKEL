@@ -8,6 +8,6 @@ class VariantAttributeRequest
   public string $name;
   public string $sku;
   public int $stock;
-  public int $additional_price;
+  public int $price;          // Harga Jual absolut per varian (bukan tambahan)
   public int $minimum_stock;
 }
