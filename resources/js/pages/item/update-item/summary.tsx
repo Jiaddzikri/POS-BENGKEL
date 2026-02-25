@@ -1,5 +1,5 @@
-import { numberFormat } from '@/utils/number-format';
 import { Variant } from '@/types';
+import { numberFormat } from '@/utils/number-format';
 
 interface SummaryProps {
   variants: Variant[];

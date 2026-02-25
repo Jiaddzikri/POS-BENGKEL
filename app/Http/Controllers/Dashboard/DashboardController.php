@@ -23,6 +23,7 @@ class DashboardController extends Controller
     $startDate = null;
     $endDate = null;
     $filterUsed = [];
+    $orderType = $request->get('order_type') ?: null;
 
     if ($request->filled('startDate') && $request->filled('endDate')) {
       $startDate = $request->get('startDate');
@@ -30,12 +31,12 @@ class DashboardController extends Controller
       $filterUsed = [
         'startDate' => $request->get('startDate'),
         'endDate' => $request->get('endDate'),
-        'range' => ''
-
+        'range' => '',
+        'order_type' => $orderType ?? '',
       ];
     } else {
       $range = $request->get('range', 'today') ?? 'today';
-      $filterUsed = ['range' => $range, 'startDate' => null, 'endDate' => null];
+      $filterUsed = ['range' => $range, 'startDate' => null, 'endDate' => null, 'order_type' => $orderType ?? ''];
     }
 
     $analyticalRequest = new GetAnalyticalRequest();
@@ -43,6 +44,7 @@ class DashboardController extends Controller
     $analyticalRequest->endDate = $endDate;
     $analyticalRequest->range = $filterUsed['range'] ?? null;
     $analyticalRequest->tenantId = $request->user()->tenant_id;
+    $analyticalRequest->orderType = $orderType;
 
     $revenue = $this->analyticalService->getRevenue($analyticalRequest);
     $totalTransaction = $this->analyticalService->getTotalTransaction($analyticalRequest);

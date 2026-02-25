@@ -1,5 +1,5 @@
-import { numberFormat } from '@/utils/number-format';
 import { ItemList } from '@/types';
+import { numberFormat } from '@/utils/number-format';
 import { PackageX } from 'lucide-react';
 
 interface CashierListItemProps {

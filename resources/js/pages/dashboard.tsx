@@ -75,6 +75,7 @@ export default function Dashboard({
   newestTransactions,
 }: DashboardProps): React.JSX.Element {
   const [selectedPeriod, setSelectedPeriod] = useState<string | undefined>(filters.range);
+  const [selectedOrderType, setSelectedOrderType] = useState<'online' | 'offline' | ''>(filters.order_type ?? '');
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: filters?.startDate ? new Date(filters.startDate) : undefined,
     to: filters?.endDate ? new Date(filters.endDate) : undefined,
@@ -82,10 +83,20 @@ export default function Dashboard({
 
   const handlePeriodChange = (period: string) => {
     setSelectedPeriod(period);
-
     setDateRange({ from: undefined, to: undefined });
+    router.get(route('dashboard'), { range: period, order_type: selectedOrderType }, { preserveState: true, replace: true });
+  };
 
-    router.get(route('dashboard'), { range: period }, { preserveState: true, replace: true });
+  const handleOrderTypeChange = (type: 'online' | 'offline' | '') => {
+    setSelectedOrderType(type);
+    const params: Record<string, string> = { order_type: type };
+    if (selectedPeriod) {
+      params.range = selectedPeriod;
+    } else if (dateRange?.from && dateRange?.to) {
+      params.startDate = formatDate(dateRange.from, 'yyyy-MM-dd');
+      params.endDate = formatDate(dateRange.to, 'yyyy-MM-dd');
+    }
+    router.get(route('dashboard'), params, { preserveState: true, replace: true });
   };
 
   const handleApplyCustomDate = () => {
@@ -105,6 +116,7 @@ export default function Dashboard({
       {
         startDate: formatDate(dateRange.from, 'yyyy-MM-dd'),
         endDate: formatDate(dateRange.to, 'yyyy-MM-dd'),
+        order_type: selectedOrderType,
       },
       { preserveState: true, replace: true },
     );
@@ -120,6 +132,8 @@ export default function Dashboard({
           dateRange={dateRange}
           handleApplyCustomDate={handleApplyCustomDate}
           setDateRange={setDateRange}
+          selectedOrderType={selectedOrderType}
+          handleOrderTypeChange={handleOrderTypeChange}
         />
         <DashboardMetric
           activeCustomer={activeCustomer}

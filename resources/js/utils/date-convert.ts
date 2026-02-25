@@ -23,7 +23,11 @@ export function convertDate(date: string) {
   return `${datePart}, ${timePart}`;
 }
 
-export default function convertDateDiffInfo(range: string | undefined, startDate: string | undefined, endDate: string | undefined): string {
+export default function convertDateDiffInfo(
+  range: string | null | undefined,
+  startDate: string | null | undefined,
+  endDate: string | null | undefined,
+): string {
   let info: string = '';
 
   if (range && range !== 'custom') {
