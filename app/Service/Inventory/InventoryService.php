@@ -75,10 +75,15 @@ class InventoryService
     }
   }
 
-  private function baseStockMovementQuery(string $tenantId, $filters = [])
+  private function baseStockMovementQuery(?string $tenantId, $filters = [])
   {
     $baseQuery = ItemRecord::with(['item.category', 'variant.item.category'])
       ->where(function ($q) use ($tenantId) {
+        if ($tenantId === null) {
+          // super_admin without an active tenant — return nothing
+          $q->whereRaw('1 = 0');
+          return;
+        }
         // flat-model records
         $q->whereHas('item', function ($query) use ($tenantId) {
           $query->where('tenant_id', $tenantId)
@@ -113,7 +118,7 @@ class InventoryService
     return $baseQuery;
   }
 
-  public function getStockMovementPaginated(string $tenantId, array $filters = [])
+  public function getStockMovementPaginated(?string $tenantId, array $filters = [])
   {
     return $this->baseStockMovementQuery($tenantId, $filters)
       ->latest()
@@ -121,7 +126,7 @@ class InventoryService
       ->withQueryString();
   }
 
-  public function getStockMovementCount(string $tenantId, array $filters = [])
+  public function getStockMovementCount(?string $tenantId, array $filters = [])
   {
     return $this->baseStockMovementQuery($tenantId, $filters)->count();
   }

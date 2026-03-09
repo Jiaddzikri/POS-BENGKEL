@@ -23,7 +23,7 @@ class InventoryController extends Controller
   }
   public function index(Request $request)
   {
-    $tenantId = auth()->user()->tenant_id;
+    $tenantId = auth()->user()->tenant_id ?? $request->get('tenant_id');
     $search = $request->input('search', null);
     $page = $request->input('page', 1);
     $searchStockMovement = $request->input('search_stock_movement', null);
@@ -90,7 +90,7 @@ class InventoryController extends Controller
 
   public function showPdfPreview(Request $request)
   {
-    $tenantId = auth()->user()->tenant_id;
+    $tenantId = auth()->user()->tenant_id ?? $request->get('tenant_id');
     $search = $request->input('search', null);
     $searchStockMovement = $request->input('search_stock_movement', null);
     $startDate = $request->input('startDate', null);
