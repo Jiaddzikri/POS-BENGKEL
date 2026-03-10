@@ -132,38 +132,43 @@ class ItemController extends Controller
 
   public function edit(Request $request, string $item)
   {
-    $tenantId = $request->user()->tenant_id;
+    $tenantId = $request->user()->tenant_id ?? $request->get('tenant_id');
 
     $categories = $this->categoryService->selectAllCategories($tenantId);
-    $item = Item::with([
+
+    $foundItem = Item::with([
       'category' => function ($query) {
         $query->select('id', 'name as category_name');
       }
     ])
-      ->where('tenant_id', $tenantId)
       ->where('id', $item)
+      ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
       ->first();
 
+    if (!$foundItem) {
+      return redirect()->route('item.index')->with('error', 'Item tidak ditemukan.');
+    }
+
     $mapItem = [
-      "brand" => $item->brand,
-      "id" => $item->id,
-      "category_id" => $item->category->id,
-      "category_name" => $item->category->category_name,
-      "item_name" => $item->name,
-      "purchase_price" => $item->purchase_price,
-      "selling_price" => $item->selling_price,
-      "image_path" => $item->image_path,
-      "description" => $item->description,
-      "is_active" => $item->status === "active",
-      "status" => $item->status,
-      "part_number" => $item->part_number,
-      "uom" => $item->uom ?? 'Pcs',
-      "rack_location" => $item->rack_location,
-      "compatibility" => $item->compatibility ?? [],
+      "brand" => $foundItem->brand,
+      "id" => $foundItem->id,
+      "category_id" => $foundItem->category?->id,
+      "category_name" => $foundItem->category?->category_name,
+      "item_name" => $foundItem->name,
+      "purchase_price" => $foundItem->purchase_price,
+      "selling_price" => $foundItem->selling_price,
+      "image_path" => $foundItem->image_path,
+      "description" => $foundItem->description,
+      "is_active" => $foundItem->status === "active",
+      "status" => $foundItem->status,
+      "part_number" => $foundItem->part_number,
+      "uom" => $foundItem->uom ?? 'Pcs',
+      "rack_location" => $foundItem->rack_location,
+      "compatibility" => $foundItem->compatibility ?? [],
       // Flat product fields
-      "sku" => $item->sku,
-      "stock" => (int) ($item->stock ?? 0),
-      "minimum_stock" => (int) ($item->minimum_stock ?? 0),
+      "sku" => $foundItem->sku,
+      "stock" => (int) ($foundItem->stock ?? 0),
+      "minimum_stock" => (int) ($foundItem->minimum_stock ?? 0),
     ];
 
     return Inertia::render('item/update-item', [
