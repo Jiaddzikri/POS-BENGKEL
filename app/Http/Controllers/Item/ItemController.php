@@ -25,9 +25,31 @@ class ItemController extends Controller
   {
   }
 
+  /**
+   * Resolve tenantId dari user yang sedang login.
+   * Jika super_admin belum memilih tenant, kembalikan redirect dengan pesan error.
+   * Gunakan di setiap method yang membutuhkan tenantId.
+   *
+   * @return string|\Illuminate\Http\RedirectResponse
+   */
+  private function resolveTenantId(Request $request): string|\Illuminate\Http\RedirectResponse
+  {
+    $tenantId = $request->user()->tenant_id ?? $request->get('tenant_id');
+
+    if (!$tenantId) {
+      return redirect()->route('item.index')->with(
+        'error',
+        'Anda belum memilih tenant aktif. Silakan pilih tenant terlebih dahulu melalui menu Tenant sebelum melakukan aksi ini.'
+      );
+    }
+
+    return $tenantId;
+  }
   public function index(Request $request)
   {
-    $tenantId = auth()->user()->tenant_id ?? $request->get('tenant_id');
+    $tenantId = $this->resolveTenantId($request);
+    if ($tenantId instanceof \Illuminate\Http\RedirectResponse) return $tenantId;
+
     $search = $request->input('search');
     $page = $request->input('page', 1);
     $minPrice = $request->get('minPrice');
@@ -79,11 +101,8 @@ class ItemController extends Controller
 
   public function create(Request $request)
   {
-    $tenantId = $request->user()->tenant_id;
-
-    if (!$tenantId) {
-      return redirect()->route('item.index')->with('error', 'Tenant ID is required. Please contact administrator.');
-    }
+    $tenantId = $this->resolveTenantId($request);
+    if ($tenantId instanceof \Illuminate\Http\RedirectResponse) return $tenantId;
 
     $categories = $this->categoryService->selectAllCategories($tenantId);
 
@@ -95,11 +114,8 @@ class ItemController extends Controller
   {
     try {
       $request->validated();
-      $tenantId = $request->user()->tenant_id;
-
-      if (!$tenantId) {
-        return redirect()->back()->with('error', 'Tenant ID is required. Please ensure you are assigned to a tenant.');
-      }
+      $tenantId = $this->resolveTenantId($request);
+      if ($tenantId instanceof \Illuminate\Http\RedirectResponse) return $tenantId;
 
       $itemRequest = new PostItemAttributeRequest();
       $itemRequest->name = $request->post("name");
@@ -132,7 +148,8 @@ class ItemController extends Controller
 
   public function edit(Request $request, string $item)
   {
-    $tenantId = $request->user()->tenant_id ?? $request->get('tenant_id');
+    $tenantId = $this->resolveTenantId($request);
+    if ($tenantId instanceof \Illuminate\Http\RedirectResponse) return $tenantId;
 
     $categories = $this->categoryService->selectAllCategories($tenantId);
 
@@ -182,7 +199,8 @@ class ItemController extends Controller
     try {
       $request->validated();
 
-      $tenantId = $request->user()->tenant_id;
+      $tenantId = $this->resolveTenantId($request);
+      if ($tenantId instanceof \Illuminate\Http\RedirectResponse) return $tenantId;
 
       $itemRequest = new UpdateItemRequest();
       $itemRequest->name = $request->post("item_name");
@@ -216,7 +234,11 @@ class ItemController extends Controller
 
   public function findItem(Request $request)
   {
-    $tenantId = $request->user()->tenant_id;
+    $tenantId = $this->resolveTenantId($request);
+    if ($tenantId instanceof \Illuminate\Http\RedirectResponse) {
+      return response()->json(['message' => 'Anda belum memilih tenant aktif. Silakan pilih tenant terlebih dahulu.'], 403);
+    }
+
     try {
       $item = Item::with('category')
         ->where('tenant_id', $tenantId)
@@ -309,7 +331,10 @@ class ItemController extends Controller
    */
   public function importItem(Request $request)
   {
-    $tenantId = auth()->user()->tenant_id ?? $request->get('tenant_id');
+    $tenantId = $this->resolveTenantId($request);
+    if ($tenantId instanceof \Illuminate\Http\RedirectResponse) {
+      return response()->json(['message' => 'Anda belum memilih tenant aktif. Silakan pilih tenant terlebih dahulu.'], 403);
+    }
 
     $request->validate([
       'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
