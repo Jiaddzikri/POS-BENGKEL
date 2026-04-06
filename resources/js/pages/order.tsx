@@ -116,12 +116,33 @@ export default function Order({ items, categories, discount, isOrderCompleted, o
     );
   };
 
+  const autoPrintReceipt = (id: string) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = route('receipt.download', { orderId: id });
+    document.body.appendChild(iframe);
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      }, 500);
+
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 10000);
+    };
+  };
+
   const submitOrder = (e: MouseEvent<HTMLButtonElement>, closePaymentModal: any, customerData?: Customer) => {
     e.preventDefault();
 
     post(route(`order.process`, { orderId: orderId }), {
       onSuccess: () => {
         closePaymentModal();
+        autoPrintReceipt(orderId);
       },
     });
   };
